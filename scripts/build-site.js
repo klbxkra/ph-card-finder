@@ -29,6 +29,7 @@ ${body}
 
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, "index.html"), html);
-fs.copyFileSync(path.join(root, "data.js"), path.join(out, "data.js"));
+// Read and write rather than copyFileSync: on Windows, copying onto a file a local server has open can fail.
+fs.writeFileSync(path.join(out, "data.js"), fs.readFileSync(path.join(root, "data.js")));
 fs.writeFileSync(path.join(out, ".nojekyll"), "");
 console.log("Built docs/index.html and docs/data.js");

@@ -61,6 +61,8 @@ for (const c of D.cards || []) {
     if (!isNum(e.cats[k])) errors.push(`${w}: earn.cats.${k} must be a number`);
   }
   for (const r of e.eco || []) if (!ecos.has(r.eco) || !cats.has(r.cat) || !isNum(r.rate)) errors.push(`${w}: bad eco rule ${JSON.stringify(r)}`);
+  for (const k of Object.keys(e.cashCats || {})) if (!cats.has(k) || !isNum(e.cashCats[k])) errors.push(`${w}: bad cashCats entry "${k}"`);
+  if (c.secured && c.secured.minDeposit != null && !isNum(c.secured.minDeposit)) errors.push(`${w}: secured.minDeposit must be a number or null`);
   for (const r of e.rotating || []) if (!cats.has(r.cat) || !isNum(r.rate) || !Array.isArray(r.months) || !r.label) errors.push(`${w}: bad rotating rule ${JSON.stringify(r)}`);
   if (c.needsMembership && !ecos.has(c.needsMembership.eco)) errors.push(`${w}: needsMembership.eco must be an ecosystem id`);
   if (!c.apply || !/^https:\/\//.test(c.apply.url || "")) errors.push(`${w}: needs apply.url (https)`);

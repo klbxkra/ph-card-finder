@@ -9,7 +9,7 @@ A single-page app that recommends Philippine credit cards from a few bracketed a
 
 | File | What it is |
 | --- | --- |
-| `index.html` | The app: layout, styles, eligibility, value, ratings and upgrade-path logic. Written for the Claude artifact, which adds the `<html>`/`<head>` wrapper when it publishes. |
+| `index.html` | The app: layout, styles, eligibility, value, ratings, upgrade paths, sort and filters, and the 6-card compare view. Written for the Claude artifact, which adds the `<html>`/`<head>` wrapper when it publishes. The only thing it stores is the viewer's light/dark choice, in their own browser. |
 | `data.js` | Every card, bank note, document list, apply link, promo and source. Sets `window.PHCC_DATA`. The only file a data refresh should touch. |
 | `scripts/check-data.js` | Validates `data.js`: schema, dates, source links, apply links on bank domains, the BSP 3% interest cap. Run before publishing. |
 | `scripts/build-site.js` | Writes `docs/` for GitHub Pages: `index.html` wrapped in a full HTML document, plus `data.js`. |
