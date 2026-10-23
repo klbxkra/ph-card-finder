@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>PH Card Finder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+/* Layout: a two-pane workbench. Questions sit in a left rail, ranked cards fill the right. Single column under 960px. */
+:root {
+  --bg: #edf1f5;
+  --surface: #ffffff;
+  --surface-2: #f5f7fa;
+  --ink: #0e1a28;
+  --muted: #546273;
+  --line: #d5dde6;
+  --accent: #2453a6;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2eafa;
+  --gold: #946a0c;
+  --gold-soft: #fbf0d6;
+  --good: #156f49;
+  --good-soft: #dcf1e7;
+  --warn: #8f5a00;
+  --warn-soft: #fbeed4;
+  --bad: #a8261e;
+  --bad-soft: #fae2df;
+  --t-classic: #5c6c80;
+  --t-gold: #b38b2c;
+  --t-plat: #8797ad;
+  --t-sig: #1b2430;
+  --t-ti: #6b7988;
+  --on-swatch: #ffffff;
+  --chip: #e6d39b;
+  --tip-bg: #13202f;
+  --tip-ink: #eef3f9;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a111d; --surface: #111a29; --surface-2: #0d1522; --ink: #e5ecf5; --muted: #9aa7b8; --line: #23324a;
+    --accent: #84a9ff; --accent-ink: #0a111d; --accent-soft: #1a2a4a;
+    --gold: #e9bb52; --gold-soft: #33280f; --good: #55c993; --good-soft: #12301f; --warn: #e6a640; --warn-soft: #34260d;
+    --bad: #ff8a80; --bad-soft: #3a1714;
+    --t-classic: #6f8096; --t-gold: #c49b39; --t-plat: #9aabc2; --t-sig: #05080d; --t-ti: #7d8b9b;
+    --tip-bg: #e5ecf5; --tip-ink: #0e1a28;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a111d; --surface: #111a29; --surface-2: #0d1522; --ink: #e5ecf5; --muted: #9aa7b8; --line: #23324a;
+  --accent: #84a9ff; --accent-ink: #0a111d; --accent-soft: #1a2a4a;
+  --gold: #e9bb52; --gold-soft: #33280f; --good: #55c993; --good-soft: #12301f; --warn: #e6a640; --warn-soft: #34260d;
+  --bad: #ff8a80; --bad-soft: #3a1714;
+  --t-classic: #6f8096; --t-gold: #c49b39; --t-plat: #9aabc2; --t-sig: #05080d; --t-ti: #7d8b9b;
+  --tip-bg: #e5ecf5; --tip-ink: #0e1a28;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 72px;
+}
+a { color: var(--accent); }
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.sub { font-size: 12px; color: var(--muted); font-weight: 400; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-block: 22px 10px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.chip-mark { width: 38px; height: 28px; border-radius: 5px; background: var(--gold); position: relative; flex: none; }
+.chip-mark::before, .chip-mark::after { content: ""; position: absolute; background: var(--surface); opacity: .55; }
+.chip-mark::before { left: 0; right: 0; top: 9px; height: 1.5px; box-shadow: 0 9px 0 var(--surface); }
+.chip-mark::after { top: 0; bottom: 0; left: 13px; width: 1.5px; box-shadow: 11px 0 0 var(--surface); }
+.brand h1 { font-size: 22px; font-weight: 800; font-stretch: 118%; letter-spacing: -.01em; }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+.fresh { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 12.5px; color: var(--muted); }
+.fresh b { color: var(--ink); font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); flex: none; }
+.dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); }
+
+nav.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+nav.tabs a { text-decoration: none; color: var(--muted); padding: 10px 14px; font-weight: 600; font-size: 14px; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+@media (max-width: 480px) { nav.tabs a { padding: 10px 9px; font-size: 13.5px; } }
+
+/* Find view */
+.find { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 960px) { .find { grid-template-columns: minmax(0, 1fr); } }
+.form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 22px; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; }
+@media (max-width: 960px) { .form { position: static; max-height: none; } }
+.sample-note { font-size: 12.5px; color: var(--muted); background: var(--surface-2); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.sample-note button { border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; min-width: 0; }
+legend { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 0; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.q { display: grid; gap: 6px; min-width: 0; position: relative; }
+.qh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; position: relative; }
+legend { position: relative; }
+.qh label, .qh .ql { font-size: 13.5px; font-weight: 600; }
+select { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; user-select: none; }
+.seg input:checked + label { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eco-group { display: grid; gap: 4px; }
+.eco-group > span { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.spend { display: grid; gap: 6px; }
+.spend-row { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 8px; align-items: center; }
+.spend-row label { font-size: 13px; line-height: 1.25; }
+.spend-row label span { display: block; font-size: 11.5px; color: var(--muted); }
+.money { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 0 8px; }
+.money span { color: var(--muted); font-family: var(--font-mono); font-size: 13px; }
+.money input { width: 100%; border: 0; background: transparent; padding: 6px 4px; text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13.5px; }
+.money input:focus { outline: none; }
+.money:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.spend-total { display: flex; justify-content: space-between; font-size: 13px; padding-top: 6px; border-top: 1px solid var(--line); }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.presets button { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 3px 9px; font-size: 12px; cursor: pointer; }
+.toggle { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
+.toggle input { margin-top: 3px; accent-color: var(--accent); }
+.privacy { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin: 0; }
+
+/* Info buttons and tips */
+.info { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--muted); background: transparent; color: var(--muted); font: italic 700 11px/1 Georgia, "Times New Roman", serif; display: inline-grid; place-items: center; padding: 0; cursor: help; flex: none; }
+.info:hover, .info[aria-expanded="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tip { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); background: var(--tip-bg); color: var(--tip-ink); border-radius: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; box-shadow: 0 8px 24px rgb(0 0 0 / .25); font-weight: 400; text-transform: none; letter-spacing: 0; font-family: var(--font-body); }
+.tip p { margin: 0 0 6px; } .tip p:last-child { margin: 0; }
+.tip b { font-weight: 700; }
+legend .tip { min-width: min(320px, 80vw); }
+
+/* Results */
+.results { display: grid; gap: 20px; min-width: 0; }
+.res-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+.res-head h2 { font-size: 24px; font-weight: 800; font-stretch: 115%; }
+.res-head p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.callout { border-radius: var(--radius); padding: 12px 14px; font-size: 13.5px; background: var(--warn-soft); color: var(--ink); border: 1px solid var(--line); }
+.callout b { color: var(--warn); }
+.picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.pick { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 6px; align-content: start; cursor: pointer; text-align: left; }
+.pick:hover { border-color: var(--accent); }
+.pick.lead { grid-column: 1 / -1; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pick.lead .pk-label, .pick.lead .pk-sub { color: var(--accent-ink); opacity: .82; }
+.pk-label { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pk-name { font-family: var(--font-display); font-weight: 800; font-stretch: 110%; font-size: 17px; line-height: 1.2; }
+.pk-val { font-family: var(--font-mono); font-size: 20px; font-weight: 600; }
+.pk-sub { font-size: 12.5px; color: var(--muted); }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.list { display: grid; gap: 10px; }
+details.cc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+details.cc[open] { border-color: var(--accent); }
+details.cc > summary { list-style: none; cursor: pointer; padding: 14px; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+details.cc > summary::-webkit-details-marker { display: none; }
+.swatch { width: 56px; height: 36px; border-radius: 5px; position: relative; background: var(--t-classic); }
+.swatch::before { content: ""; position: absolute; left: 7px; top: 9px; width: 11px; height: 8px; border-radius: 2px; background: var(--chip); }
+.swatch::after { content: attr(data-net); position: absolute; right: 5px; bottom: 3px; font: 600 7.5px/1 var(--font-mono); color: var(--on-swatch); opacity: .85; letter-spacing: .02em; }
+.swatch.Gold { background: var(--t-gold); } .swatch.Platinum { background: var(--t-plat); } .swatch.Signature, .swatch.World { background: var(--t-sig); } .swatch.Titanium { background: var(--t-ti); }
+.cc-main { min-width: 0; display: grid; gap: 4px; }
+.cc-title { font-weight: 700; font-size: 15.5px; line-height: 1.25; }
+.cc-title small { font-weight: 500; color: var(--muted); font-size: 13px; }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; }
+.b { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.b.good { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.b.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.b.bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.b.promo { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
+.cc-val { text-align: right; }
+.cc-val .v { font-family: var(--font-mono); font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; }
+.cc-val .v.neg { color: var(--bad); }
+.cc-val .s { font-size: 11.5px; color: var(--muted); }
+@media (max-width: 560px) {
+  details.cc > summary { grid-template-columns: 44px minmax(0, 1fr); }
+  .swatch { width: 44px; height: 29px; }
+  .swatch::after { display: none; }
+  .cc-val { grid-column: 2; text-align: left; display: flex; gap: 8px; align-items: baseline; }
+}
+
+/* Card body: essentials first, the rest folded */
+.cc-body { border-top: 1px solid var(--line); padding: 14px; display: grid; gap: 16px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.fact { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.fact b { display: block; font-family: var(--font-mono); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 11.5px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.apply { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: var(--accent-ink); padding: 9px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; }
+.apply:hover { filter: brightness(1.08); }
+.apply.alt { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+.actions .sub { max-width: 46ch; }
+.block-h { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; position: relative; }
+.block-h h4 { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; font-stretch: 110%; }
+.block-h .tip { top: 24px; max-width: 420px; }
+.ratings { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 22px; }
+.rt { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+.bar { display: inline-flex; gap: 3px; flex: none; }
+.bar i { width: 13px; height: 8px; border-radius: 2px; background: var(--line); }
+.bar i.on { background: var(--accent); }
+.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 13.5px; }
+.quick ul, .sec ul, .sec ol { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 13.5px; }
+.quick h5 { margin: 0 0 4px; font-size: 13px; }
+.secs { border-top: 1px solid var(--line); }
+details.sec { border-bottom: 1px solid var(--line); }
+details.sec > summary { list-style: none; cursor: pointer; padding: 10px 2px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+details.sec > summary::-webkit-details-marker { display: none; }
+details.sec > summary::after { content: "+"; font-family: var(--font-mono); color: var(--muted); font-size: 16px; }
+details.sec[open] > summary::after { content: "−"; }
+details.sec > summary .sub { margin-left: auto; }
+.sec-body { padding: 2px 2px 14px; display: grid; gap: 10px; font-size: 13.5px; }
+.sec-body p { margin: 0; }
+.sec-body h5 { margin: 0 0 4px; font-size: 13px; }
+.math { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.math td { padding: 3px 0; border-bottom: 1px dotted var(--line); }
+.math td:not(:first-child) { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding-left: 8px; white-space: nowrap; }
+.math tr.tot td { border-bottom: 0; font-weight: 700; padding-top: 6px; }
+.path { list-style: none; padding: 0 !important; margin: 0; display: grid; gap: 0 !important; }
+.path li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding-bottom: 12px; position: relative; }
+.path li::before { content: attr(data-n); width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font: 700 12px/24px var(--font-mono); text-align: center; }
+.path li:not(:last-child)::after { content: ""; position: absolute; left: 11.5px; top: 26px; bottom: 2px; width: 1px; background: var(--line); }
+.path .when { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.path .what { font-weight: 700; }
+.mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.mini button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 4px 9px; font-size: 12.5px; cursor: pointer; text-align: left; }
+.mini button:hover { border-color: var(--accent); }
+.srcs { display: grid; gap: 4px; font-size: 12.5px; }
+.srcs .k { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; margin-right: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); }
+.srcs .k.official { color: var(--good); }
+.you { background: var(--accent-soft); border-radius: 8px; padding: 8px 10px; }
+.empty { padding: 24px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+/* Prose views */
+.prose { max-width: 820px; display: grid; gap: 18px; }
+.prose h2 { font-size: 26px; font-weight: 800; font-stretch: 115%; }
+.prose h3 { font-size: 17px; font-weight: 800; font-stretch: 108%; margin-top: 8px; }
+.prose p, .prose li { font-size: 15px; max-width: 68ch; }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table.factors { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+table.factors th, table.factors td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.factors th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+table.factors tr:last-child td { border-bottom: 0; }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+
+.jump { display: none; }
+@media (max-width: 960px) {
+  .jump { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; gap: 10px; align-items: center; justify-content: space-between;
+    padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    background: var(--ink); color: var(--bg); font-size: 13.5px; }
+  .jump a { color: var(--bg); font-weight: 700; white-space: nowrap; }
+  .jump span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  details.cc[open] .cc-body { animation: rise .18s ease-out; }
+  @keyframes rise { from { opacity: .4; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="chip-mark" aria-hidden="true"></div>
+      <div>
+        <h1>PH Card Finder</h1>
+        <p>Which Philippine credit card fits how you earn and spend</p>
+      </div>
+    </div>
+    <div class="fresh" id="fresh"></div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <a href="#find" data-view="find">Find a card</a>
+    <a href="#factors" data-view="factors">What banks check</a>
+    <a href="#data" data-view="data">About the data</a>
+  </nav>
+
+  <main>
+    <section id="view-find" class="find">
+      <form class="form" id="form" autocomplete="off">
+        <div class="sample-note" id="sampleNote"><span>These are sample answers. Change them to yours.</span><button type="button" id="resetBtn">Clear spend</button></div>
+
+        <fieldset>
+          <legend>About you</legend>
+          <div class="q"><div class="qh"><label for="age">Age</label><span data-info="age"></span></div><select id="age"></select></div>
+          <div class="q"><div class="qh"><label for="income">Gross income</label><span class="sub">before tax, that you can document</span><span data-info="income"></span></div><select id="income"></select></div>
+          <div class="q"><div class="qh"><label for="emp">Work</label><span data-info="emp"></span></div><select id="emp"></select></div>
+          <div class="q"><div class="qh"><span class="ql" id="cardLbl">Do you already have a credit card from a bank?</span><span data-info="card"></span></div><div class="seg" role="radiogroup" aria-labelledby="cardLbl" id="card"></div></div>
+          <div class="q" id="limitQ"><div class="qh"><span class="ql" id="limitLbl">Highest limit on that card</span><span data-info="limit"></span></div><div class="seg" role="radiogroup" aria-labelledby="limitLbl" id="limit"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="banksLbl">Banks where you have an account</span><span class="sub">no balances needed</span><span data-info="banks"></span></div><div class="seg" id="banks" aria-labelledby="banksLbl"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="regionLbl">Where you live or work</span><span data-info="region"></span></div><div class="seg" role="radiogroup" aria-labelledby="regionLbl" id="region"></div></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Monthly spend you'd put on the card <span data-info="spend"></span></legend>
+          <div class="presets"><button type="button" data-preset="light">Light</button><button type="button" data-preset="typical">Typical</button><button type="button" data-preset="heavy">Heavy</button></div>
+          <div class="spend" id="spend"></div>
+          <div class="spend-total"><span>Total a month</span><b class="mono" id="spendTotal"></b></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What you want</legend>
+          <div class="q"><div class="qh"><span class="ql" id="prefLbl">Reward type</span><span data-info="pref"></span></div><div class="seg" role="radiogroup" aria-labelledby="prefLbl" id="pref"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="feeLbl">Annual fee</span><span data-info="feeTol"></span></div><div class="seg" role="radiogroup" aria-labelledby="feeLbl" id="feeTol"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="perksLbl">Nice to have</span><span data-info="perks"></span></div><div class="seg" id="perks" aria-labelledby="perksLbl"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="ecoLbl">Stores you use a lot</span><span data-info="eco"></span></div><div id="eco" class="eco-wrap" aria-labelledby="ecoLbl"></div></div>
+          <div class="q"><div class="qh"><span class="ql" id="balLbl">How you pay your bill</span><span data-info="balance"></span></div><div class="seg" role="radiogroup" aria-labelledby="balLbl" id="balance"></div></div>
+          <label class="toggle"><input type="checkbox" id="promos" checked> <span>Count current lifetime fee-waiver promos when I'd meet the spend</span></label>
+        </fieldset>
+
+        <p class="privacy">Nothing you enter is saved or sent anywhere. The math runs in this page, and closing it clears everything.</p>
+      </form>
+
+      <section class="results" id="results" aria-live="polite"></section>
+    </section>
+
+    <section id="view-factors" class="prose" hidden></section>
+    <section id="view-data" class="prose" hidden></section>
+  </main>
+</div>
+<div class="jump" id="jump"><span id="jumpText"></span><a href="#results" id="jumpLink">See results</a></div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const D = window.PHCC_DATA;
+  const $ = (s, el = document) => el.querySelector(s);
+  if (!D) {
+    $("#results").innerHTML = `<div class="empty">The card data file didn't load. Reload the page; if it keeps happening, the data file is missing from this version.</div>`;
+    return;
+  }
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const peso = n => (n < 0 ? "−" : "") + "₱" + Math.round(Math.abs(n)).toLocaleString("en-PH");
+  const pct = n => (Math.round(n * 100) / 100).toString().replace(/\.0+$/, "") + "%";
+  const fmtDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
+  const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
+  const isActive = until => !until || new Date(until + "T23:59:59") >= TODAY;
+  const src = s => typeof s === "string" ? D.sources[s] : s;
+  const ecoLabel = id => (D.ecosystems.find(x => x.id === id) || {}).label || id;
+
+  /* ---------- Question options ---------- */
+  const AGES = [
+    { id: "18-20", label: "18–20", lo: 18, hi: 20 },
+    { id: "21-59", label: "21–59", lo: 21, hi: 59 },
+    { id: "60-65", label: "60–65", lo: 60, hi: 65 },
+    { id: "66-70", label: "66–70", lo: 66, hi: 70 },
+    { id: "71+", label: "71 or older", lo: 71, hi: 99 }
+  ];
+  const INCOMES = [
+    [0, 0, "No regular income yet"],
+    [120000, 179999, "₱10k–₱15k a month"],
+    [180000, 249999, "₱15k–₱20.8k a month"],
+    [250000, 349999, "₱20.8k–₱29k a month"],
+    [350000, 399999, "₱29k–₱33k a month"],
+    [400000, 479999, "₱33k–₱40k a month"],
+    [480000, 599999, "₱40k–₱50k a month"],
+    [600000, 779999, "₱50k–₱65k a month"],
+    [780000, 999999, "₱65k–₱83k a month"],
+    [1000000, 1799999, "₱83k–₱150k a month"],
+    [1800000, 2999999, "₱150k–₱250k a month"],
+    [3000000, Infinity, "₱250k+ a month"]
+  ].map(([lo, hi, label], i) => ({ i, lo, hi, label: label + (lo ? `  (₱${Math.round(lo / 1000)}k+ a year)` : "") }));
+  const EMPS = [
+    ["employed1", "Employee, 1 year or more"], ["employedNew", "Employee, under 1 year"],
+    ["self", "Business owner / self-employed"], ["freelance", "Freelancer or gig worker"],
+    ["ofw", "OFW or seafarer"], ["retired", "Retired / pensioner"], ["none", "Student or not working"]
+  ];
+  const CARDS = [["none", "No"], ["lt6", "Under 6 months"], ["6to11", "6–11 months"], ["12plus", "1 year+"]];
+  const CARD_MONTHS = { none: 0, lt6: 3, "6to11": 6, "12plus": 12 };
+  const LIMITS = [["lt30", "Under ₱30k"], ["30to49", "₱30k–₱49k"], ["50plus", "₱50k+"]];
+  const LIMIT_VAL = { lt30: 0, "30to49": 30000, "50plus": 50000 };
+  const REGIONS = [["mm", "Metro Manila"], ["luzon", "Rest of Luzon"], ["visayas", "Visayas"], ["mindanao", "Mindanao"]];
+  const PREFS = [["any", "Any"], ["cash", "Cashback"], ["points", "Points"], ["miles", "Airline miles"]];
+  const FEES = [["free", "Must be free or waivable"], ["ok", "OK if it pays for itself"]];
+  const PERKS = [["lounge", "Airport lounges"], ["lowfx", "Low fee on foreign purchases"], ["simple", "Same rate on everything"]];
+  const BALANCE = [["full", "Full balance every month"], ["sometimes", "Sometimes carry a balance"]];
+  const PRESETS = {
+    light:   { groceries: 4000, dining: 2500, online: 1500, shopping: 1000, fuel: 0, utilities: 2000, telco: 1000, drugstore: 500, travel: 0, foreign: 0, other: 500 },
+    typical: { groceries: 7000, dining: 5000, online: 3000, shopping: 2000, fuel: 2000, utilities: 3500, telco: 1500, drugstore: 1000, travel: 0, foreign: 500, other: 1500 },
+    heavy:   { groceries: 14000, dining: 10000, online: 7000, shopping: 6000, fuel: 5000, utilities: 6000, telco: 2500, drugstore: 2000, travel: 3000, foreign: 3000, other: 4000 }
+  };
+  const BANK_KEYS = Object.keys(D.banks);
+
+  /* Why each question matters. `best` and `worst` only apply to things banks judge. */
+  const INFO = {
+    age: { why: "Banks set age limits for the main cardholder: old enough to sign a binding contract, young enough to have working years left to repay.",
+      best: "21–59 fits every bank in the list.", worst: "Under 21 or over 70. BDO stops at 60; Security Bank, HSBC, RCBC and Maya at 65." },
+    income: { why: "Each card has a minimum yearly income. It's the bank's main test of whether you can pay, and it sets your starting limit (often 1–3× your monthly pay).",
+      best: "Comfortably above the card's floor, with a BIR 2316 or ITR to prove it.", worst: "No documented income. Cash income with no ITR usually counts as zero; a secured card is the way in." },
+    emp: { why: "Banks want steady income they can verify. Regular employees are easiest. Business owners and freelancers need filed tax returns, usually covering 2+ years.",
+      best: "Regular employee for a year or more.", worst: "Freelance, or a new job, with no filed ITR yet." },
+    card: { why: "An existing card proves you already handle credit. Many banks approve 'card-to-card': your other card's statement replaces payslips, and your new limit is based on the old one.",
+      best: "A card held 1+ year and always paid on time.", worst: "No card yet. Not a dealbreaker, but fewer banks will say yes and limits start small." },
+    limit: { why: "Some banks require a minimum limit on your other card (Maybank ₱30,000; Metrobank ₱25,000–₱50,000) and size your new limit from it.",
+      best: "₱50,000 or more.", worst: "Under ₱30,000 rules out a few cards." },
+    banks: { why: "Banks know their own depositors. An account with history can unlock pre-approved offers, depositor-only cards and secured cards.",
+      best: "An account you've used for 6+ months at the bank you're applying to.", worst: "No account there. You can still apply; it's one less thing in your favor." },
+    region: { why: "Banks have to deliver the card and be able to reach you. EastWest only accepts applicants in listed cities.",
+      best: "Metro Manila or a major city.", worst: "Remote areas can hit delivery or service-area limits." },
+    spend: { why: "This only changes the value estimate. Enter what you'd actually charge to the card each month; bills you pay by bank transfer don't count." },
+    pref: { why: "Cashback is money off your bill. Points turn into vouchers, credits or miles, and their value varies. Airline miles are worth the most when you fly and redeem them for flights." },
+    feeTol: { why: "'Must be free or waivable' pushes cards with an unavoidable fee down the list. 'OK if it pays for itself' subtracts the fee from the rewards and lets cards compete on what's left." },
+    perks: { why: "<b>Airport lounges:</b> free or discounted access before flights. <b>Low fee on foreign purchases:</b> banks add a fee when you pay in another currency, like USD sites or shopping abroad; 1.7–2% is low, 3–3.5% is high. <b>Same rate on everything:</b> cards that pay one rate on every purchase (like 1% everywhere), so you never have to think about which card to use where." },
+    eco: { why: "Only stores where a card in the list pays extra are shown. Shopee, Grab, SM and everything else is already covered by your spending categories above." },
+    balance: { why: "If you sometimes pay less than the full amount, interest (up to 3% a month) costs more than any reward. The app then favors cards with lower interest or interest rebates." }
+  };
+  function infoTip(key) {
+    const x = INFO[key]; if (!x) return "";
+    const id = "tip-" + key;
+    return `<button type="button" class="info" aria-expanded="false" aria-controls="${id}" aria-label="More about this question">i</button>
+      <div class="tip" id="${id}" role="tooltip" hidden><p>${x.why}</p>${x.best ? `<p><b>Best:</b> ${esc(x.best)}</p><p><b>Worst:</b> ${esc(x.worst)}</p>` : ""}</div>`;
+  }
+
+  const st = {
+    age: "21-59", income: 5, emp: "employed1", card: "6to11", limit: "30to49",
+    banks: new Set(["BPI"]), region: "mm", pref: "cash", feeTol: "free",
+    perks: new Set(), eco: new Set(), balance: "full", promos: true,
+    spend: { ...PRESETS.typical }
+  };
+
+  /* ---------- Build form ---------- */
+  function fillSelect(el, items, val) {
+    el.innerHTML = items.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(val) ? " selected" : ""}>${esc(l)}</option>`).join("");
+  }
+  function seg(el, name, items, type, isChecked) {
+    el.innerHTML = items.map(([v, l]) => {
+      const id = `${name}-${String(v).replace(/\W/g, "_")}`;
+      return `<input type="${type}" id="${id}" name="${name}" value="${esc(v)}"${isChecked(v) ? " checked" : ""}><label for="${id}">${esc(l)}</label>`;
+    }).join("");
+  }
+  function buildForm() {
+    fillSelect($("#age"), AGES.map(a => [a.id, a.label]), st.age);
+    fillSelect($("#income"), INCOMES.map(x => [x.i, x.label]), st.income);
+    fillSelect($("#emp"), EMPS, st.emp);
+    seg($("#card"), "card", CARDS, "radio", v => v === st.card);
+    seg($("#limit"), "limit", LIMITS, "radio", v => v === st.limit);
+    seg($("#banks"), "banks", BANK_KEYS.map(k => [k, D.banks[k].name]), "checkbox", v => st.banks.has(v));
+    seg($("#region"), "region", REGIONS, "radio", v => v === st.region);
+    seg($("#pref"), "pref", PREFS, "radio", v => v === st.pref);
+    seg($("#feeTol"), "feeTol", FEES, "radio", v => v === st.feeTol);
+    seg($("#perks"), "perks", PERKS, "checkbox", v => st.perks.has(v));
+    seg($("#balance"), "balance", BALANCE, "radio", v => v === st.balance);
+    const groups = [...new Set(D.ecosystems.map(e => e.group))];
+    $("#eco").innerHTML = groups.map(g => {
+      const div = document.createElement("div");
+      seg(div, "eco", D.ecosystems.filter(e => e.group === g).map(e => [e.id, e.label]), "checkbox", v => st.eco.has(v));
+      return `<div class="eco-group"><span>${esc(g)}</span><div class="seg">${div.innerHTML}</div></div>`;
+    }).join("");
+    $("#eco").style.display = "grid"; $("#eco").style.gap = "8px";
+    $("#spend").innerHTML = D.categories.map(c => `
+      <div class="spend-row"><label for="sp-${c.id}">${esc(c.label)}<span>${esc(c.hint)}</span></label>
+      <div class="money"><span>₱</span><input id="sp-${c.id}" data-cat="${c.id}" type="number" inputmode="numeric" min="0" step="500" value="${st.spend[c.id] || 0}"></div></div>`).join("");
+    document.querySelectorAll("[data-info]").forEach(el => { el.outerHTML = infoTip(el.dataset.info); });
+    $("#limitQ").hidden = st.card === "none";
+  }
+  function readForm() {
+    st.age = $("#age").value; st.income = +$("#income").value; st.emp = $("#emp").value;
+    const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+    const checks = n => new Set([...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value));
+    st.card = radio("card"); st.limit = radio("limit") || "lt30"; st.region = radio("region");
+    st.pref = radio("pref"); st.feeTol = radio("feeTol"); st.balance = radio("balance");
+    st.banks = checks("banks"); st.perks = checks("perks"); st.eco = checks("eco");
+    st.promos = $("#promos").checked;
+    document.querySelectorAll("#spend input").forEach(i => { st.spend[i.dataset.cat] = Math.max(0, +i.value || 0); });
+    $("#limitQ").hidden = st.card === "none";
+  }
+
+  /* ---------- Info tips: hover on desktop, tap anywhere ---------- */
+  function closeTips(except) {
+    document.querySelectorAll(".info[aria-expanded='true']").forEach(b => { if (b !== except) { b.setAttribute("aria-expanded", "false"); b.dataset.pinned = ""; const t = document.getElementById(b.getAttribute("aria-controls")); if (t) t.hidden = true; } });
+  }
+  function setTip(btn, open) {
+    const t = document.getElementById(btn.getAttribute("aria-controls"));
+    if (!t) return;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    t.hidden = !open;
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".info");
+    if (b) {
+      e.preventDefault(); e.stopPropagation();
+      const pinned = b.dataset.pinned === "1";
+      closeTips(b);
+      b.dataset.pinned = pinned ? "" : "1";
+      setTip(b, !pinned);
+      return;
+    }
+    if (!e.target.closest(".tip")) closeTips();
+  }, true);
+  document.addEventListener("mouseover", e => { const b = e.target.closest && e.target.closest(".info"); if (b && matchMedia("(hover: hover)").matches) setTip(b, true); });
+  document.addEventListener("mouseout", e => { const b = e.target.closest && e.target.closest(".info"); if (b && b.dataset.pinned !== "1" && matchMedia("(hover: hover)").matches) setTip(b, false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeTips(); });
+
+  /* ---------- Engine ---------- */
+  const ORDER = { ok: 0, edge: 1, stretch: 2, no: 3 };
+  const reqOf = c => c.minIncome ?? c.estIncome ?? 0;
+  const membershipMissing = c => c.needsMembership && !st.eco.has(c.needsMembership.eco);
+
+  function evaluate(card) {
+    const r = { status: "ok", reasons: [], notes: [] };
+    const bump = s => { if (ORDER[s] > ORDER[r.status]) r.status = s; };
+    const age = AGES.find(a => a.id === st.age);
+    const inc = INCOMES[st.income];
+    const months = CARD_MONTHS[st.card];
+    if (card.age) {
+      const [mn, mx] = card.age;
+      if (age.hi < mn || age.lo > mx) { bump("no"); r.reasons.push(`Principal applicants must be ${mn}–${mx}`); }
+      else if (age.lo < mn || age.hi > mx) { bump("stretch"); r.notes.push(`Age limit is ${mn}–${mx}`); }
+    }
+    if (card.status === "depositor" && !st.banks.has(card.depositorBank)) { bump("no"); r.reasons.push(`Only offered to ${card.depositorBank} depositors`); }
+    if (card.secured) {
+      r.secured = true;
+      r.notes.push(`Needs a deposit of at least ${peso(card.secured.minDeposit)}`);
+    } else {
+      const req = reqOf(card);
+      const lbl = req ? (card.minIncome ? `${peso(req)} a year` : `about ${peso(req)} a year (estimate, not published)`) : "";
+      if (card.minIncome == null && card.estIncome) r.estIncome = true;
+      if (inc.lo === 0 || st.emp === "none") {
+        if (card.bank === "Maya") { bump("stretch"); r.notes.push("Maya decides using its own app data, so it sometimes approves without payslips"); }
+        else { bump("no"); r.reasons.push("Needs regular, documented income"); }
+      } else if (req) {
+        if (req <= inc.lo) { /* clears the floor */ }
+        else if (req <= inc.hi) { bump("edge"); r.notes.push(`Needs ${lbl}, which falls inside your bracket`); }
+        else if (card.altCard && months >= card.altCard.months && LIMIT_VAL[st.limit] >= card.altCard.minLimit) {
+          bump("stretch"); r.notes.push(`Below the ${peso(req)} floor, but ${card.bank} also lists holding another bank's card for ${card.altCard.months}+ months (₱${card.altCard.minLimit / 1000}k+ limit) as a way in`);
+        }
+        else if (inc.hi >= 0.8 * req) { bump("stretch"); r.notes.push(`Needs ${lbl}, a little above your bracket`); }
+        else { bump("no"); r.reasons.push(`Needs ${lbl}`); }
+      }
+      if (card.tenureMonths >= 12 && st.emp === "employedNew") { bump("no"); r.reasons.push("Wants at least 1 year as a regular employee"); }
+      else if (card.tenureMonths && st.emp === "employedNew") { bump("stretch"); r.notes.push(`Prefers ${card.tenureMonths}+ months as a regular employee`); }
+      if (card.selfEmployedNeedsDeposit && (st.emp === "self" || st.emp === "freelance") && !st.banks.has(card.bank)) { bump("no"); r.reasons.push(`Self-employed applicants need a ${card.bank} deposit held 12 months`); }
+      if (st.emp === "freelance" && card.bank !== "Maya") { bump("stretch"); r.notes.push("Freelance income usually needs a BIR-stamped ITR to count"); }
+      if (st.emp === "ofw" && card.bank !== "Maya") { bump("stretch"); r.notes.push("Overseas income is hard to document for most banks; a deposit with the bank helps"); }
+      if (st.emp === "self") r.notes.push("Prepare your ITR, 2 years of audited financials and DTI/SEC registration");
+      if (st.emp === "retired") r.notes.push("Bring proof of pension or investment income");
+    }
+    if (card.needsCard) {
+      if (months < card.needsCard.months) { bump("no"); r.reasons.push(`Needs another bank's card held ${card.needsCard.months}+ months`); }
+      else if (card.needsCard.minLimit && LIMIT_VAL[st.limit] < card.needsCard.minLimit) { bump("no"); r.reasons.push(`Your other card's limit must be ${peso(card.needsCard.minLimit)}+`); }
+    }
+    if (card.areas === "eastwest" && st.region !== "mm") { bump("stretch"); r.notes.push("EastWest only serves listed cities outside Metro Manila; check that yours is one"); }
+    if (card.needsMembership) r.notes.push(`Requires a paid ${card.needsMembership.label} membership`);
+    if (card.landline) r.notes.push("Asks for a landline number");
+    if (card.status === "offered") { r.offered = true; r.notes.push("You can't apply for this directly. Maya may offer it if Maya Black is declined."); }
+    return r;
+  }
+
+  function approval(card, ev) {
+    if (ev.secured) return ev.offered ? { label: "If offered", score: 0.45, why: ["Maya decides whether to offer it"] } : { label: "Very likely", score: 0.95, why: ["Backed by your own deposit"] };
+    let p = 0; const why = [];
+    const inc = INCOMES[st.income]; const req = reqOf(card);
+    if (req && inc.lo > 0) {
+      const ratio = inc.lo / req;
+      if (ratio >= 1.5) { p += 1.5; why.push("Income well above the floor"); }
+      else if (ratio >= 1.15) { p += 1; why.push("Income above the floor"); }
+      else if (ratio >= 1) { p += 0.5; why.push("Income just clears the floor"); }
+      else { p -= 1; why.push("Income is at or under the floor"); }
+    }
+    const m = CARD_MONTHS[st.card];
+    if (m >= 12) { p += 1; why.push("A card held 1+ year often gets you approved card-to-card"); }
+    else if (m >= 6) { p += 0.5; why.push("Your existing card helps"); }
+    else if (m === 0 && card.bank !== "Maya") { p -= 0.5; why.push("No credit card history yet"); }
+    if (st.banks.has(card.bank)) { p += 1; why.push(`You already bank with ${card.bank}`); }
+    const ease = (D.banks[card.bank] || {}).ease ?? 2;
+    if (ease === 3) { p += 0.5; why.push(`${card.bank} is often described as easier to get`); }
+    if (ease === 1) { p -= 0.5; why.push(`${card.bank} is often described as strict`); }
+    if (st.emp === "employed1") p += 0.25;
+    else if (["self", "freelance", "ofw"].includes(st.emp)) p -= 0.5;
+    else if (st.emp === "employedNew") p -= 0.25;
+    if (ev.estIncome) p -= 0.25;
+    if (ev.status === "stretch") p -= 0.5;
+    const label = p >= 2 ? "Strong" : p >= 0.75 ? "Fair" : "Long shot";
+    return { label, score: label === "Strong" ? 1 : label === "Fair" ? 0.6 : 0.25, why };
+  }
+
+  function unitValue(earn, prefMiles) {
+    const mv = prefMiles ? D.meta.mileValue.travel : D.meta.mileValue.cash;
+    if (earn.unit === "cash") return 0.01;
+    if (earn.unit === "miles") return mv / 100;
+    if (earn.toMiles) return earn.toMiles * mv / 100;
+    return (earn.pv || 0) / 100;
+  }
+
+  // % of spend returned in pesos for one category. `o.eco(id)` says whether a store counts.
+  function rateFor(card, cat, o) {
+    const e = card.earn, v = unitValue(e, o.prefMiles);
+    let pctv = (e.cats && cat in e.cats ? e.cats[cat] : e.base) * v * 100;
+    let tag = "";
+    if (o.bonusOff && e.cats && cat in e.cats && e.cats[cat] > e.base) { pctv = e.base * v * 100; tag = "bonus needs more spend"; }
+    for (const rule of e.eco || []) if (rule.cat === cat && o.eco(rule.eco)) { pctv = rule.cash ? rule.rate : rule.rate * v * 100; tag = ecoLabel(rule.eco) + " only"; }
+    if (o.flex && o.flex.has(cat)) { pctv *= e.flexPick.mult; tag = o.flexTag || "2x pick"; }
+    for (const t of e.tiers || []) if (t.cat === cat && o.eco(t.eco)) { pctv = t.steps[0].rate; tag = ecoLabel(t.eco) + " tiers"; }
+    return { pct: pctv, tag };
+  }
+
+  function rewards(card) {
+    const e = card.earn; const s = st.spend;
+    const total = Object.values(s).reduce((a, b) => a + b, 0);
+    const nonEss = ["dining", "online", "shopping", "travel", "other", "telco", "utilities", "foreign"].reduce((a, k) => a + (s[k] || 0), 0);
+    const bonusOn = (!e.minSpend || total >= e.minSpend) && (!e.minSpendNonEssential || nonEss >= e.minSpendNonEssential);
+    let flex = new Set();
+    if (e.flexPick) flex = new Set(e.flexPick.from.slice().sort((a, b) => (s[b] || 0) - (s[a] || 0)).slice(0, e.flexPick.n).filter(c => s[c] > 0));
+    const o = { prefMiles: st.pref === "miles", eco: id => st.eco.has(id), bonusOff: !bonusOn, flex, flexTag: "your 2x pick" };
+    const lines = []; const eff = {};
+    let month = 0;
+    for (const c of D.categories) {
+      const amt = s[c.id] || 0;
+      let { pct: p, tag } = rateFor(card, c.id, o);
+      let val = amt * p / 100;
+      for (const t of e.tiers || []) if (t.cat === c.id && st.eco.has(t.eco)) {
+        let left = amt, prev = 0; val = 0;
+        for (const step of t.steps) { const room = step.upTo != null ? step.upTo - prev : Infinity; const part = Math.min(left, room); val += part * step.rate / 100; left -= part; prev = step.upTo ?? prev; if (left <= 0) break; }
+        p = amt ? val / amt * 100 : p;
+      }
+      eff[c.id] = p;
+      month += val;
+      if (amt > 0) lines.push({ id: c.id, label: c.label, amt, eff: p, year: val * 12, tag });
+    }
+    let capped = "";
+    if (e.capMonth && month > e.capMonth) { capped = `Capped at ${peso(e.capMonth)} a month`; month = e.capMonth; }
+    let year = month * 12;
+    // Quarterly categories: 3 months at the bonus rate instead of the usual one.
+    const rot = (e.rotating || []).map(q => ({ ...q, extra: (s[q.cat] || 0) * 3 * Math.max(0, q.rate - (eff[q.cat] || 0)) / 100 }));
+    const rotExtra = rot.reduce((a, q) => a + q.extra, 0);
+    year += rotExtra;
+    if (e.capYear && year > e.capYear) { capped = `Capped at ${peso(e.capYear)} a year`; year = e.capYear; }
+    return { month, year, lines: lines.sort((a, b) => b.year - a.year), rot, rotExtra, capped, bonusOn, flex: [...flex] };
+  }
+
+  function fees(card, annualSpend) {
+    const f = card.fee || { annual: 0 };
+    if (f.life) return { y1: 0, ongoing: 0, how: "No annual fee for life", promoUsed: false };
+    let y1 = f.firstYear ?? f.annual, ongoing = f.annual; const how = []; let promoUsed = false;
+    const waiverSpend = f.waiver && f.waiver.spend && (f.waiver.kind === "foreign+online" ? (st.spend.foreign + st.spend.online) * 12 : annualSpend);
+    if (f.waiver && f.waiver.spend && waiverSpend >= f.waiver.spend) { ongoing = 0; how.push(f.waiver.uses ? `Waived: you'd pass ${f.waiver.uses} uses or ${peso(f.waiver.spend)} a year` : `Waived because you'd spend over ${peso(f.waiver.spend)} a year${f.waiver.kind ? " on foreign and online purchases" : ""}`); }
+    if (ongoing > 0 && card.naffl && isActive(card.naffl.until)) {
+      const twoMonths = annualSpend / 12 * 2;
+      if (st.promos && twoMonths >= card.naffl.spend) { ongoing = 0; y1 = 0; promoUsed = true; how.push(`Free for life through the current promo if you spend ${peso(card.naffl.spend)} within ${card.naffl.days} days (apply by ${fmtDate(card.naffl.until)})`); }
+      else if (twoMonths < card.naffl.spend) how.push(`A lifetime-waiver promo needs ${peso(card.naffl.spend)} within ${card.naffl.days} days; your usual spend falls short`);
+    }
+    if (ongoing > 0) how.unshift(y1 === 0 ? `First year free, then ${peso(ongoing)} a year` : `${peso(ongoing)} a year`);
+    if (ongoing === 0 && !how.length) how.push("No annual fee");
+    return { y1, ongoing, how: how.join(". "), promoUsed };
+  }
+
+  function fit(card, rw, fe) {
+    let p = 0; const why = [];
+    const u = card.earn.unit, milesy = u === "miles" || !!card.earn.toMiles;
+    if (st.pref === "cash") { if (u === "cash" && rw.year > 0) p += 1; else if (rw.year > 0) p -= 0.5; }
+    if (st.pref === "points" && u === "points") p += 1;
+    if (st.pref === "miles") { if (milesy) p += 1.2; else p -= 0.5; }
+    if (st.feeTol === "free" && fe.ongoing > 0) { p -= 2; why.push("Has an annual fee you said you'd rather avoid"); }
+    if (st.perks.has("lounge")) { if ((card.tags || []).includes("lounge")) { p += 1; why.push("Includes airport lounge access"); } else p -= 0.25; }
+    if (st.perks.has("lowfx")) { if (card.fx <= 2) { p += 0.75; why.push(`Low ${pct(card.fx)} fee on foreign purchases`); } else if (card.fx >= 3.5) p -= 0.5; }
+    if (st.perks.has("simple")) { const flat = !card.earn.cats && !card.earn.eco && !card.earn.flexPick && !card.earn.rotating; if (flat && rw.year > 0) { p += 0.75; why.push("One rate on everything, nothing to track"); } }
+    if (st.balance === "sometimes" && (card.tags || []).includes("lowInterest")) { p += 3; why.push("Softens the cost of carrying a balance"); }
+    if (membershipMissing(card)) { p -= 2; why.push(`Needs a paid ${card.needsMembership.label} membership, and you didn't pick ${card.needsMembership.label}`); }
+    if (card.flags) p -= Math.min(0.5, card.flags.length * 0.25);
+    return { p, why };
+  }
+
+  /* 1–5 ratings by use case. These describe the card, not your answers, so every store bonus counts. */
+  const stars = p => p >= 4 ? 5 : p >= 2 ? 4 : p >= 0.9 ? 3 : p >= 0.4 ? 2 : 1;
+  function ratings(card) {
+    const all = { prefMiles: st.pref === "miles", eco: () => true, flex: new Set((card.earn.flexPick || {}).from || []) };
+    const r = cat => {
+      let p = rateFor(card, cat, all).pct;
+      for (const q of card.earn.rotating || []) if (q.cat === cat) p += Math.max(0, q.rate - p) / 4;
+      return p;
+    };
+    const lounge = (card.tags || []).includes("lounge");
+    const fxStars = card.fx <= 1.7 ? 5 : card.fx <= 1.9 ? 4 : card.fx <= 2.5 ? 3 : card.fx <= 3 ? 2 : 1;
+    const foreign = r("foreign");
+    const f = card.fee || {};
+    const promoFree = card.naffl && isActive(card.naffl.until);
+    const cost = f.life || f.annual === 0 ? 5 : (f.waiver || promoFree || f.annual <= 1500) ? 4 : f.annual <= 2500 ? 3 : f.annual <= 4500 ? 2 : 1;
+    let ease;
+    if (card.secured) ease = card.status === "offered" ? 3 : 5;
+    else {
+      ease = ({ 1: 2, 2: 3, 3: 4 })[(D.banks[card.bank] || {}).ease ?? 2];
+      const req = reqOf(card);
+      if (req && req <= 180000) ease += 1; else if (req >= 700000) ease -= 1;
+      if (card.needsCard) ease -= 1;
+      ease = Math.max(1, Math.min(5, ease));
+    }
+    return [
+      ["Groceries", stars(r("groceries"))],
+      ["Dining", stars(r("dining"))],
+      ["Online shopping", stars(r("online"))],
+      ["Fuel", stars(r("fuel"))],
+      ["Bills", stars(Math.max(r("utilities"), r("telco")))],
+      ["Travel", Math.min(5, stars(Math.max(r("travel"), foreign)) + (lounge ? 1 : 0))],
+      ["Use abroad", Math.max(1, Math.min(5, fxStars + (foreign >= 1.5 ? 1 : 0) - (foreign === 0 && card.earn.base > 0 ? 1 : 0)))],
+      ["Everything else", stars(r("other"))],
+      ["Low cost to keep", cost],
+      ["Easy to get", ease]
+    ];
+  }
+
+  let lastRun = null;
+  function run() {
+    const annualSpend = Object.values(st.spend).reduce((a, b) => a + b, 0) * 12;
+    const listed = D.cards.filter(c => c.status === "closed" || c.status === "invite");
+    const rows = D.cards.filter(c => !listed.includes(c)).map(card => {
+      const ev = evaluate(card);
+      const rw = rewards(card);
+      const fe = fees(card, annualSpend);
+      const fx = (st.spend.foreign || 0) * 12 * card.fx / 100;
+      const net = rw.year - fe.ongoing - fx;
+      const net1 = rw.year - fe.y1 - fx;
+      const ap = ev.status === "no" ? null : approval(card, ev);
+      const ft = fit(card, rw, fe);
+      return { card, ev, rw, fe, fx, net, net1, ap, ft };
+    });
+    const live = rows.filter(r => r.ev.status !== "no");
+    const nets = live.map(r => r.net);
+    const lo = Math.min(...nets, 0), hi = Math.max(...nets, 1);
+    // Secured cards tie up a deposit, so they only lead when no regular card fits.
+    const hasRegular = live.some(r => !r.ev.secured && r.ev.status !== "stretch");
+    live.forEach(r => {
+      const nv = (r.net - lo) / (hi - lo || 1);
+      const nf = Math.max(0, Math.min(1, (r.ft.p + 3) / 6));
+      r.score = (0.45 * nv + 0.3 * r.ap.score + 0.25 * nf)
+        * (r.ev.status === "stretch" ? 0.85 : 1)
+        * (r.ev.offered ? 0.8 : 1)
+        * (r.ev.secured && hasRegular ? 0.6 : 1)
+        * (st.feeTol === "free" && r.fe.ongoing > 0 ? 0.55 : 1)
+        // A required store membership is a fee in all but name.
+        * (membershipMissing(r.card) ? (st.feeTol === "free" ? 0.55 : 0.75) : 1);
+    });
+    live.sort((a, b) => b.score - a.score);
+    const out = rows.filter(r => r.ev.status === "no").sort((a, b) => b.net - a.net);
+    lastRun = { live, out, listed, annualSpend, rows, byId: Object.fromEntries(rows.map(r => [r.card.id, r])) };
+    return lastRun;
+  }
+
+  /* ---------- Upgrade path ---------- */
+  function pathFor(r) {
+    const c = r.card, bank = D.banks[c.bank] || {};
+    const steps = [];
+    const inc = INCOMES[st.income].lo;
+    steps.push({ when: "Now", what: `Start with the ${c.bank} ${c.name}`, text: "Pay the full statement balance on time every month, and keep what you owe under about 30% of your limit. Banks read a maxed-out card as strain, even if you pay." });
+    if (c.secured) steps.push({ when: "Month 6–12", what: "Move off the deposit", text: c.secured.upgrade || "Ask the bank to review you for an unsecured card and release your deposit." });
+    const cli = bank.cli || { text: D.cliGeneric };
+    steps.push({ when: "Month 6", what: "Ask for a higher limit", text: cli.text, url: cli.url });
+    const c2c = lastRun.rows.filter(x => x.card.bank !== c.bank && !x.card.secured && x.card.status === "open"
+        && (x.card.needsCard || x.card.altCard || (D.banks[x.card.bank] || {}).cardToCard)
+        && (!reqOf(x.card) || reqOf(x.card) <= Math.max(inc, 180000))
+        && !(x.card.needsCard && x.card.needsCard.minLimit > 30000))
+      .sort((a, b) => b.net - a.net).slice(0, 3);
+    steps.push({ when: "Month 6–12", what: "Add a second card, card-to-card",
+      text: "With 6–12 months of clean history, other banks accept this card's statement in place of payslips, and some require it. Best value for your spending:", cards: c2c });
+    const ladder = lastRun.rows.filter(x => x.card.bank === c.bank && x.card.id !== c.id && !x.card.secured && x.card.status === "open" && reqOf(x.card) > reqOf(c))
+      .sort((a, b) => reqOf(a.card) - reqOf(b.card)).slice(0, 3);
+    if (ladder.length) steps.push({ when: "As your income grows", what: `Upgrade within ${c.bank}`,
+      text: `Ask ${c.bank} to upgrade your card instead of filing a new application; your payment history carries over.`, cards: ladder, showIncome: true });
+    steps.push({ when: "Always", what: "Protect your record", text: "Space out applications (each one is checked against your credit record), keep your oldest card open, and avoid cash advances, which charge interest from day one." });
+    return steps;
+  }
+
+  /* ---------- Render ---------- */
+  let filter = "fit";
+  const apClass = l => l === "Strong" || l === "Very likely" ? "good" : l === "Fair" || l === "If offered" ? "warn" : "bad";
+  const rewardKind = c => c.earn.unit === "cash" ? (c.earn.base === 0 && !c.earn.cats && !c.earn.eco ? "None" : "Cashback") : c.earn.unit === "miles" ? "Airline miles" : c.earn.toMiles ? "Points → miles" : "Points";
+
+  function picks(live) {
+    const used = new Set(); const out = [];
+    const add = (label, arr) => { const r = arr.find(x => !used.has(x.card.id)); if (r) { used.add(r.card.id); out.push({ label, r }); } };
+    const good = live.filter(r => r.ev.status !== "stretch");
+    const regular = good.filter(r => !r.ev.secured);
+    add("Best match", good.length ? good : live);
+    add("Most value", regular.filter(r => r.ap.score >= 0.6).sort((a, b) => b.net - a.net));
+    if (st.balance === "sometimes") add("Lowest interest", regular.filter(r => (r.card.tags || []).includes("lowInterest")).sort((a, b) => a.card.apr - b.card.apr || b.ap.score - a.ap.score));
+    add("Easiest yes", [...regular].sort((a, b) => b.ap.score - a.ap.score || b.net - a.net));
+    add("No annual fee", regular.filter(r => r.fe.ongoing === 0).sort((a, b) => b.net - a.net));
+    if (!regular.length) add("Smallest deposit", live.filter(r => r.ev.secured && !r.ev.offered).sort((a, b) => a.card.secured.minDeposit - b.card.secured.minDeposit));
+    return out.slice(0, 4);
+  }
+
+  function badgeRow(r) {
+    const b = [];
+    if (r.ap) b.push(`<span class="b ${apClass(r.ap.label)}">${esc(r.ap.label)} odds</span>`);
+    if (r.ev.status === "stretch") b.push(`<span class="b warn">Stretch</span>`);
+    if (r.ev.status === "edge") b.push(`<span class="b warn">Check income</span>`);
+    if (r.ev.secured) b.push(`<span class="b">Secured</span>`);
+    b.push(`<span class="b">${esc(rewardKind(r.card))}</span>`);
+    if (r.fe.ongoing === 0) b.push(`<span class="b good">${r.fe.promoUsed ? "Free via promo" : "No ongoing fee"}</span>`);
+    const live = (r.card.promos || []).filter(p => p.until && isActive(p.until));
+    if (live.length) b.push(`<span class="b promo">Promo to ${esc(fmtDate(live[0].until))}</span>`);
+    if (r.card.flags && r.card.flags.length) b.push(`<span class="b warn">${r.card.flags.length === 1 ? esc(r.card.flags[0]) : r.card.flags.length + " data caveats"}</span>`);
+    return b.join("");
+  }
+
+  function sourceList(card) {
+    return (card.src || []).map(s => { const x = src(s); return x ? `<div><span class="k ${x.kind}">${x.kind === "official" ? "Bank" : x.kind === "aggregator" ? "Compare site" : esc(x.kind)}</span><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a></div>` : ""; }).join("");
+  }
+
+  const sec = (title, body, meta) => `<details class="sec"><summary><span>${title}</span>${meta ? `<span class="sub">${meta}</span>` : ""}</summary><div class="sec-body">${body}</div></details>`;
+  const ul = items => items.length ? `<ul>${items.map(x => `<li>${x}</li>`).join("")}</ul>` : "";
+  let tipSeq = 0;
+  const inlineTip = (label, html) => { const id = "tip-x" + (++tipSeq); return `<div class="block-h"><h4>${label}</h4><button type="button" class="info" aria-expanded="false" aria-controls="${id}" aria-label="How this works">i</button><div class="tip" id="${id}" role="tooltip" hidden>${html}</div></div>`; };
+
+  function cardItem(r) {
+    const c = r.card, bank = D.banks[c.bank] || {};
+    const officialPage = (c.src || []).map(src).find(x => x && x.kind === "official");
+    const quarter = Math.floor(TODAY.getMonth() / 3);
+
+    // Value math
+    const lines = r.rw.lines.slice(0, 8).map(l => `<tr><td>${esc(l.label)}${l.tag ? ` <span class="sub">(${esc(l.tag)})</span>` : ""}</td><td>${peso(l.amt)}</td><td>${pct(l.eff)}</td><td>${peso(l.year)}</td></tr>`).join("");
+    const rotLine = r.rw.rot.length ? `<tr><td>8% quarterly categories <span class="sub">(${r.rw.rot.map(q => esc(q.label)).join(", ")})</span></td><td></td><td></td><td>${peso(r.rw.rotExtra)}</td></tr>` : "";
+    const valueBody = `
+      <table class="math"><tbody>
+        ${lines || `<tr><td colspan="4">No rewards on your spend</td></tr>`}
+        ${rotLine}
+        <tr class="tot"><td>Rewards</td><td></td><td></td><td>${peso(r.rw.year)}</td></tr>
+        <tr><td>Annual fee, ongoing</td><td></td><td></td><td>−${peso(r.fe.ongoing)}</td></tr>
+        ${r.fx ? `<tr><td>Fee on foreign purchases (${pct(c.fx)})</td><td></td><td></td><td>−${peso(r.fx)}</td></tr>` : ""}
+        <tr class="tot"><td>Net a year</td><td></td><td></td><td>${peso(r.net)}</td></tr>
+      </tbody></table>
+      <p class="sub">Columns: your monthly spend, the effective rate, and the yearly reward. ${esc(r.rw.capped)}${r.rw.capped ? ". " : ""}${!r.rw.bonusOn ? "Bonus rates need more monthly spend than you entered. " : ""}Year 1: ${peso(r.net1)}.${c.earn.valueAssumed ? " Point value is an assumption; see About the data." : ""}</p>`;
+
+    // Requirements
+    const elig = [];
+    if (c.age) elig.push(`Age ${c.age[0]}${c.age[1] >= 99 ? "+" : "–" + c.age[1]} for the main cardholder`);
+    if (c.secured) elig.push(esc(c.secured.note));
+    else elig.push(`Income: ${c.minIncome ? `${peso(c.minIncome)} a year (${c.incomeVia === "official" ? "bank site" : "comparison site"})` : c.estIncome ? `not published, about ${peso(c.estIncome)} a year estimated` : "not published"}`);
+    if (c.incomeNote) elig.push(esc(c.incomeNote));
+    if (c.needsCard) elig.push(`Another bank's credit card held ${c.needsCard.months}+ months${c.needsCard.minLimit ? ` with a ${peso(c.needsCard.minLimit)}+ limit` : ""}`);
+    if (c.altCard) elig.push(`Alternative route: another bank's card held ${c.altCard.months}+ months with a ${peso(c.altCard.minLimit)}+ limit`);
+    if (c.tenureMonths) elig.push(`${c.tenureMonths >= 12 ? "1 year" : c.tenureMonths + " months"}+ as a regular employee`);
+    if (c.status === "depositor") elig.push(`${c.depositorBank} depositors only`);
+    if (c.areas === "eastwest") elig.push("Home or office inside EastWest's serviceable cities");
+    if (c.needsMembership) elig.push(`Paid ${esc(c.needsMembership.label)} membership`);
+    const d = bank.docs || {};
+    const reqBody = `
+      <div class="you"><b>Your odds: ${esc(r.ap ? r.ap.label : "Not eligible yet")}.</b> ${esc([...(r.ap ? r.ap.why : []), ...r.ev.reasons].join(". "))}${r.ev.reasons.length || (r.ap && r.ap.why.length) ? "." : ""}</div>
+      ${r.ev.notes.length ? `<div><h5>For your situation</h5>${ul(r.ev.notes.map(esc))}</div>` : ""}
+      <div><h5>Eligibility</h5>${ul(elig)}</div>
+      <div><h5>IDs</h5>${ul((d.ids || []).map(esc))}</div>
+      <div><h5>Proof of income</h5>${ul((d.income || []).map(esc))}</div>
+      ${d.foreign ? `<div><h5>Foreign nationals</h5>${ul(d.foreign.map(esc))}</div>` : ""}
+      <p class="sub">${d.via === "official" ? `From ${esc(c.bank)}'s own pages.` : "Common requirements; the bank doesn't list them in one place."} ${esc(d.note || "")}</p>`;
+
+    // Upgrade path
+    const steps = pathFor(r);
+    const pathBody = `<ol class="path">${steps.map((s, i) => `<li data-n="${i + 1}"><div>
+      <div class="when">${esc(s.when)}</div><div class="what">${esc(s.what)}</div>
+      <div>${esc(s.text)}${s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">Bank's steps</a>` : ""}</div>
+      ${s.cards && s.cards.length ? `<div class="mini">${s.cards.map(x => `<button type="button" data-go="${x.card.id}">${esc(x.card.bank)} ${esc(x.card.name)} · ${s.showIncome ? (reqOf(x.card) ? peso(reqOf(x.card)) + "/yr income" : "income n/a") : peso(x.net) + "/yr"}</button>`).join("")}</div>` : ""}
+    </div></li>`).join("")}</ol>`;
+
+    // Promos
+    const activePromos = (c.promos || []).filter(p => isActive(p.until));
+    const promoBody = ul((c.promos || []).map(p => {
+      const on = isActive(p.until); const s = src(p.src);
+      return `${on ? "" : "<s>"}<b>${esc(p.title)}</b>${on ? "" : "</s>"} ${esc(p.detail)} <span class="sub">${p.until ? (on ? `Until ${esc(fmtDate(p.until))}` : `Ended ${esc(fmtDate(p.until))}`) : "No end date shown"}${s ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</span>`;
+    }));
+
+    const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean));
+    const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
+    const earnBody = `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}${c.perks && c.perks.length ? `<div><h5>Perks</h5>${ul(c.perks.map(esc))}</div>` : ""}<div><h5>Good</h5>${ul((c.pros || []).map(esc))}</div><div><h5>Watch out</h5>${ul((c.cons || []).map(esc))}</div>`;
+
+    const apply = c.apply || {};
+    const applyLabel = apply.how ? apply.how : `Apply on ${c.bank}'s site`;
+    const applyHtml = apply.url ? `<a class="apply${apply.how ? " alt" : ""}" href="${esc(apply.url)}" target="_blank" rel="noopener">${esc(applyLabel)} ↗</a>` : "";
+    const rating = ratings(c);
+    const ratingTip = "<p>Rates the card itself on a 1–5 scale, counting every store bonus, so a Petron card scores high on fuel even if you don't pick Petron.</p><p>Spending: 1 is under 0.4% back, 2 under 0.9%, 3 under 2%, 4 under 4%, 5 is 4% or more. Travel adds a point for lounge access. Use abroad follows the foreign-purchase fee. Low cost follows the annual fee and waivers. Easy to get blends the bank's reputation, the income floor and any existing-card rule.</p>";
+
+    return `<details class="cc" id="card-${c.id}">
+      <summary>
+        <div class="swatch ${esc(c.tier || "")}" data-net="${esc((c.network || "").split(" ")[0].toUpperCase())}" aria-hidden="true"></div>
+        <div class="cc-main"><div class="cc-title">${esc(c.bank)} ${esc(c.name)} <small>${esc(c.network || "")}</small></div><div class="badges">${badgeRow(r)}</div></div>
+        <div class="cc-val"><div class="v${r.net < 0 ? " neg" : ""}">${peso(r.net)}</div><div class="s">est. net a year</div></div>
+      </summary>
+      <div class="cc-body">
+        <div class="facts">
+          <div class="fact"><span>Annual fee, ongoing</span><b>${r.fe.ongoing ? peso(r.fe.ongoing) : "₱0"}</b></div>
+          <div class="fact"><span>${c.secured ? "Deposit" : "Income floor"}</span><b>${c.secured ? peso(c.secured.minDeposit) : reqOf(c) ? (c.minIncome ? "" : "~") + peso(reqOf(c)) : "n/a"}</b></div>
+          <div class="fact"><span>Rewards</span><b style="font-family:var(--font-body)">${esc(rewardKind(c))}</b></div>
+          <div class="fact"><span>Foreign purchase fee</span><b>${pct(c.fx)}</b></div>
+        </div>
+        <div class="actions">${applyHtml}${officialPage ? `<a href="${esc(officialPage.url)}" target="_blank" rel="noopener">Card details on ${esc(c.bank)}'s site</a>` : ""}
+          <span class="sub">Opens the bank's own page in a new tab. Check the address bar before you type any details.</span></div>
+        <div>${inlineTip("How it rates", ratingTip)}
+          <div class="ratings">${rating.map(([l, n]) => `<div class="rt"><span>${esc(l)}</span><span class="bar" role="img" aria-label="${n} out of 5">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span></div>`).join("")}</div>
+        </div>
+        <div class="quick">
+          <div><h5>Why it's here</h5>${ul([...(r.ft.why || []).filter(x => !/avoid|didn't pick/.test(x)), ...(c.pros || [])].slice(0, 3).map(esc))}</div>
+          <div><h5>Watch out</h5>${ul([...(r.ft.why || []).filter(x => /avoid|didn't pick/.test(x)), ...r.ev.reasons, ...(c.cons || [])].slice(0, 3).map(esc))}</div>
+        </div>
+        <div class="secs">
+          ${sec("Requirements and documents", reqBody)}
+          ${sec("Upgrade path and credit limit", pathBody)}
+          ${sec(`How we estimated ${peso(r.net)} a year`, valueBody)}
+          ${sec("Fees and rates", feesBody)}
+          ${(c.promos || []).length ? sec("Promos", promoBody, `${activePromos.length} active`) : ""}
+          ${sec("Rewards, perks, pros and cons", earnBody)}
+          ${sec(`What applicants say about ${esc(c.bank)}`, `<p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not verified this release.</p><p><b>${esc(c.bank)} application notes:</b> ${esc(bank.lookFor || "")}</p>`)}
+          ${sec("Sources", `<div class="srcs">${sourceList(c)}</div>`, `checked ${esc(fmtDate(c.checked))} via ${c.via === "official" ? "bank site" : "compare sites"}`)}
+        </div>
+      </div>
+    </details>`;
+  }
+
+  function renderResults() {
+    const { live, out, listed, annualSpend } = run();
+    const fitRows = live.filter(r => r.ev.status !== "stretch");
+    const stretch = live.filter(r => r.ev.status === "stretch");
+    const pk = picks(live);
+    const total = annualSpend / 12;
+    const counts = { fit: fitRows.length, stretch: stretch.length, out: out.length, listed: listed.length };
+    const list = filter === "fit" ? fitRows : filter === "stretch" ? stretch : filter === "out" ? out : null;
+    const openIds = new Set([...document.querySelectorAll("details.cc[open]")].map(d => d.id));
+
+    const warn = [];
+    if (st.balance === "sometimes") warn.push(`<div class="callout"><b>Interest outweighs rewards.</b> Most cards charge 3% a month (36% a year) on unpaid balances. That wipes out any 1–5% cashback. Cards marked “softens the cost” charge less or rebate part of the interest.</div>`);
+    if (!fitRows.some(r => !r.ev.secured)) warn.push(`<div class="callout"><b>Few regular cards fit right now.</b> A secured card backed by your own deposit builds a credit record. After 6–12 months of on-time payments, you'll qualify card-to-card for most of the list.</div>`);
+
+    $("#results").innerHTML = `
+      <div class="res-head"><h2>Your matches</h2><p>${D.cards.length} cards checked · ${counts.fit} fit · based on ${peso(total)} a month</p></div>
+      ${warn.join("")}
+      <div class="picks">${pk.map((p, i) => `
+        <button type="button" class="pick${i === 0 ? " lead" : ""}" data-go="${p.r.card.id}">
+          <span class="pk-label">${esc(p.label)}</span>
+          <span class="pk-name">${esc(p.r.card.bank)} ${esc(p.r.card.name)}</span>
+          <span class="pk-val">${peso(p.r.net)}<span class="pk-sub"> / yr est.</span></span>
+          <span class="pk-sub">${esc(p.r.ap.label)} odds · ${esc(p.r.ev.secured ? peso(p.r.card.secured.minDeposit) + " deposit" : p.r.fe.ongoing ? peso(p.r.fe.ongoing) + " fee" : "no ongoing fee")}${p.label === "Lowest interest" ? ` · ${esc(pct(p.r.card.apr))} a month` : ""}</span>
+        </button>`).join("")}</div>
+      <div class="filters" role="group" aria-label="Filter cards">
+        <button type="button" data-f="fit" aria-pressed="${filter === "fit"}">Good fit (${counts.fit})</button>
+        <button type="button" data-f="stretch" aria-pressed="${filter === "stretch"}">Stretch (${counts.stretch})</button>
+        <button type="button" data-f="out" aria-pressed="${filter === "out"}">Not eligible yet (${counts.out})</button>
+        <button type="button" data-f="listed" aria-pressed="${filter === "listed"}">Closed or invite-only (${counts.listed})</button>
+      </div>
+      <div class="list">${list
+        ? (list.length ? list.map(r => cardItem(r)).join("") : `<div class="empty">Nothing here with your current answers.</div>`)
+        : listed.map(c => `<details class="cc"><summary><div class="swatch" aria-hidden="true"></div><div class="cc-main"><div class="cc-title">${esc(c.bank)} ${esc(c.name)}</div><div class="badges"><span class="b ${c.status === "closed" ? "bad" : ""}">${c.status === "closed" ? "Not taking applications" : "Invitation only"}</span></div></div><div class="cc-val"></div></summary><div class="cc-body"><p>${esc(c.closedNote)}</p><div><div class="sub">Checked ${esc(fmtDate(c.checked))}</div><div class="srcs">${sourceList(c)}</div></div></div></details>`).join("")
+      }</div>`;
+    openIds.forEach(id => { const el = document.getElementById(id); if (el) el.open = true; });
+    const top = pk[0];
+    $("#jumpText").textContent = top ? `Top match: ${top.r.card.bank} ${top.r.card.name}` : "No matches yet";
+  }
+
+  function renderFresh() {
+    const asOf = new Date(D.meta.dataAsOf + "T00:00:00");
+    const days = Math.max(0, Math.round((TODAY - asOf) / 864e5));
+    const cls = days > 90 ? "bad" : days > 30 ? "warn" : "";
+    const age = days === 0 ? "updated today" : days === 1 ? "1 day old" : `${days} days old`;
+    $("#fresh").innerHTML = `<span class="dot ${cls}"></span><span>Data as of <b>${esc(fmtDate(D.meta.dataAsOf))}</b> · ${age} · v${esc(D.meta.version)}</span>`;
+  }
+
+  function renderFactors() {
+    const rows = [
+      ["Gross annual income", "Every bank sets a floor per card, from ₱120,000 (PNB) to ₱3,000,000 (Security Bank World).", "Asked, as a bracket"],
+      ["Work type and tenure", "Security Bank wants 1+ year as a regular employee; Metrobank 6+ months. Self-employed need 2–3 years of filed returns.", "Asked"],
+      ["Age", "Most banks take principal applicants from 21. Upper limits vary: BDO 60, Security Bank 65, Metrobank 70.", "Asked, as a bracket"],
+      ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: how long and the limit range"],
+      ["Relationship with the bank", "Depositors get pre-approved offers, depositor-only cards (BPI Free+) and secured cards.", "Asked: which banks, no balances"],
+      ["Where you live", "EastWest only serves listed cities. Most banks need a deliverable Philippine address.", "Asked, as a region"],
+      ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Not asked"],
+      ["Citizenship or residency", "Filipino citizens and resident foreigners with an ACR/ICR qualify at most banks.", "Not asked"],
+      ["Existing debt", "Loans and other card balances affect the limit you get, sometimes approval.", "Not asked"],
+      ["Contact numbers", "Metrobank and Security Bank ask for a landline; EastWest for a business landline.", "Shown in each card's requirements"],
+      ["Documents", "Government ID, TIN/SSS/PhilID number, and proof of income: BIR 2316 or ITR, recent payslips, or a COE. Self-employed add audited financials and DTI/SEC papers.", "Listed per bank in each card"]
+    ];
+    $("#view-factors").innerHTML = `
+      <h2>What Philippine banks check</h2>
+      <p>Banks weigh these when they decide on a credit card application. The app only asks for broad brackets, never names, numbers or IDs, and nothing leaves this page.</p>
+      <div class="tbl-wrap"><table class="factors"><thead><tr><th>Factor</th><th>How banks use it</th><th>In this app</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
+      <h3>Documents to prepare</h3>
+      <ul>
+        <li><b>Employees:</b> one valid government ID, plus BIR Form 2316 or a stamped ITR, or your last 1–3 payslips, or a COE with your salary.</li>
+        <li><b>Self-employed:</b> ITR with BIR stamp, 2 years of audited financial statements, DTI or SEC registration, business permit.</li>
+        <li><b>Already have a card:</b> many banks (BPI, BDO, EastWest, PNB, UnionBank) accept your latest statement from another bank as proof of income.</li>
+        <li><b>No income documents:</b> secured cards from BDO (₱10,000 deposit), UnionBank (₱20,000), Security Bank (₱25,000) or Maya Black Express (₱12,500, by offer).</li>
+      </ul>
+      <h3>Interest rules</h3>
+      <p>${esc(D.meta.interestCapNote)}</p>`;
+  }
+
+  function renderData() {
+    const c = D.cards;
+    const official = c.filter(x => x.via === "official").length;
+    $("#view-data").innerHTML = `
+      <h2>About the data</h2>
+      <dl class="kv">
+        <dt>Version</dt><dd class="mono">${esc(D.meta.version)}</dd>
+        <dt>Data as of</dt><dd>${esc(fmtDate(D.meta.dataAsOf))}</dd>
+        <dt>Cards</dt><dd>${c.length} (${official} checked on the bank's own site, ${c.length - official} from comparison sites)</dd>
+      </dl>
+      <h3>How the data is gathered</h3>
+      <p>Each card is checked against the bank's own card page and fee table first. Where a bank site was down or doesn't publish a figure, the app uses dated comparison sites and labels the card so you can tell. Every card lists its sources and the date it was checked. Apply buttons only link to the banks' own sites.</p>
+      <p>The data is a snapshot. It's re-checked on the 1st of every month (and on request) and shipped as a new version. Promo end dates are checked against today's date, so expired promos show as ended without an update. The badge at the top turns amber after 30 days and red after 90.</p>
+      <h3>How scores work</h3>
+      <ul>
+        <li><b>Eligibility</b> compares your brackets to each card's income floor, age range, existing-card rule, work tenure and service area.</li>
+        <li><b>Approval odds</b> are a heuristic, not a bank decision. They weigh how far your income clears the floor, your existing card, whether you bank there, and how strict the bank is reported to be.</li>
+        <li><b>Value</b> is your monthly spend times each card's rate, minus caps, the ongoing annual fee and fees on foreign purchases.</li>
+        <li><b>Ranking</b> blends value (45%), approval odds (30%) and your preferences (25%).</li>
+        <li><b>Ratings</b> (1–5 bars) describe each card on its own, using the same rates.</li>
+      </ul>
+      <h3>Assumptions</h3>
+      <ul>${D.meta.assumptions.map(a => `<li>${esc(a)}</li>`).join("")}</ul>
+      <h3>Known gaps</h3>
+      <ul>
+        <li>Reddit and some forums block automated reading, so community notes summarize recurring themes rather than linking specific threads.</li>
+        <li>UnionBank's website was in maintenance during this check; its cards rely on MoneyMax (Oct 16, 2026), and its Apply buttons go to UnionBank's card page.</li>
+        <li>China Bank and Maybank fee tables on file date from Feb 2023.</li>
+        <li>Banks change promos often. Always confirm on the bank's site before you apply.</li>
+      </ul>
+      <h3>Shared sources</h3>
+      <div class="srcs">${Object.values(D.sources).map(s => `<div><span class="k ${s.kind}">${s.kind === "aggregator" ? "Compare site" : s.kind === "official" ? "Bank" : esc(s.kind)}</span><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></div>`).join("")}</div>
+      <h3>Changelog</h3>
+      <ul>${D.meta.changelog.map(x => `<li><b>${esc(fmtDate(x.date))}:</b> ${esc(x.note)}</li>`).join("")}</ul>
+      <p class="sub">This tool gives general information, not financial advice. Approval is always the bank's decision.</p>`;
+  }
+
+  /* ---------- Views ---------- */
+  function showView() {
+    const v = ["find", "factors", "data"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "find";
+    for (const id of ["find", "factors", "data"]) $("#view-" + id).hidden = id !== v;
+    document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false"));
+    $("#jump").style.visibility = v === "find" ? "visible" : "hidden";
+  }
+
+  /* ---------- Wire up ---------- */
+  buildForm();
+  renderFresh(); renderFactors(); renderData(); renderResults(); showView();
+  let t;
+  const update = () => { clearTimeout(t); t = setTimeout(() => { readForm(); updateTotal(); renderResults(); }, 80); };
+  function updateTotal() { $("#spendTotal").textContent = peso(Object.values(st.spend).reduce((a, b) => a + b, 0)); }
+  updateTotal();
+  $("#form").addEventListener("input", update);
+  $("#form").addEventListener("change", update);
+  $("#form").addEventListener("submit", e => e.preventDefault());
+  document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
+    const p = PRESETS[b.dataset.preset];
+    document.querySelectorAll("#spend input").forEach(i => { i.value = p[i.dataset.cat] || 0; });
+    update();
+  }));
+  $("#resetBtn").addEventListener("click", () => {
+    document.querySelectorAll("#spend input").forEach(i => { i.value = 0; });
+    $("#sampleNote").hidden = true; update();
+  });
+  function goTo(id) {
+    const find = () => document.getElementById("card-" + id);
+    let el = find();
+    for (const f of ["fit", "stretch", "out"]) { if (el) break; filter = f; renderResults(); el = find(); }
+    if (el) { el.open = true; el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); }
+  }
+  $("#results").addEventListener("click", e => {
+    const f = e.target.closest("[data-f]");
+    if (f) { filter = f.dataset.f; renderResults(); return; }
+    const go = e.target.closest("[data-go]");
+    if (go) { e.preventDefault(); goTo(go.dataset.go); }
+  });
+  window.addEventListener("hashchange", showView);
+})();
+</script>
+
+</body>
+</html>

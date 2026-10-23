@@ -1,0 +1,1319 @@
+/*
+  PH Card Finder: card dataset
+  ------------------------------------------------------------------
+  One file holds every number the app uses. To refresh the data:
+    1. Re-check each card's sources (official page first).
+    2. Edit the card, set `checked` to the date you looked, set `via`.
+    3. Bump meta.version and meta.dataAsOf, add a changelog line.
+    4. Run `node scripts/check-data.js`.
+  The app reads window.PHCC_DATA; nothing is fetched at runtime.
+
+  Earn model (per card `earn`):
+    unit  'cash'   -> numbers are % cashback (₱ back per ₱100)
+          'points' -> numbers are points per ₱100; value = pts × pv (₱ per point)
+                      if `toMiles` is set, value = pts × toMiles × mile value instead
+          'miles'  -> numbers are airline miles per ₱100; value = miles × mile value
+    base        rate for any category not listed in `cats`
+    cats        category overrides
+    eco         merchant-specific rates that only apply if the user shops there
+                ({ eco, cat, rate }; add `cash: true` when the rate is % cash on a points card)
+    rotating    quarterly bonus categories ({ months, cat, rate, label }), always % cash
+    flexPick    user-chosen 2x categories (RCBC Flex)
+    tiers       spend tiers within a category (e.g. first ₱4,000 at 10%)
+    minSpend    monthly spend needed before bonus `cats` apply (else base)
+    capMonth / capYear  maximum rewards in ₱
+
+  Applying (per card `apply`): { url, how }. `url` must be on the bank's own domain.
+  `how` is shown on the button when applying isn't a plain online form.
+*/
+window.PHCC_DATA = {
+  meta: {
+    version: "2026.10.24-2",
+    dataAsOf: "2026-10-24",
+    interestCapNote: "BSP Circular No. 1165 (2023) caps credit card interest at 3% a month (36% a year), installment add-on at 1% a month and the cash advance fee at ₱200.",
+    mileValue: { travel: 0.5, cash: 0.3 },
+    assumptions: [
+      "Airline miles are valued at ₱0.50 each if you said you prefer miles (award flights), otherwise ₱0.30 (typical non-flight redemptions).",
+      "Points with no published peso value are valued so the card's base rate lands near 0.3%, a common floor for Philippine points programs. These cards are marked 'value assumed'.",
+      "RCBC points use RCBC's own published equivalent (15,000 points = ₱2,250, so ₱0.15 per point). BDO Peso Points are ₱1 each (BDO FAQ). PNB points are 4 points = ₱1. EastWest Puregold points are ₱1 each in Puregold P-Wallet.",
+      "Co-brand rates only count if you pick that store in 'Places you use a lot'.",
+      "Rebate rules we could not confirm are flagged on the card and not guessed."
+    ],
+    changelog: [
+      { date: "2026-10-24", note: "v2: Renamed to PH Card Finder. Added official apply links, document checklists and credit limit tips per bank. Added 6 store co-brand cards (EastWest Puregold, UnionBank S&R and Mercury Drug, RCBC ZALORA and Landmark Anson's) and Caltex rebates on HSBC cards. Confirmed BDO income floors and RCBC fees on the banks' sites. PNB Cashback Titanium now models its rotating 8% quarters and ₱15,000 yearly cap." },
+      { date: "2026-10-24", note: "First release. 58 cards across 13 issuers (52 open to applicants, 6 closed or invite-only). Official pages checked for BPI, Metrobank, Security Bank, RCBC, EastWest, HSBC promos, BDO and Maya. UnionBank's site was down for maintenance, so UnionBank figures come from MoneyMax (Oct 16, 2026) and a fee-table compilation. Reddit blocks automated reading, so community notes are summarized themes, not linked threads." }
+    ]
+  },
+
+  sources: {
+    tc:  { label: "taxcalculator.com.ph card table (compiles each bank's fee table), edition Oct 13, 2026", url: "https://taxcalculator.com.ph/credit-cards", kind: "aggregator" },
+    tcb: { label: "taxcalculator.com.ph beginner and secured card guide, Oct 16, 2026", url: "https://taxcalculator.com.ph/credit-cards/for-beginners", kind: "aggregator" },
+    mm:  { label: "MoneyMax best credit cards, updated Oct 22, 2026", url: "https://www.moneymax.ph/credit-card/best", kind: "aggregator" },
+    mmub:{ label: "MoneyMax UnionBank cards, updated Oct 16, 2026", url: "https://www.moneymax.ph/credit-card/partners/unionbank", kind: "aggregator" },
+    rcbcfees: { label: "RCBC card fees and charges", url: "https://rcbccredit.com/card-fees-and-charges", kind: "official" }
+  },
+
+  categories: [
+    { id: "groceries", label: "Groceries & supermarkets", hint: "SM, Puregold, Robinsons Supermarket, S&R" },
+    { id: "dining",    label: "Dining & food delivery", hint: "Restaurants, fast food, GrabFood, foodpanda" },
+    { id: "online",    label: "Online shopping", hint: "Shopee, Lazada, Zalora, online stores" },
+    { id: "shopping",  label: "Malls & department stores", hint: "Clothes, gadgets, appliances in-store" },
+    { id: "fuel",      label: "Fuel & transport", hint: "Gas stations, tolls, ride-hailing" },
+    { id: "utilities", label: "Utility bills", hint: "Meralco, water" },
+    { id: "telco",     label: "Phone, internet & subscriptions", hint: "Globe, Smart, PLDT, Converge, Netflix, Spotify" },
+    { id: "drugstore", label: "Drugstores & health", hint: "Mercury Drug, Watsons, clinics" },
+    { id: "travel",    label: "Local travel bookings", hint: "Airfare, hotels, travel agencies paid in pesos" },
+    { id: "foreign",   label: "Foreign-currency spend", hint: "Shopping abroad, USD subscriptions, overseas sites" },
+    { id: "other",     label: "Everything else", hint: "Insurance, school, services, misc." }
+  ],
+
+  // Only stores where at least one card in the list pays extra. Everything else is covered by the spend categories.
+  ecosystems: [
+    { id: "petron",    label: "Petron",          group: "Gas" },
+    { id: "shell",     label: "Shell",           group: "Gas" },
+    { id: "caltex",    label: "Caltex",          group: "Gas" },
+    { id: "puregold",  label: "Puregold",        group: "Groceries & warehouse clubs" },
+    { id: "landers",   label: "Landers",         group: "Groceries & warehouse clubs" },
+    { id: "snr",       label: "S&R",             group: "Groceries & warehouse clubs" },
+    { id: "landmark",  label: "Landmark / Anson's", group: "Groceries & warehouse clubs" },
+    { id: "robinsons", label: "Robinsons stores", group: "Malls & shopping" },
+    { id: "lazada",    label: "Lazada",          group: "Online & delivery apps" },
+    { id: "zalora",    label: "ZALORA",          group: "Online & delivery apps" },
+    { id: "foodpanda", label: "foodpanda",       group: "Online & delivery apps" },
+    { id: "mercury",   label: "Mercury Drug",    group: "Health" },
+    { id: "cebupac",   label: "Cebu Pacific",    group: "Airlines" }
+  ],
+
+  // How to raise a limit when a bank doesn't publish its own steps.
+  cliGeneric: "Ask through the bank's app or hotline after 6+ months of on-time payments. Many banks also raise limits on their own for cardholders who pay in full. Have an updated payslip, ITR or COE ready.",
+
+  banks: {
+    BPI: {
+      name: "BPI", site: "https://www.bpi.com.ph/personal/cards/credit-cards",
+      ease: 2, cardToCard: true,
+      lookFor: "Accepts another bank's credit card statement in place of payslips. Also offers 'Express Start', a card backed by a deposit hold-out.",
+      community: "BPI depositors often report quick approvals. Common complaints are about the rewards catalog and card-to-card limits being modest at first.",
+      docs: {
+        via: "official",
+        ids: ["One unexpired photo ID: PhilID or ePhilID, passport, driver's license, other government ID, or a company ID from a BSP/SEC/IC-regulated employer (front and back)"],
+        income: ["Proof of income, or a copy of your credit card statement from another bank"]
+      },
+      cli: { text: "Request it in BPI Help & Support (BPI online login) under Submit a Request → Credit Limit Increase. If you hold another bank's card, you only enter that card's number. Otherwise upload your latest 2 payslips, a COE issued within 2 months, or your latest ITR.", url: "https://www.bpi.com.ph/personal/cards/credit-cards/increase-in-credit-limit-request", via: "official" }
+    },
+    BDO: {
+      name: "BDO", site: "https://www.bdo.com.ph/personal/cards/credit-cards",
+      ease: 2, cardToCard: true,
+      lookFor: "Principal applicants must be 21–60 (secured card: 21–70). Filipino citizens or resident foreigners. A BIR-stamped ITR or BIR 2316 is mandatory for employed applicants.",
+      community: "Seen as relationship-driven: having a BDO account helps. Processing is often described as slow, and Peso Points are low value.",
+      docs: {
+        via: "official",
+        ids: ["Any valid government photo ID, front and back: PhilSys ID, passport, driver's license, SSS ID"],
+        income: ["Employed: latest BIR-stamped ITR or BIR 2316 signed by your employer (required)", "Plus one of: latest full-month payslip, original COE showing status, tenure and pay, or your last 2 months of statements from another credit card"],
+        foreign: ["Employment contract or COE, plus a valid visa and work permit or ACR/ICR"]
+      }
+    },
+    Metrobank: {
+      name: "Metrobank", site: "https://www.metrobank.com.ph/personal/cards/credit-cards",
+      ease: 1, cardToCard: false,
+      lookFor: "Age 18–70. Several cards want 6+ months as a regular employee or 9+ months holding another bank's card. Different income rules apply to Metrobank depositors and holders of other banks' cards.",
+      community: "Often described as harder for first-timers without a Metrobank account or an existing card. Customer service gets mixed reviews.",
+      docs: {
+        via: "official",
+        ids: ["Your PhilID, TIN, SSS, GSIS or UMID number", "PhilID or another valid government photo ID with date of birth and signature", "An active landline (business or residence) and a mobile number"],
+        income: ["Employed: BIR-stamped ITR and/or BIR 2316, plus your last 3 months of payslips. Employees of top-1,000 corporations add an original COE", "Self-employed: latest audited financial statements and ITR, both stamped"],
+        foreign: ["Proof of income or employment, plus ACR, ICR or visa"]
+      }
+    },
+    "Security Bank": {
+      name: "Security Bank", site: "https://www.securitybank.com/personal/credit-cards/",
+      ease: 1, cardToCard: false,
+      lookFor: "Age 21–65, Filipino citizen and resident. At least 1 year as a regular employee or 3 years profitably self-employed. Self-employed applicants must also be Security Bank depositors for 12 months.",
+      community: "Considered strict. Its popular entry cards (Wave, Gold, Complete Cashback) are not taking new applications as of this check.",
+      docs: {
+        via: "official",
+        ids: ["Government-issued photo ID", "Landline number and email address"],
+        income: ["Employed: 1 month's payslip, a signed COE, or your ITR", "Self-employed: ITR, 2 years of audited financial statements, business permit and DTI/SEC registration"]
+      },
+      cli: { text: "Use the 'Increase credit limit' online form on Security Bank's credit card page.", url: "https://www.securitybank.com/personal/credit-cards/", via: "official" }
+    },
+    RCBC: {
+      name: "RCBC", site: "https://rcbccredit.com/credit-cards",
+      ease: 3, cardToCard: false,
+      lookFor: "Fully online application with e-KYC (ID photo plus selfie). An SMS with your reference number arrives within 10 banking days.",
+      community: "Often named as one of the easier banks for a first or second card. Hotline wait times are a frequent complaint.",
+      docs: {
+        via: "official",
+        ids: ["One valid Philippine government photo ID for e-KYC: driver's license, passport, PhilPost, PRC, SSS, TIN, UMID, visa/residence, voter's ID or PhilSys", "A selfie taken during the online application"],
+        income: ["Employed: BIR- or bank-stamped ITR/W2, latest payslip, or a COE with annual income signed by HR (no older than 6 months)", "Self-employed: stamped audited financial statements plus ITR"]
+      }
+    },
+    UnionBank: {
+      name: "UnionBank", site: "https://www.unionbankph.com/credit-cards",
+      ease: 2, cardToCard: true,
+      lookFor: "Apply in the UnionBank app. Other-bank cards must be current and in good standing. The secured card needs a UnionBank savings account.",
+      community: "App-first experience is liked. Reviews since the 2024 Citi migration mention outages and hard-to-reach customer service.",
+      docs: {
+        via: "aggregator",
+        ids: ["Valid government photo ID, captured in the UnionBank app"],
+        income: ["Proof of income (ITR/2316, COE or payslips), or details of your existing card from another bank"],
+        note: "UnionBank's website was in maintenance during this check. Confirm the list in the app."
+      }
+    },
+    EastWest: {
+      name: "EastWest", site: "https://www.eastwestbanker.com/cards/creditcards/visa-platinum",
+      ease: 3, cardToCard: true,
+      lookFor: "Age 21+. Your home or office must be inside EastWest's serviceable cities (most of Metro Manila plus listed cities in Luzon, Cebu, Iloilo, Bacolod, Davao and Cagayan de Oro). Needs a residence landline or mobile plus a business landline. Processing takes 10–15 banking days.",
+      community: "Often reported as approving first-time applicants. Telemarketing calls and the area restriction are common gripes.",
+      docs: {
+        via: "official",
+        ids: ["Valid ID with photo and signature: company ID, driver's license, passport, PRC, SSS, BIR or postal ID"],
+        income: ["Employed, any one of: BIR 2316/ITR, COE with pay breakdown, appointment letter, salary adjustment memo, last 3 months of payslips, service record (government), or another credit card plus its latest statement", "Self-employed: BIR 1701/ITR plus audited financials (if applicable), or another credit card plus its latest statement"],
+        foreign: ["One of: ACR with permanent status, 9(d)/9(g) visa, SIRV, PEZA 47(a)(2) visa, or embassy certification"]
+      }
+    },
+    HSBC: {
+      name: "HSBC", site: "https://www.hsbc.com.ph/credit-cards/",
+      ease: 1, cardToCard: false,
+      lookFor: "Requires a locally issued principal card from another bank held for at least 6 months, and ₱400,000 a year in income. No HSBC card held or cancelled in the last 15 months for welcome offers.",
+      community: "Strict on approval but well regarded for service and the Live+ cashback structure.",
+      docs: {
+        via: "official",
+        ids: ["Proof of identity, valid and photo-bearing with your birth date: passport, driver's license, voter's ID, or SSS/TIN ID plus NBI clearance", "Proof of residence in your name: an ID showing your address, or a utility bill from the last 3 months"],
+        income: ["Your existing locally issued credit card, held 6+ months"]
+      }
+    },
+    Maya: {
+      name: "Maya", site: "https://www.mayabank.ph/creditcard/",
+      ease: 3, cardToCard: false,
+      lookFor: "Age 21–65, Filipino resident with an upgraded (fully verified) Maya account. Decision is in-app and uses Maya's own transaction data, so thin credit files can still qualify.",
+      community: "Popular as a first card because approval is instant. Applicants who are declined may be offered the secured Black Express instead.",
+      docs: {
+        via: "official",
+        ids: ["An upgraded Maya account (your ID is verified inside the Maya app)"],
+        income: ["No upload in most cases; Maya decides from your app activity"]
+      },
+      cli: { text: "Black Express holders are reviewed for a regular Maya Black after about 6 months.", url: "https://www.mayabank.ph/creditcard/maya-black-express", via: "official" }
+    },
+    PNB: {
+      name: "PNB", site: "https://www.pnb.com.ph/card/",
+      ease: 2, cardToCard: true,
+      lookFor: "Lowest published income floor (₱120,000 a year) on several cards. Accepts foreign applicants with the right documents. Applications use an online e-sign form linked from each card page.",
+      community: "Low income floor is the draw. Processing can be slow.",
+      docs: {
+        via: "aggregator",
+        ids: ["Valid government photo ID"],
+        income: ["Proof of income (ITR/2316, COE or payslips), or a statement from another bank's card"],
+        note: "PNB's card pages don't list documents; this is the common set."
+      }
+    },
+    "China Bank": {
+      name: "China Bank", site: "https://www.chinabank.ph/credit-cards",
+      ease: 1, cardToCard: false,
+      lookFor: "Generally requires a principal card from another bank active for 12+ months. Self-employed need a business operating 2+ years. A China Bank news page describes Freedom as exclusive to depositors. Fee table on file is from Feb 2023.",
+      community: "Rarely discussed as a first card because of the existing-card rule.",
+      docs: {
+        via: "aggregator",
+        ids: ["Valid government photo ID", "Completed application form, sent by email or at a branch"],
+        income: ["Proof of income, plus your other bank card details"]
+      }
+    },
+    Maybank: {
+      name: "Maybank", site: "https://www.maybank.com.ph/en/personal/cards/credit-cards.page",
+      ease: 1, cardToCard: true,
+      lookFor: "Age 21–65. Requires another Philippine-issued card with at least a ₱30,000 limit held more than 10 months. Applicants who don't qualify may be offered a secured card. Fee table on file is from Feb 2023.",
+      community: "Fee waiver by usage count is easy to hit; the existing-card rule keeps it off first-card lists.",
+      docs: {
+        via: "official",
+        ids: ["Valid government photo ID"],
+        income: ["Employed: ITR, payslips or COE", "Self-employed: audited financial statements and ITR, both bank- or BIR-stamped"]
+      }
+    }
+  },
+
+  cards: [
+    /* ---------------- BPI ---------------- */
+    {
+      id: "bpi-amore", bank: "BPI", name: "Amore Cashback Card", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator", incomeNote: "BPI does not publish income floors; ₱180,000 is MoneyMax's figure.",
+      age: [21, 65],
+      fee: { annual: 2050, firstYear: 0, note: "First supplementary card free for life." },
+      fx: 1.85, apr: 3,
+      earn: { unit: "cash", base: 0.3, cats: { groceries: 4, drugstore: 1, utilities: 1, foreign: 0 }, capYear: 15000,
+              note: "Cashback is on local spend only. Redeem in ₱500 steps." },
+      perks: ["Unlimited Ayala Malls customer and family lounges", "1.85% forex fee, among the lowest", "Installments and credit-to-cash up to 36 months"],
+      promos: [{ title: "Welcome gift through MoneyMax", detail: "Up to ₱2,495 gift plus ₱500 e-gift for approved applicants who apply through MoneyMax.", until: null, src: "mm" }],
+      pros: ["4% back at supermarkets, the best grocery rate among the big banks' entry cards", "Easy redemption, low forex fee"],
+      cons: ["₱15,000 yearly cashback cap", "0.3% on everything else", "Nothing earned on foreign-currency spend"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=4900" },
+      src: [
+        { label: "BPI Amore Cashback page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/amore-visa-classic", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" },
+        "mm"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-rewards", bank: "BPI", name: "Rewards Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator", incomeNote: "MoneyMax figure; BPI does not publish one.",
+      age: [21, 65],
+      fee: { annual: 1550, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 0.105, base: 2.857, valueAssumed: true, note: "1 BPI point per ₱35. Points never expire." },
+      perks: ["Free travel insurance up to ₱2M when you book with the card", "Points convert to miles, shopping credits or e-GCs"],
+      promos: [{ title: "Welcome gift through MoneyMax", detail: "Up to ₱2,495 gift plus ₱500 e-gift.", until: null, src: "mm" }],
+      pros: ["Low fee, low forex", "Simple starter card that upgrades within BPI"],
+      cons: ["Points value is modest", "No bonus categories"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=3810" },
+      src: [
+        { label: "BPI Rewards Card page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/bpi-blue-mastercard", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" },
+        "mm"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-petron", bank: "BPI", name: "Petron BPI Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 1550, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "cash", base: 0, eco: [{ eco: "petron", cat: "fuel", rate: 3 }], capYear: 15000,
+              note: "3% rebate on Petron fuel only. Non-Petron purchases earn nothing." },
+      perks: ["₱200 Petron fuel voucher welcome gift", "Partner card perks at Petron"],
+      promos: [{ title: "₱200 fuel voucher", detail: "For first-time Petron BPI cardholders.", until: null, src: { label: "Petron BPI page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/petron-bpi-mastercard", kind: "official" } }],
+      pros: ["3% at Petron is strong for drivers", "Low annual fee"],
+      cons: ["Earns nothing outside Petron fuel", "₱15,000 yearly cap"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=3910" },
+      src: [
+        { label: "Petron BPI Card page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/petron-bpi-mastercard", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" },
+        "mm"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-edge", bank: "BPI", name: "Edge Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: null, estIncome: 180000, incomeNote: "Not published. Marketed to young professionals; estimate only.",
+      age: [21, 65],
+      fee: { annual: 1320, firstYear: 0, note: "Billed ₱110 a month from year 2." },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 0.105, base: 2, valueAssumed: true, note: "1 BPI point per ₱50." },
+      perks: ["1.85% forex fee", "Partner store installment deals"],
+      promos: [],
+      pros: ["Aimed at first-jobbers", "Points don't expire"],
+      cons: ["Earns less than the BPI Rewards Card for a similar fee"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=0602" },
+      src: [
+        { label: "BPI Edge Card page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/bpi-edge-mastercard", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-gold", bank: "BPI", name: "Gold Rewards Card", network: "Mastercard", tier: "Gold",
+      status: "open",
+      minIncome: null, estIncome: 350000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 2250, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 0.105, base: 2.857, valueAssumed: true, note: "1 BPI point per ₱35." },
+      perks: ["Free travel insurance up to ₱10M", "Simplified Korean visa application (BPI promo)"],
+      promos: [],
+      pros: ["Bigger travel insurance than the Rewards Card"],
+      cons: ["Same earn rate as the cheaper Rewards Card"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=2800" },
+      src: [
+        { label: "BPI Gold Rewards page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/bpi-gold-mastercard", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-platinum", bank: "BPI", name: "Platinum Rewards Card", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: null, estIncome: 600000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 4000, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 0.105, base: 6.667, cats: { foreign: 10 }, valueAssumed: true,
+              note: "2 points per ₱30 local, 2 points per ₱20 foreign." },
+      perks: ["Priority Pass membership with up to 4 free lounge passes a year (spend required)", "Travel insurance up to ₱10M", "Mastercard purchase protection (180 days)"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Double BPI points everywhere", "Low forex fee for a lounge card"],
+      cons: ["Free lounge passes need qualifying spend", "Points value is assumed"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=6210" },
+      src: [
+        { label: "BPI Platinum Rewards page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/bpi-platinum-rewards-mastercard", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-signature", bank: "BPI", name: "Signature Card", network: "Visa", tier: "Signature",
+      status: "open",
+      minIncome: null, estIncome: 1000000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 5500, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 0.105, base: 10, valueAssumed: true, note: "2 points per ₱20." },
+      perks: ["Free PAGSS international lounge access at NAIA Terminal 1", "Travel insurance up to ₱20M", "Preferential forex rates"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Highest BPI earn rate", "Low forex fee"],
+      cons: ["₱5,500 fee from year 2", "Lounge benefit tied to one NAIA terminal"],
+      apply: { url: "https://www.bpi.com.ph/cards/pq/landing?cc=7800" },
+      src: [
+        { label: "BPI Signature page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/visa-signature", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-robinsons", bank: "BPI", name: "Robinsons Cashback Card", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: null, estIncome: 400000, incomeNote: "Not published; replaced the Amore Platinum Cashback in June 2026. Estimate only.",
+      age: [21, 65],
+      fee: { annual: 2500, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "cash", base: 0.3, cats: { dining: 4, groceries: 1, shopping: 1 }, eco: [{ eco: "robinsons", cat: "shopping", rate: 3 }],
+              note: "Robinsons stores: 3% on ₱3,500+ receipts, 1% on ₱1,000–₱3,499. Cap not shown on the card page." },
+      perks: ["Robinsons brand discounts", "1.85% forex fee"],
+      promos: [],
+      pros: ["4% back on restaurants and food delivery", "0.3% also on foreign spend"],
+      cons: ["Yearly cap not published on the card page", "Robinsons bonus needs big single receipts"],
+      flags: ["Cashback cap not confirmed"],
+      apply: { url: "https://www2.bpi.com.ph/cards/pq/landing?cc=5900" },
+      src: [
+        { label: "Robinsons Cashback Card page", url: "https://www.bpi.com.ph/personal/cards/credit-cards/robinsons-cashback-card-visa", kind: "official" },
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bpi-freeplus", bank: "BPI", name: "Free+ Card", network: "Visa", tier: "Classic",
+      status: "depositor", depositorBank: "BPI",
+      minIncome: null, incomeNote: "Offered to BPI depositors.",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 3.0, apr: 2.5,
+      earn: { unit: "cash", base: 0, note: "No purchase rewards. Instead, 15% back on interest charged when you pay at least the minimum on time." },
+      perks: ["No annual fee", "2.5% monthly interest instead of 3%"],
+      tags: ["lowInterest"],
+      promos: [],
+      pros: ["Lowest BPI interest rate", "No fee"],
+      cons: ["No cash advance or installments yet", "3% forex fee", "Depositors only"],
+      apply: { url: "https://www.bpi.com.ph/personal/cards/credit-cards", how: "Offered to BPI depositors" },
+      src: [
+        { label: "BPI rates and fees (Jul 2026)", url: "https://www.bpi.com.ph/personal/cards/credit-cards/rates-and-fees", kind: "official" },
+        "tc"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- Metrobank ---------------- */
+    {
+      id: "mb-mfree", bank: "Metrobank", name: "M Free Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 446000, incomeVia: "official",
+      altCard: { months: 9, minLimit: 25000 },
+      tenureMonths: 6,
+      age: [18, 70],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0, note: "No rewards program." },
+      perks: ["No annual fee for life"],
+      promos: [],
+      pros: ["Truly free to keep", "Good backup or limit-builder card"],
+      cons: ["No rewards at all", "3.5% forex fee", "Higher income floor than most no-fee cards"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard?product_code=MFHA" },
+      src: [
+        { label: "Metrobank M Free page", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/mfree", kind: "official" },
+        "tc"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "mb-titanium", bank: "Metrobank", name: "Titanium Mastercard", network: "Mastercard", tier: "Gold",
+      status: "open",
+      minIncome: 350000, incomeVia: "official", incomeNote: "MoneyMax lists ₱180,000; Metrobank's own page says ₱350,000.",
+      tenureMonths: 6,
+      age: [18, 70],
+      fee: { annual: 2500, firstYear: 0, note: "MoneyMax shows 'no annual fee' as a limited-time offer; Metrobank's fee table (Jun 2026) lists ₱2,500." },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.06, base: 5, cats: { online: 10, shopping: 10, dining: 10 }, valueAssumed: true,
+              note: "1 point per ₱20, 2x on online, department store and dining. Points never expire." },
+      perks: ["0% installment programs", "Points to e-GCs or miles"],
+      promos: [
+        { title: "Welcome gift through MoneyMax", detail: "Up to ₱4,300 gift; no end date shown.", until: null, src: "mm" },
+        { title: "No annual fee for life (select depositors)", detail: "Invitation-only offer for Metrobank depositors.", until: "2026-02-28", src: { label: "Metrobank promo", url: "https://www.metrobank.com.ph/promos/no-annual-fee-for-life", kind: "official" } }
+      ],
+      pros: ["2x points on the three most common categories", "Non-expiring points"],
+      cons: ["3.5% forex fee", "Point value is low"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard?product_code=MGOA" },
+      src: [
+        { label: "Metrobank Titanium page", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/titanium", kind: "official" },
+        "tc", "mm"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "mb-rewardsplus", bank: "Metrobank", name: "Rewards Plus Visa", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      tenureMonths: 6,
+      age: [18, 70],
+      fee: { annual: 2500, firstYear: 0 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.06, base: 5, cats: { online: 10, telco: 10, dining: 10 }, valueAssumed: true,
+              note: "2x on online, gadgets, telco, food delivery and transport. Dining bonus here covers delivery apps only." },
+      perks: ["Lowest Metrobank income floor"],
+      promos: [{ title: "Welcome gift through MoneyMax", detail: "Up to ₱4,300 gift; no end date shown.", until: null, src: "mm" }],
+      pros: ["Bonus on telco and online, which few cards reward"],
+      cons: ["3.5% forex fee", "Point value is low"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard", how: "Pick Rewards Plus on Metrobank's form" },
+      src: ["tc", "mm"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "mb-cashback", bank: "Metrobank", name: "Cashback Visa", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 480000, incomeVia: "official",
+      altCard: { months: 9, minLimit: 50000 },
+      tenureMonths: 6,
+      age: [18, 70],
+      fee: { annual: 3500, firstYear: 0 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0.2, cats: { groceries: 5, telco: 5 }, capMonth: 1000,
+              note: "5% on groceries, telco, subscriptions, school and bookstores. Capped at ₱1,000 per statement. Redeem in ₱1,000 steps." },
+      perks: ["Up to ₱12,000 rebates a year"],
+      promos: [{ title: "Welcome gift through MoneyMax", detail: "Up to ₱4,300 gift; no end date shown.", until: null, src: "mm" }],
+      pros: ["5% on groceries and telco", "Simple flat cap"],
+      cons: ["₱3,500 fee from year 2", "0.2% elsewhere", "3.5% forex fee"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard?product_code=VCPA" },
+      src: [
+        { label: "Metrobank Cashback page", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/cashback", kind: "official" },
+        { label: "Cashback rebate program terms", url: "https://www.metrobank.com.ph/articles/metrobank-cashback-visa-rebate-program", kind: "official" },
+        "tc"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "mb-travelsig", bank: "Metrobank", name: "Travel Signature Visa", network: "Visa", tier: "Signature",
+      status: "open",
+      minIncome: 700000, incomeVia: "aggregator",
+      age: [18, 70],
+      fee: { annual: 5500, firstYear: 0 },
+      fx: 1.68, apr: 3,
+      earn: { unit: "miles", base: 3.333, note: "1 mile per ₱30." },
+      perks: ["1.68% forex fee"],
+      promos: [],
+      pros: ["Straight miles on everything", "Low forex fee"],
+      cons: ["₱5,500 fee from year 2"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard", how: "Pick Travel Signature on Metrobank's form" },
+      src: ["tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "mb-world", bank: "Metrobank", name: "World Mastercard", network: "Mastercard", tier: "World",
+      status: "open",
+      minIncome: 700000, incomeVia: "aggregator", incomeNote: "Fee-table compilation says ₱700,000; MoneyMax says ₱1,500,000.",
+      age: [18, 70],
+      fee: { annual: 6000, firstYear: 0 },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", toMiles: 0.4, base: 5, cats: { foreign: 15 }, note: "1 point per ₱20, 3 per ₱20 overseas. 2.5 points = 1 mile." },
+      perks: ["Up to 50% off at luxury dining partners"],
+      promos: [{ title: "Welcome gift through MoneyMax", detail: "Up to ₱4,300 gift; no end date shown.", until: null, src: "mm" }],
+      pros: ["Triple points abroad", "1.85% forex fee"],
+      cons: ["₱6,000 fee from year 2", "Income floor disputed between sources"],
+      apply: { url: "https://apply.metrobank.com.ph/creditcard?product_code=MWOA" },
+      src: [{ label: "Metrobank World page", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/world", kind: "official" }, "tc", "mm"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+
+    /* ---------------- Security Bank ---------------- */
+    {
+      id: "sb-platinum", bank: "Security Bank", name: "Platinum Mastercard", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: 780000, incomeVia: "official",
+      tenureMonths: 12, selfEmployedNeedsDeposit: true, landline: true,
+      age: [21, 65],
+      fee: { annual: 4000, firstYear: 0 },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", toMiles: 0.15, base: 10, note: "2 BetterBanking points per ₱20. 6,667 points = 1,000 Mabuhay Miles." },
+      perks: ["2 complimentary local and international lounge passes", "Free travel insurance"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Points convert to PAL, Cathay, Cebu Pacific and AirAsia", "Non-expiring points"],
+      cons: ["Strict tenure rules", "Landline required", "Fee is not generally waived"],
+      apply: { url: "https://creditcardsapplication.securitybank.com/sbc-microsite/#/onboarding/process-shell/rcob/applicant-info?action=applicant-info&cardselector=platinum&cardtype=28&source=OL&branch_id=1101&Sales_id=0000&promo=platinumcardpage&Channel=ONL" },
+      src: [{ label: "Security Bank Platinum page", url: "https://www.securitybank.com/personal/credit-cards/premium-rewards/mastercard-platinum/", kind: "official" }, { label: "Security Bank credit cards", url: "https://www.securitybank.com/personal/credit-cards/", kind: "official" }],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "sb-world", bank: "Security Bank", name: "World Mastercard", network: "Mastercard", tier: "World",
+      status: "open",
+      minIncome: 3000000, incomeVia: "official",
+      tenureMonths: 12, selfEmployedNeedsDeposit: true, landline: true,
+      age: [21, 65],
+      fee: { annual: 5000, firstYear: 5000 },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", toMiles: 0.15, base: 15, note: "3 points per ₱20." },
+      perks: ["Unlimited local lounges (A Lounge, Marhaba, PAGSS)", "6 international lounge passes", "Free travel insurance"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Unlimited local lounge access"],
+      cons: ["₱3M income floor", "No first-year waiver listed"],
+      apply: { url: "https://creditcardsapplication.securitybank.com/sbc-microsite/#/onboarding/process-shell/rcob/applicant-info?action=applicant-info&cardselector=world&cardtype=30&source=OL&branch_id=1101&Sales_id=0000&promo=worldcardpage&Channel=ONL" },
+      src: [{ label: "Security Bank World page", url: "https://www.securitybank.com/personal/credit-cards/premium-rewards/mastercard-world/", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "sb-secured", bank: "Security Bank", name: "Fast Track Secured Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      secured: { minDeposit: 25000, note: "Open a savings account with a ₱25,000 hold-out (₱100,000 for a time deposit). Your limit is 80% of the hold-out. Processed in about 3 banking days after the deposit.", upgrade: "Build 6–12 months of on-time payments, then ask Security Bank to review you for an unsecured card and release the hold-out." },
+      minIncome: null,
+      age: [21, 65],
+      fee: { annual: 2000, firstYear: 0, note: "First year waived. Later fee assumes a Classic-level card; ask the branch." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", toMiles: 0.15, base: 5, valueAssumed: true, note: "Earns BetterBanking points; rate assumed at 1 point per ₱20." },
+      perks: ["Builds a Security Bank credit record"],
+      promos: [],
+      pros: ["No income documents needed", "Fast processing"],
+      cons: ["Deposit is locked while the card is open", "Apply at a branch"],
+      apply: { url: "https://www.securitybank.com/personal/credit-cards/fast-track-secured-credit-card/", how: "Apply at a Security Bank branch" },
+      src: [{ label: "Fast Track Secured page", url: "https://www.securitybank.com/personal/credit-cards/fast-track-secured-credit-card/", kind: "official" }],
+      checked: "2026-10-24", via: "official"
+    },
+    { id: "sb-wave", bank: "Security Bank", name: "Wave Mastercard", network: "Mastercard", status: "closed",
+      closedNote: "Marked 'currently unavailable' on Security Bank's site. Was no annual fee with 1% online cashback.",
+      src: [{ label: "Security Bank credit cards", url: "https://www.securitybank.com/personal/credit-cards/", kind: "official" }], checked: "2026-10-24", via: "official" },
+    { id: "sb-complete", bank: "Security Bank", name: "Complete Cashback Platinum", network: "Mastercard", status: "closed",
+      closedNote: "Marked 'temporarily unavailable'. Was 5/4/3/2/1% across groceries, gas, utilities, dining, shopping with a ₱1,100 monthly cap.",
+      src: [{ label: "Complete Cashback page", url: "https://www.securitybank.com/personal/credit-cards/rebate/complete-cashback-platinum-mastercard/", kind: "official" }], checked: "2026-10-24", via: "official" },
+    { id: "sb-gold", bank: "Security Bank", name: "Gold Mastercard", network: "Mastercard", status: "closed",
+      closedNote: "Marked 'currently unavailable' on Security Bank's site.",
+      src: [{ label: "Security Bank credit cards", url: "https://www.securitybank.com/personal/credit-cards/", kind: "official" }], checked: "2026-10-24", via: "official" },
+
+    /* ---------------- RCBC ---------------- */
+    {
+      id: "rcbc-flex", bank: "RCBC", name: "Flex Visa", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator", incomeNote: "MoneyMax figure; RCBC does not publish one.",
+      age: [21, 65],
+      fee: { annual: 1500, firstYear: 0 },
+      naffl: { spend: 30000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 2.778, cats: { groceries: 0.8, drugstore: 0.8, fuel: 0.8, utilities: 0.4 },
+              flexPick: { n: 2, from: ["dining", "shopping", "travel"], mult: 2 },
+              note: "1 point per ₱36 at dining, shopping and travel merchants; 1 per ₱125 at supermarkets, drugstores and gas; 1 per ₱250 on bills. 2x in two categories you pick. Points never expire." },
+      perks: ["0% installments up to 36 months", "Free travel insurance on travel charged to the card"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "New-to-RCBC applicants who apply online and spend ₱30,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Lifetime fee waiver is achievable right now", "Pick your own 2x categories", "Non-expiring points"],
+      cons: ["Weak earn on groceries and bills", "3.5% forex fee"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_FLEX" },
+      src: [
+        { label: "RCBC Flex Visa page", url: "https://rcbccredit.com/credit-cards/gold-and-classic-cards/flex-visa", kind: "official" },
+        { label: "RCBC rewards earn table", url: "https://rcbccredit.com/features-and-benefits/rewards/rewards-points", kind: "official" },
+        "rcbcfees"
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-flexgold", bank: "RCBC", name: "Flex Gold Visa", network: "Visa", tier: "Gold",
+      status: "open",
+      minIncome: null, estIncome: 350000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 3000, firstYear: 0 },
+      naffl: { spend: 40000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 2.778, cats: { groceries: 0.8, drugstore: 0.8, fuel: 0.8, utilities: 0.4 },
+              flexPick: { n: 3, from: ["groceries", "fuel", "travel", "shopping"], mult: 2 },
+              note: "2x in three categories you pick from grocery, gas, travel, department store and appliances." },
+      perks: ["0% installments up to 36 months", "Free travel insurance on travel charged to the card"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "Spend ₱40,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Lets you double grocery and gas points"],
+      cons: ["Even doubled, grocery points are low", "3.5% forex fee"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_FLEX_GOLD" },
+      src: [{ label: "RCBC Flex Gold page", url: "https://rcbccredit.com/credit-cards/gold-and-classic-cards/flex-gold-visa", kind: "official" }, "rcbcfees"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-classic", bank: "RCBC", name: "Classic Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: null, estIncome: 180000, incomeNote: "Not published; estimate based on the Flex Visa.",
+      age: [21, 65],
+      fee: { annual: 1500, firstYear: 0 },
+      naffl: { spend: 30000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 2.778, cats: { groceries: 0.8, drugstore: 0.8, fuel: 0.8, utilities: 0.4 }, note: "Standard RCBC earn table." },
+      perks: ["0% installments up to 36 months"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "Spend ₱30,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Simple starter card with a fee-free path"],
+      cons: ["The Flex Visa earns more for the same fee"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_CMC" },
+      src: [{ label: "RCBC Classic page", url: "https://rcbccredit.com/credit-cards/gold-and-classic-cards/classic-card", kind: "official" }, "rcbcfees"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-airmiles", bank: "RCBC", name: "Airmiles Visa Signature", network: "Visa", tier: "Signature",
+      status: "open",
+      minIncome: null, estIncome: 1000000, incomeNote: "Not published. Replaces the RCBC Visa Platinum, which MoneyMax lists at ₱1,000,000.",
+      age: [21, 65],
+      fee: { annual: 5500, firstYear: 0 },
+      fx: 1.7, apr: 3,
+      earn: { unit: "miles", base: 2.083, cats: { foreign: 4 }, note: "1 mile per ₱48 local, 1 per ₱25 overseas. Converts 1:1 to Asia Miles, Mabuhay Miles or AirAsia. Miles never expire." },
+      perks: ["Priority Pass with up to 4 free visits a year", "Unlimited PAGSS lounge at NAIA", "Travel insurance up to ₱20M"],
+      tags: ["lounge"],
+      promos: [{ title: "1.50% forex fee", detail: "Down from 1.70% on all foreign-currency transactions.", until: "2026-12-31", src: { label: "RCBC Airmiles Signature page", url: "https://rcbccredit.com/credit-cards/premium-cards/airmiles-visa-signature", kind: "official" } }],
+      pros: ["1:1 transfers to three airline programs", "Low forex fee"],
+      cons: ["₱5,500 fee from year 2", "Not covered by the RCBC lifetime-fee promo"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_SIG" },
+      src: [{ label: "RCBC Airmiles Visa Signature page", url: "https://rcbccredit.com/credit-cards/premium-cards/airmiles-visa-signature", kind: "official" }, "rcbcfees"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-world", bank: "RCBC", name: "World Mastercard", network: "Mastercard", tier: "World",
+      status: "open",
+      minIncome: 2000000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 6000, firstYear: 0 },
+      naffl: { spend: 100000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 3.333, cats: { foreign: 10 }, note: "1 point per ₱30 local, ₱10 international." },
+      perks: ["Priority Pass membership with lounge use", "Pay with Rewards", "Up to 9 free supplementary cards"],
+      tags: ["lounge"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "Spend ₱100,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Fee-free for life if you hit the promo spend", "Strong overseas earn"],
+      cons: ["3.5% forex fee eats into overseas points"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_PWM" },
+      src: [{ label: "RCBC World page", url: "https://rcbccredit.com/credit-cards/premium-cards/world-mastercard", kind: "official" }, "rcbcfees", "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-jcbplat", bank: "RCBC", name: "JCB Platinum", network: "JCB", tier: "Platinum",
+      status: "open",
+      minIncome: 1000000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 3600, firstYear: 0 },
+      naffl: { spend: 60000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 2.778, cats: { foreign: 4 }, note: "1 point per ₱25 on spend in Japan; foreign rate here assumes Japan." },
+      perks: ["50+ JCB airport lounges", "24/7 concierge"],
+      tags: ["lounge"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "Spend ₱60,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Good fit for frequent Japan trips"],
+      cons: ["JCB acceptance is narrower outside Japan", "3.5% forex fee"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_PJCB" },
+      src: [{ label: "RCBC JCB Platinum page", url: "https://rcbccredit.com/credit-cards/premium-cards/jcb-platinum", kind: "official" }, "rcbcfees", "mm"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-zalora", bank: "RCBC", name: "ZALORA Credit Card", network: "Mastercard", tier: "Gold",
+      status: "open",
+      minIncome: null, estIncome: 360000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 4000, firstYear: 0 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0.3, cats: { online: 2 }, eco: [{ eco: "zalora", cat: "online", rate: 6 }],
+              note: "6% ZALORA cashback on ZALORA, up to 2% on other online purchases (as ZALORA cashback), and RCBC points elsewhere (valued here at about 0.3%)." },
+      perks: ["Unlimited free shipping with ZNOW for a year", "Free virtual card on approval"],
+      promos: [{ title: "₱5,000 ZALORA shopping credits", detail: "Spend ₱30,000 within 60 days of card delivery and register.", until: null, src: { label: "ZALORA card page", url: "https://rcbccredit.com/zalora", kind: "official" } }],
+      pros: ["6% back at ZALORA", "Online spend elsewhere also earns"],
+      cons: ["₱4,000 fee from year 2", "Cashback is ZALORA credit, not cash"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_ZAL" },
+      src: [{ label: "ZALORA Credit Card page", url: "https://rcbccredit.com/zalora", kind: "official" }, "rcbcfees"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "rcbc-landmark", bank: "RCBC", name: "Landmark Anson's Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: null, estIncome: 180000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 960, firstYear: 0, note: "₱80 a month from year 2." },
+      naffl: { spend: 30000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.15, base: 2.778, cats: { groceries: 0.8, drugstore: 0.8, fuel: 0.8, utilities: 0.4 },
+              eco: [{ eco: "landmark", cat: "groceries", rate: 3, cash: true }, { eco: "landmark", cat: "shopping", rate: 3, cash: true }],
+              note: "3% rebate, no cap, on Monday–Friday straight purchases at Landmark Department Store, Landmark Supermarket and Anson's (Anson's receipts up to ₱3,000). RCBC points elsewhere." },
+      perks: ["Loyalty, discount and credit card in one"],
+      promos: [{ title: "No annual fee for life (online applications)", detail: "Spend ₱30,000 within 60 days of receiving the card.", until: "2026-12-31", src: { label: "RCBC NAFFL promo", url: "https://rcbccredit.com/promos/NAFFLDigital26", kind: "official" } }],
+      pros: ["Uncapped 3% at Landmark on weekdays", "Cheap to keep"],
+      cons: ["Weekend Landmark purchases don't get the 3%", "Only useful if you shop at Landmark"],
+      apply: { url: "https://applications.rcbccredit.com/?option=RCBC_CLAM" },
+      src: [{ label: "Landmark Anson's card page", url: "https://rcbccredit.com/credit-cards/co-branded-cards/landmark-ansons-mastercard", kind: "official" }, "rcbcfees"],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- UnionBank ---------------- */
+    {
+      id: "ub-u", bank: "UnionBank", name: "U Platinum (Mastercard or Visa)", network: "Mastercard / Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 2.0, apr: 3,
+      earn: { unit: "cash", base: 0, note: "No purchase rewards. 10% rebate on interest when you pay at least the minimum on time." },
+      perks: ["No annual fee for life", "No late payment or over-limit fees", "Insurance payment rebate"],
+      tags: ["lowInterest"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Choose one: ₱3,000 Giftaway credit, camera, speaker or smartwatch. New-to-UnionBank applicants who already hold another bank's card.", until: "2027-01-31", src: "mmub" }],
+      pros: ["Forgiving if you sometimes pay late", "No fee ever"],
+      cons: ["No rewards", "Forex fee listed as 2% (MoneyMax) vs 1% + up to 2.525% (fee-table compilation)"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", { label: "MoneyMax UnionBank fees (Aug 2026)", url: "https://www.moneymax.ph/credit-card/blog/unionbank-credit-card-fees-and-charges", kind: "aggregator" }, "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-rewards", bank: "UnionBank", name: "Rewards Platinum Mastercard", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 2500, firstYear: 0, note: "UnionBank's fee table (Jul 2025) lists ₱2,500. MoneyMax (Oct 2026) lists no annual fee, possibly a current waiver. Confirm before applying." },
+      fx: 2.0, apr: 3,
+      earn: { unit: "points", pv: 0.1, base: 3.333, cats: { dining: 10, shopping: 10, online: 10 }, valueAssumed: true,
+              note: "1 point per ₱30; 3 points on dining and retail. Points never expire." },
+      perks: ["Points to cash credit, gadgets or airline partners"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit for new-to-UnionBank applicants with another bank's card.", until: "2027-01-31", src: "mmub" }],
+      pros: ["3x on dining and retail"],
+      cons: ["Annual fee status unclear"],
+      flags: ["Annual fee disputed between sources"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-cashback", bank: "UnionBank", name: "Cash Back Titanium Mastercard", network: "Mastercard", tier: "Titanium",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 4500, firstYear: 4500 },
+      fx: 3.0, apr: 3,
+      earn: { unit: "cash", base: 0.2, cats: { groceries: 6, utilities: 2 }, minSpend: 10000,
+              note: "MoneyMax: up to 6% supermarkets, up to 2% Meralco via UnionBank Online, 0.2% else. The older Citi terms (2022) put 6% on non-supermarket spend after ₱10,000 a month. Cap amount not published." },
+      perks: ["Rebates credited to the statement"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit for new-to-UnionBank applicants with another bank's card.", until: "2027-01-31", src: "mmub" }],
+      pros: ["Potentially the highest grocery rate"],
+      cons: ["₱4,500 fee with no waiver listed", "Rebate rules conflict between sources"],
+      flags: ["Rebate categories disputed", "Cap not published"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", { label: "Legacy Citi Cash Back terms (Aug 2022)", url: "https://www.unionbankph.com/sites/default/files/2022-07/CITI_Cash_Back_TCs_Aug2022.pdf", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-milesworld", bank: "UnionBank", name: "Miles+ World Mastercard", network: "Mastercard", tier: "World",
+      status: "open",
+      minIncome: 360000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 5000, firstYear: 5000 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "miles", base: 3.333, note: "1 mile per ₱30. Miles never expire." },
+      perks: ["2 complimentary lounge passes a year", "Travel insurance up to ₱1M", "30-day purchase protection"],
+      tags: ["lounge"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit.", until: "2027-01-31", src: "mmub" }],
+      pros: ["Miles card at a moderate income floor"],
+      cons: ["₱5,000 fee with no waiver listed", "3.5% forex fee"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-lazada", bank: "UnionBank", name: "Lazada Credit Card", network: "Mastercard", tier: "Gold",
+      status: "open",
+      minIncome: 360000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 3000, firstYear: 3000 },
+      fx: 3.0, apr: 3,
+      earn: { unit: "cash", base: 0.5, eco: [{ eco: "lazada", cat: "online", rate: 3 }], note: "₱6 Lazada Credits per ₱200 on the Lazada app, ₱1 per ₱200 elsewhere. Credits are usable on Lazada only." },
+      perks: ["Lazada merchant discounts"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit.", until: "2027-01-31", src: "mmub" }],
+      pros: ["3% back on Lazada"],
+      cons: ["Rewards are Lazada credits, not cash", "₱3,000 fee"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-shell", bank: "UnionBank", name: "Shell Power Visa Platinum", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 2800, firstYear: 0, note: "Fee-table compilation notes a 'no annual fee for life' promo with terms." },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0, eco: [{ eco: "shell", cat: "fuel", rate: 5 }], capYear: 15000, note: "5% on Shell fuel, RFID loads and auto services; ₱15,000 yearly cap." },
+      perks: ["10% off Shell Helix oil change packages", "24/7 roadside assistance"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit.", until: "2027-01-31", src: "mmub" }],
+      pros: ["5% at Shell beats most fuel cards"],
+      cons: ["Earns nothing elsewhere"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-snr", bank: "UnionBank", name: "S&R Visa Platinum", network: "Visa", tier: "Platinum",
+      status: "open", needsMembership: { label: "S&R", eco: "snr" },
+      minIncome: 180000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, note: "No separate card fee; your S&R membership is billed to the card on renewal." },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0.5, cats: { dining: 1, shopping: 1 }, eco: [{ eco: "snr", cat: "groceries", rate: 3 }],
+              note: "3% at S&R, 1% on dining and shopping, 0.5% elsewhere." },
+      perks: ["S&R membership renewal on the card"],
+      promos: [],
+      pros: ["3% at S&R with no card fee"],
+      cons: ["Needs a paid S&R membership", "3.5% forex fee"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["tc", { label: "UnionBank S&R card terms (Nov 2024)", url: "https://www.unionbankph.com/sites/default/files/2024-11/Final%20S%26R%20T%26Cs%20%281%29.pdf", kind: "official" }],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-mercury", bank: "UnionBank", name: "Mercury Drug Visa", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: null, estIncome: 180000, incomeNote: "Not published; estimate only.",
+      age: [21, 65],
+      fee: { annual: 2000, firstYear: 2000 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 1, base: 0.5, cats: { foreign: 1.5 }, eco: [{ eco: "mercury", cat: "drugstore", rate: 2.5 }], valueAssumed: true,
+              note: "1 point per ₱200, 5x at Mercury Drug (on up to ₱320,000 of spend), 3x on foreign spend. Points valued at ₱1 each here; check the rewards terms." },
+      perks: ["Mercury Drug rewards"],
+      promos: [],
+      pros: ["Best drugstore rate if you buy medicine monthly"],
+      cons: ["Low earn elsewhere", "Point value not confirmed"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-cebgold", bank: "UnionBank", name: "Cebu Pacific Gold", network: "Visa", tier: "Gold",
+      status: "open",
+      minIncome: 360000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 3000, firstYear: 3000 },
+      fx: 3.0, apr: 3,
+      earn: { unit: "cash", base: 0.5, eco: [{ eco: "cebupac", cat: "travel", rate: 1 }], note: "1 Go Rewards point per ₱200 (₱100 at Cebu Pacific); 1 point = ₱1." },
+      perks: ["Cebu Pacific seat-sale access", "Free life insurance up to ₱400,000"],
+      promos: [{ title: "MoneyMax welcome gift", detail: "Up to ₱3,990 item or ₱3,000 credit.", until: "2027-01-31", src: "mmub" }],
+      pros: ["Go Rewards points work like cash at Robinsons and Cebu Pacific"],
+      cons: ["Low earn rate", "₱3,000 fee"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["mmub", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "ub-secured", bank: "UnionBank", name: "Rewards Secured Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      secured: { minDeposit: 20000, note: "₱20,000–₱165,000 locked for at least 12 months. Limit is 90% of the deposit. Must be a UnionBank savings depositor with no existing UnionBank card.", upgrade: "After the 12-month lock, ask UnionBank to review you for an unsecured card and release the deposit." },
+      minIncome: null,
+      age: [21, 70],
+      fee: { annual: 0, firstYear: 0, life: true, note: "Free for life if used within 60 days of approval." },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.1, base: 3.333, cats: { dining: 10, shopping: 10 }, valueAssumed: true, note: "1 point per ₱30; 3x dining and shopping." },
+      perks: ["Builds credit history with no income documents"],
+      promos: [],
+      pros: ["Free, and it earns points"],
+      cons: ["Deposit locked 12+ months"],
+      apply: { url: "https://www.unionbankph.com/credit-cards", how: "Apply in the UnionBank app" },
+      src: ["tcb", "tc"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+
+    /* ---------------- EastWest ---------------- */
+    {
+      id: "ew-visaplat", bank: "EastWest", name: "Visa Platinum", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 1000000, incomeVia: "official", areas: "eastwest",
+      age: [21, 99],
+      fee: { annual: 4000, firstYear: 0, waiver: { spend: 1500000 }, note: "Auto-waived after ₱1.5M spend in the past 12 months." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "cash", base: 0.3, cats: { shopping: 8.88, dining: 8.88, travel: 8.88, fuel: 8.88, utilities: 8.88, online: 8.88 }, capMonth: 1250,
+              note: "8.88% on department stores, restaurants, fast food and delivery, airlines, hotels, travel, car rental, fuel, utilities and select online stores. 0.3% else. Capped at ₱1,250 per month. Rewards expire and are forfeited if the card closes." },
+      perks: ["Visa concierge", "EastWest Premium Perks"],
+      promos: [],
+      pros: ["Hits the ₱1,250 cap with only about ₱14,000 of bonus spend"],
+      cons: ["₱1M income floor", "Serviceable-area rule", "Rewards forfeited on cancellation"],
+      apply: { url: "https://chatbot.ewbconsumerlending.com/estachatbot.html?ref=cardsapp-&sourcecode=MDATORGA0X00000&utm_source=WEBSORVPL", how: "Apply through EastWest's ESTA chat" },
+      src: [
+        { label: "EastWest Visa Platinum page", url: "https://www.eastwestbanker.com/cards/creditcards/visa-platinum", kind: "official" },
+        { label: "Cash Rewards program terms", url: "https://www.eastwestbanker.com/pages/cash-rewards-program-terms-and-conditions", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "ew-everyday", bank: "EastWest", name: "EveryDay Titanium Mastercard", network: "Mastercard", tier: "Titanium",
+      status: "open",
+      minIncome: 480000, incomeVia: "official", areas: "eastwest",
+      age: [21, 99],
+      fee: { annual: 2800, firstYear: 0 },
+      fx: 3.0, apr: 3,
+      earn: { unit: "cash", base: 0, cats: { groceries: 5, drugstore: 5, fuel: 5 }, minSpendNonEssential: 10000,
+              note: "Up to 5% on supermarket, drugstore and gas, but only in months you also spend ₱10,000 on other categories. Base rate and cap are not stated on the card page." },
+      perks: ["Up to 9 supplementary cards"],
+      promos: [],
+      pros: ["High rate on essentials"],
+      cons: ["Needs ₱10,000 of non-essential spend each month", "Cap and base rate not published"],
+      flags: ["Cap not published"],
+      apply: { url: "https://chatbot.ewbconsumerlending.com/estachatbot.html?ref=cardsapp-&sourcecode=MDATORGA0X00000&utm_source=WEBSORETM", how: "Apply through EastWest's ESTA chat" },
+      src: [{ label: "EastWest EveryDay Titanium page", url: "https://www.eastwestbanker.com/creditcards/everyday-titanium-mastercard", kind: "official" }],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "ew-foodpanda", bank: "EastWest", name: "foodpanda Visa", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 480000, incomeVia: "aggregator", areas: "eastwest",
+      age: [21, 99],
+      fee: { annual: 1200, firstYear: 0 },
+      fx: 2.5, apr: 3,
+      earn: { unit: "cash", base: 0.3, cats: { foreign: 1 }, tiers: [{ eco: "foodpanda", cat: "dining", steps: [{ upTo: 4000, rate: 10 }, { rate: 3 }] }], capMonth: 1000,
+              note: "10% on the first ₱4,000 of foodpanda orders a month, then 3%. 1% abroad, 0.3% else. ₱1,000 monthly cap, paid weekly into pandapay." },
+      perks: ["6 months of pandapro"],
+      promos: [],
+      pros: ["Best food-delivery rate in the market"],
+      cons: ["Only foodpanda gets the high rate", "Serviceable-area rule"],
+      apply: { url: "https://chatbot.ewbconsumerlending.com/estachatbot.html?ref=foodpanda-&sourcecode=MDATPANEWX00000&utm_source=WEBSORGNC", how: "Apply through EastWest's ESTA chat" },
+      src: [{ label: "EastWest foodpanda Visa page", url: "https://www.eastwestbanker.com/cards/creditcards/foodpanda-visa", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "ew-puregold", bank: "EastWest", name: "Puregold Always Panalo Visa", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 480000, incomeVia: "official", areas: "eastwest",
+      age: [21, 99],
+      fee: { annual: 1200, firstYear: 1200, waiver: { spend: 80000, kind: "foreign+online" }, note: "₱100 a month. Waived with ₱80,000 a year of foreign and online spend." },
+      fx: 3.0, apr: 3,
+      earn: { unit: "points", pv: 1, base: 1, eco: [{ eco: "puregold", cat: "groceries", rate: 3.333 }],
+              note: "1 point per ₱30 at Puregold, 1 per ₱100 elsewhere. Points convert to Puregold P-Wallet at ₱1 each, so the value is usable at Puregold." },
+      perks: ["Up to 9 supplementary cards"],
+      promos: [],
+      pros: ["About 3.3% back at Puregold and 1% everywhere else", "Simple points-to-peso conversion"],
+      cons: ["Rewards can only be spent at Puregold", "Serviceable-area rule", "3% forex fee"],
+      apply: { url: "https://chatbot.ewbconsumerlending.com/estachatbot.html?ref=puregold-&sourcecode=MDATPGW00X00000&utm_source=puregoldweb&lang=eng", how: "Apply through EastWest's ESTA chat" },
+      src: [{ label: "EastWest Puregold Visa page", url: "https://www.eastwestbanker.com/cards/creditcards/eastwest-puregold-always-panalo-visa", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "ew-platinum", bank: "EastWest", name: "Platinum Mastercard", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: 1800000, incomeVia: "aggregator", areas: "eastwest",
+      age: [21, 99],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", pv: 0.12, base: 2.5, valueAssumed: true, note: "1 point per ₱40." },
+      perks: ["Priority Pass membership (US$27 a visit, refunded per ₱100,000 travel spend)", "Travel insurance up to ₱20M"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Free for life, principal and supplementary"],
+      cons: ["Lounge visits are not free by default", "₱1.8M income floor"],
+      apply: { url: "https://chatbot.ewbconsumerlending.com/estachatbot.html?ref=cardsapp-&sourcecode=MDATORGA0X00000&utm_source=WEBSORPMC", how: "Apply through EastWest's ESTA chat" },
+      src: [{ label: "EastWest Platinum page", url: "https://www.eastwestbanker.com/cards/creditcards/platinum-mastercard", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- HSBC ---------------- */
+    {
+      id: "hsbc-live", bank: "HSBC", name: "Live+ Credit Card", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 400000, incomeVia: "official",
+      needsCard: { months: 6 },
+      age: [21, 65],
+      fee: { annual: 5000, firstYear: 0 },
+      naffl: { spend: 60000, days: 60, until: "2026-12-31" },
+      fx: 3.5, apr: 3,
+      earn: { unit: "cash", base: 0.2, cats: { dining: 8, shopping: 5, online: 5, travel: 5 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3 }], minSpend: 10000, capMonth: 1250,
+              note: "Up to 8% dining (2% fast food), 5% shopping, entertainment and travel, once you spend ₱10,000 in the month. ₱1,250 monthly cap across all in-card cashback. 3% at Caltex (6% on your first Caltex fill-up), with its own ₱600 monthly cap." },
+      perks: ["3% Caltex fuel rebate", "E-commerce purchase protection up to US$200"],
+      promos: [
+        { title: "No annual fees for life", detail: "Apply online, spend ₱60,000 within 60 days of approval, register in the HSBC app.", until: "2026-12-31", src: { label: "HSBC Live+ NAFFL promo", url: "https://offers.hsbc.com.ph/banners/20", kind: "official" } },
+        { title: "Free Hedgren carry-on", detail: "Alternative welcome gift: spend ₱40,000 within 60 days. One welcome offer per applicant.", until: "2026-11-30", src: { label: "HSBC luggage promo", url: "https://offers.hsbc.com.ph/getfreeluggage26", kind: "official" } }
+      ],
+      pros: ["8% dining is the market high", "Lifetime fee waiver available now"],
+      cons: ["Needs a 6-month-old card from another bank", "3.5% forex fee", "Cap is reached quickly"],
+      apply: { url: "https://www.hsbc.com.ph/credit-cards/apply-for-a-credit-card-online/" },
+      src: [
+        { label: "HSBC Live+ page", url: "https://www.hsbc.com.ph/credit-cards/products/liveplus/", kind: "official" },
+        { label: "HSBC Live+ NAFFL promo", url: "https://offers.hsbc.com.ph/banners/20", kind: "official" },
+        { label: "HSBC luggage promo (caps and eligibility)", url: "https://offers.hsbc.com.ph/getfreeluggage26", kind: "official" }
+      ],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "hsbc-red", bank: "HSBC", name: "Red Platinum Mastercard", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: 400000, incomeVia: "official",
+      needsCard: { months: 6 },
+      age: [21, 65],
+      fee: { annual: 2500, firstYear: 0 },
+      fx: 3.5, apr: 3,
+      earn: { unit: "points", pv: 0.06, base: 5, cats: { online: 20, dining: 20, shopping: 20, foreign: 20 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3, cash: true }], valueAssumed: true,
+              note: "1 point per ₱20, 4x on online, dining, shopping and overseas (bonus on up to ₱40,000 a month). 3% rebate at Caltex." },
+      perks: ["3% Caltex fuel rebate", "HSBC home&Away discounts"],
+      promos: [{ title: "Free World Traveller carry-on", detail: "Spend ₱40,000 within 60 days of approval.", until: "2026-11-30", src: { label: "HSBC luggage promo", url: "https://offers.hsbc.com.ph/getfreeluggage26", kind: "official" } }],
+      pros: ["4x points on everyday categories"],
+      cons: ["Needs a 6-month-old card", "Points value assumed"],
+      apply: { url: "https://offers.hsbc.com.ph/cc-apply-online/promotion-apply-credit-card/en?PdC=MA1" },
+      src: [{ label: "HSBC Red Platinum page", url: "https://www.hsbc.com.ph/credit-cards/products/red-mastercard/", kind: "official" }, { label: "HSBC luggage promo", url: "https://offers.hsbc.com.ph/getfreeluggage26", kind: "official" }],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- BDO ---------------- */
+    {
+      id: "bdo-shopmore", bank: "BDO", name: "ShopMore Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 180000, incomeVia: "official", incomeNote: "₱15,000 gross fixed monthly income.",
+      age: [21, 60],
+      fee: { annual: 1800, firstYear: 0, note: "₱150 a month from the 13th month." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", pv: 1, base: 0.2, note: "2 Peso Points per ₱1,000; 1 Peso Point = ₱1." },
+      perks: ["BDO Buy Now Pay Later: 0% up to 24 months (promo to Dec 31, 2026)"],
+      promos: [],
+      pros: ["BDO's lowest income floor", "Widest installment partner network"],
+      cons: ["0.2% rewards", "Monthly fee after year 1"],
+      apply: { url: "https://www.apply.bdo.com.ph/cards/?Channel=P&Subchannel=W&SCCampaign=AA&SCBranch=00&Card=M0005" },
+      src: [{ label: "BDO ShopMore page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/mastercard/shopmore", kind: "official" },
+            { label: "BDO Peso Rewards FAQ", url: "https://www.aem.bdo.com.ph/content/dam/cbg/marketing-services/channels/cards/pdf-files/CC-Peso-Rewards-FAQ-2025.pdf", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bdo-amexcash", bank: "BDO", name: "American Express Cashback", network: "Amex", tier: "Gold",
+      status: "open",
+      minIncome: 396000, incomeVia: "official", incomeNote: "₱33,000 gross fixed monthly income.",
+      age: [21, 60],
+      fee: { annual: 3000, firstYear: 0, note: "₱250 a month from year 2." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "cash", base: 1, cats: { foreign: 2 }, note: "1% local, 2% overseas. No minimum spend, no cap." },
+      perks: ["Family travel insurance up to ₱10M"],
+      promos: [],
+      pros: ["Flat 1% with no cap or tracking"],
+      cons: ["Amex is not accepted everywhere in the Philippines", "₱3,000 yearly fee"],
+      apply: { url: "https://www.apply.bdo.com.ph/cards/?Channel=P&Subchannel=W&SCCampaign=AA&SCBranch=00&Card=A0009" },
+      src: [{ label: "BDO Amex Cashback page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/american-express/cashback", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bdo-explorer", bank: "BDO", name: "American Express Explorer", network: "Amex", tier: "Platinum",
+      status: "open",
+      minIncome: 792000, incomeVia: "official", incomeNote: "₱66,000 gross fixed monthly income.",
+      age: [21, 60],
+      fee: { annual: 4000, firstYear: 0, waiver: { spend: 450000 } },
+      fx: 1.85, apr: 3,
+      earn: { unit: "miles", base: 3.333, note: "1 Membership Rewards point per ₱30; 1 point = 1 air mile across 6 airline partners." },
+      perks: ["Unlimited Marhaba lounge at NAIA T1 and Clark T2", "Family travel insurance up to ₱10M", "1.85% forex fee"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Fee waived at ₱450,000 a year", "1:1 airline transfers"],
+      cons: ["Amex acceptance gaps"],
+      apply: { url: "https://www.apply.bdo.com.ph/cards/?Channel=P&Subchannel=W&SCCampaign=AA&SCBranch=00&Card=A0078" },
+      src: [{ label: "BDO Amex Explorer page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/american-express/explorer", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bdo-platinum", bank: "BDO", name: "Platinum Mastercard", network: "Mastercard", tier: "Platinum",
+      status: "open",
+      minIncome: 924000, incomeVia: "official", incomeNote: "₱77,000 gross fixed monthly income.",
+      age: [21, 60],
+      fee: { annual: 4500, firstYear: 0, waiver: { spend: 600000 } },
+      fx: 1.85, apr: 3,
+      earn: { unit: "points", pv: 1, base: 0.1, note: "1 Peso Point per ₱1,000." },
+      perks: ["Priority Pass membership (1,800+ lounges)", "Family travel insurance up to ₱20M", "Up to 6 supplementary cards free for life"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Fee waived at ₱600,000 a year", "Low forex fee"],
+      cons: ["0.1% rewards"],
+      apply: { url: "https://www.apply.bdo.com.ph/cards/?Channel=P&Subchannel=W&SCCampaign=AA&SCBranch=00&Card=M0016" },
+      src: [{ label: "BDO Platinum page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/mastercard/platinum", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "bdo-secured", bank: "BDO", name: "Secured Credit Card", network: "Mastercard", tier: "Classic",
+      status: "open",
+      secured: { minDeposit: 10000, note: "Open a BDO savings or time deposit with at least ₱10,000 and sign a deed of assignment at the branch. Limit is 90% of a peso deposit (80% for dollars). Released 60 days after you cancel.", upgrade: "After 6–12 months of on-time payments, ask BDO about an unsecured card. Your record also counts card-to-card at other banks." },
+      minIncome: null,
+      age: [21, 70],
+      fee: { annual: 1800, firstYear: 0, note: "Assumes the Standard card's ₱150 monthly fee; ask the branch." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", pv: 1, base: 0.1, note: "1 Peso Point per ₱1,000." },
+      perks: ["BDO describes approval as 100%"],
+      promos: [],
+      pros: ["Guaranteed approval", "Smallest deposit of any secured card"],
+      cons: ["Apply at a branch", "Low rewards"],
+      apply: { url: "https://www.bdo.com.ph/personal/cards/credit-cards/secured-credit-card", how: "Apply at a BDO branch" },
+      src: [{ label: "BDO Secured Credit Card page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/secured-credit-card", kind: "official" }],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- Maya ---------------- */
+    {
+      id: "maya-landers", bank: "Maya", name: "Landers Cashback Everywhere", network: "Visa", tier: "Platinum",
+      status: "open", needsMembership: { label: "Landers", eco: "landers" },
+      minIncome: 180000, incomeVia: "aggregator", incomeNote: "Maya decides in-app using its own data; ₱180,000 is the fee-table compilation's figure.",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, note: "No card fee if used at least once a month. Requires a paid Landers membership." },
+      fx: 2.0, apr: 3,
+      earn: { unit: "cash", base: 1, cats: { dining: 2, groceries: 0, fuel: 0, drugstore: 0, utilities: 0, telco: 0 }, eco: [{ eco: "landers", cat: "groceries", rate: 5 }], capYear: 200000,
+              note: "1% everywhere, 2% dining, up to 5% at Landers (Maya terminals). No cashback at other supermarkets, gas, pharmacies, government, utilities, telco or wallet top-ups." },
+      perks: ["Landers Superstore membership", "Visa Platinum concierge"],
+      promos: [],
+      pros: ["1% back on general spend with a very high yearly cap", "2% forex fee", "Instant in-app decision"],
+      cons: ["Needs a Landers membership", "Excludes many everyday categories"],
+      apply: { url: "https://www.mayabank.ph/creditcard/", how: "Apply in the Maya app" },
+      src: [{ label: "Maya credit cards page", url: "https://www.mayabank.ph/creditcard/", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "maya-black", bank: "Maya", name: "Black", network: "Visa", tier: "Platinum",
+      status: "open",
+      minIncome: 180000, incomeVia: "aggregator", incomeNote: "Maya decides in-app using its own data. MoneyMax shows no income floor; the fee-table compilation shows ₱180,000.",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, note: "Free if you use it at least once a month. The fee-table compilation notes a ₱50 inactivity fee from month 7." },
+      fx: 2.0, apr: 3,
+      earn: { unit: "points", pv: 0.12, base: 2.5, valueAssumed: true, note: "1 Maya Mile per ₱40, credited instantly. Up to 10x at partner merchants (marked 'coming soon')." },
+      perks: ["Quarterly airport lounge passes via DragonPass"],
+      tags: ["lounge"],
+      promos: [],
+      pros: ["Easiest first-card approval in the list", "Lounge passes on a no-fee card", "2% forex fee"],
+      cons: ["Maya Miles value is unclear", "Inactivity fee if unused"],
+      apply: { url: "https://www.mayabank.ph/creditcard/", how: "Apply in the Maya app" },
+      src: [{ label: "Maya credit cards page", url: "https://www.mayabank.ph/creditcard/", kind: "official" }, "tc", "mm"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "maya-express", bank: "Maya", name: "Black Express", network: "Visa", tier: "Platinum",
+      status: "offered",
+      secured: { minDeposit: 12500, note: "Offered to some applicants instead of Maya Black. ₱12,500+ deposit earning 3.5% a year; limit is 80%.", upgrade: "Maya reviews Black Express holders for a regular Maya Black after about 6 months." },
+      minIncome: null,
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, note: "Free with at least one use a month." },
+      fx: 2.0, apr: 3,
+      earn: { unit: "points", pv: 0.12, base: 2.5, valueAssumed: true, note: "Same Maya Miles earn as Maya Black." },
+      perks: ["Deposit earns interest"],
+      promos: [],
+      pros: ["Interest-earning deposit", "Upgrade path"],
+      cons: ["You can't apply for it directly"],
+      apply: { url: "https://www.mayabank.ph/creditcard/maya-black-express", how: "Offered in the Maya app" },
+      src: [{ label: "Maya Black Express page", url: "https://www.mayabank.ph/creditcard/maya-black-express", kind: "official" }, "tcb"],
+      checked: "2026-10-24", via: "official"
+    },
+
+    /* ---------------- PNB ---------------- */
+    {
+      id: "pnb-zelo", bank: "PNB", name: "Ze-Lo Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 120000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 2.5, apr: 2.5,
+      earn: { unit: "cash", base: 0, note: "No rewards." },
+      perks: ["No annual fee", "2.5% monthly interest"],
+      tags: ["lowInterest"],
+      promos: [],
+      pros: ["Lowest income floor in the market", "Lower interest than the 3% norm"],
+      cons: ["No rewards"],
+      apply: { url: "https://www.pnb.com.ph/product/pnb-ze-lo-mastercard", how: "Use Apply Now on PNB's card page" },
+      src: [{ label: "PNB cards", url: "https://www.pnb.com.ph/card/", kind: "official" }, "tc", "tcb"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "pnb-cashback", bank: "PNB", name: "Cashback Titanium Mastercard", network: "Mastercard", tier: "Titanium",
+      status: "open",
+      minIncome: 120000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 2500, firstYear: 0 },
+      fx: 2.5, apr: 3,
+      earn: { unit: "cash", base: 0.2, cats: { dining: 3, online: 3 }, capYear: 15000,
+              rotating: [
+                { months: [1, 2, 3], cat: "drugstore", rate: 8, label: "Wellness" },
+                { months: [4, 5, 6], cat: "travel", rate: 8, label: "Leisure" },
+                { months: [7, 8, 9], cat: "shopping", rate: 8, label: "Homecare" },
+                { months: [10, 11, 12], cat: "shopping", rate: 8, label: "Retail" }
+              ],
+              note: "3% dining and online all year, 0.2% else. 8% on one category each quarter: Wellness (Jan–Mar), Leisure (Apr–Jun), Homecare (Jul–Sep), Retail (Oct–Dec). Up to ₱15,000 a year. No minimum spend." },
+      perks: ["Free travel insurance up to ₱3M", "Card made from 85% recycled material", "Supplementary cards free for life"],
+      promos: [],
+      pros: ["Cashback card at the lowest income floor", "No minimum spend"],
+      cons: ["8% categories change every quarter", "We map PNB's categories to ours approximately"],
+      apply: { url: "https://www.pnb.com.ph/product/cashback-titanium-mastercard", how: "Use Apply Now on PNB's card page" },
+      src: [{ label: "PNB Cashback Titanium page", url: "https://www.pnb.com.ph/product/cashback-titanium-mastercard", kind: "official" }, "tc"],
+      checked: "2026-10-24", via: "official"
+    },
+    {
+      id: "pnb-mabuhay", bank: "PNB", name: "PAL Mabuhay Miles NOW", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 120000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 1000, firstYear: 0, note: "Free for years 1–3." },
+      fx: 2.5, apr: 3,
+      earn: { unit: "miles", base: 1.724, note: "1 Mabuhay Mile per ₱58. Needs a Mabuhay Miles number." },
+      perks: ["Entry-level airline miles card"],
+      promos: [],
+      pros: ["Cheapest way to earn PAL miles", "Free for 3 years"],
+      cons: ["Low earn rate"],
+      apply: { url: "https://www.pnb.com.ph/product/pnb-pal-mabuhaymiles-now-mastercard", how: "Use Apply Now on PNB's card page" },
+      src: [{ label: "PNB cards", url: "https://www.pnb.com.ph/card/", kind: "official" }, "tc", "tcb"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "pnb-essentials", bank: "PNB", name: "Essentials Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 120000, incomeVia: "aggregator",
+      age: [21, 65],
+      fee: { annual: 1200, firstYear: 0 },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", pv: 0.25, base: 1.429, note: "1 point per ₱70; 4 points = ₱1." },
+      perks: [],
+      promos: [],
+      pros: ["Low income floor"],
+      cons: ["About 0.36% back"],
+      apply: { url: "https://www.pnb.com.ph/product/pnb-essentials-mastercard", how: "Use Apply Now on PNB's card page" },
+      src: [{ label: "PNB cards", url: "https://www.pnb.com.ph/card/", kind: "official" }, "tc", "tcb"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+
+    /* ---------------- China Bank, Maybank (older fee tables) ---------------- */
+    {
+      id: "cb-freedom", bank: "China Bank", name: "Freedom Mastercard", network: "Mastercard", tier: "Classic",
+      status: "open",
+      minIncome: 250000, incomeVia: "aggregator",
+      needsCard: { months: 12 },
+      age: [21, 65],
+      fee: { annual: 0, firstYear: 0, life: true },
+      fx: 2.5, apr: 3,
+      earn: { unit: "points", pv: 0.09, base: 3.333, valueAssumed: true, note: "1 point per ₱30 (some China Bank pages say ₱20)." },
+      perks: ["No annual fee for principal and supplementary cards"],
+      promos: [],
+      pros: ["No-fee card that still earns points"],
+      cons: ["Needs a 12-month-old card from another bank", "May be limited to China Bank depositors", "Fee table dates from Feb 2023"],
+      flags: ["Data may be stale (Feb 2023 fee table)"],
+      apply: { url: "https://www.chinabank.ph/credit-cards-freedom", how: "Apply by email or at a branch" },
+      src: [{ label: "China Bank Freedom page", url: "https://www.chinabank.ph/credit-cards-freedom", kind: "official" }, "tc", "tcb"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+    {
+      id: "maybank-classic", bank: "Maybank", name: "Visa Classic", network: "Visa", tier: "Classic",
+      status: "open",
+      minIncome: 195000, incomeVia: "official",
+      needsCard: { months: 10, minLimit: 30000 },
+      age: [21, 65],
+      fee: { annual: 2000, firstYear: 0, waiver: { uses: 24, spend: 24000 }, note: "Auto-waived with 24 uses or ₱24,000 spend a year." },
+      fx: 3.0, apr: 3,
+      earn: { unit: "points", pv: 0.075, base: 4, valueAssumed: true, note: "1 TreatsPoint per ₱25." },
+      perks: ["Easy usage-based fee waiver"],
+      promos: [],
+      pros: ["Fee waiver almost anyone can hit"],
+      cons: ["Needs a 10-month-old card with ₱30,000+ limit", "Fee table dates from Feb 2023"],
+      flags: ["Data may be stale (Feb 2023 fee table)"],
+      apply: { url: "https://secured.maybank.com.ph/creditcards/application.html" },
+      src: [{ label: "Maybank Visa Classic page", url: "https://www.maybank.com.ph/en/personal/cards/credit-cards/visa-classic.page", kind: "official" }, "tc", "tcb"],
+      checked: "2026-10-24", via: "aggregator"
+    },
+
+    /* ---------------- Invitation-only / depositor-only (listed, not ranked) ---------------- */
+    { id: "inv-maricard", bank: "MariBank", name: "MariCard Credit", network: "—", status: "invite",
+      closedNote: "Invitation-only pilot. 1% local cashback, ₱120,000 income floor.", src: ["tc"], checked: "2026-10-24", via: "aggregator" },
+    { id: "inv-bdo-worldelite", bank: "BDO", name: "World Elite Mastercard", network: "Mastercard", status: "invite",
+      closedNote: "By invitation only.", src: [{ label: "BDO credit cards", url: "https://www.bdo.com.ph/personal/cards/credit-cards", kind: "official" }], checked: "2026-10-24", via: "official" },
+    { id: "inv-bpi-wealth", bank: "BPI", name: "Signature Wealth Card", network: "Visa", status: "invite",
+      closedNote: "BPI's invite-only card.", src: [{ label: "BPI credit cards", url: "https://www.bpi.com.ph/personal/cards/credit-cards", kind: "official" }], checked: "2026-10-24", via: "official" }
+  ]
+};
