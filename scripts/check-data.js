@@ -12,7 +12,8 @@ const D = ctx.window.PHCC_DATA;
 const errors = [];
 const warnings = [];
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
-const today = new Date().toLocaleDateString("en-CA");
+// Manila date, so a GitHub runner on UTC doesn't flag this morning's checks as future dates.
+const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
 const daysAgo = iso => Math.round((new Date(today) - new Date(iso)) / 864e5);
 const isNum = v => typeof v === "number" && Number.isFinite(v);
 

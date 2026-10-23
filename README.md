@@ -14,6 +14,7 @@ A single-page app that recommends Philippine credit cards from a few bracketed a
 | `scripts/check-data.js` | Validates `data.js`: schema, dates, source links, apply links on bank domains, the BSP 3% interest cap. Run before publishing. |
 | `scripts/build-site.js` | Writes `docs/` for GitHub Pages: `index.html` wrapped in a full HTML document, plus `data.js`. |
 | `docs/` | Built site that GitHub Pages serves. Don't edit by hand; run the build script. |
+| `.github/workflows/pages.yml` | Checks the data, rebuilds `docs/` and deploys to GitHub Pages on every push to `main`. |
 
 ## Refreshing the data
 
@@ -24,13 +25,13 @@ A scheduled task, **PH card data refresh**, runs on the 1st of each month at 9:0
 3. Bumps `meta.version` and `meta.dataAsOf` and adds a changelog line.
 4. Runs `node scripts/check-data.js` and stops if it fails.
 5. Republishes the artifact to the same link.
-6. Runs `node scripts/build-site.js`, commits and pushes to `main`. GitHub Pages redeploys from that push.
+6. Runs `node scripts/build-site.js`, commits and pushes to `main`. The Pages workflow redeploys from that push.
 
 To refresh by hand, ask Claude in this folder to "refresh the card data", or use **Run now** on the task.
 
 ## GitHub Pages
 
-Settings → Pages → Build and deployment → **Deploy from a branch**, branch `main`, folder `/docs`.
+Settings → Pages → Build and deployment → Source: **GitHub Actions**. The workflow in `.github/workflows/pages.yml` runs on every push to `main`: it runs `scripts/check-data.js` (a failing check stops the deploy), rebuilds `docs/`, and publishes it. You can also start it by hand from the Actions tab.
 
 ## Data rules
 
