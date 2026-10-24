@@ -213,6 +213,47 @@ select { width: 100%; padding: 9px 34px 9px 12px; border: 0; border-radius: var(
 .switch:checked::after { transform: translateX(16px); }
 .sample-note { font-size: 13px; color: var(--muted); padding: 10px 14px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .privacy { font-size: 12.5px; color: var(--muted); margin: 0; padding: 0 14px; }
+.wallet { display: grid; gap: 8px; }
+.wallet[hidden] { display: none; }
+.wrow { background: var(--fill-2); border-radius: var(--r-sm); padding: 8px; display: grid; gap: 6px; }
+.wrow-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; align-items: center; }
+.wrow-sub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
+.wrow select { background-color: var(--surface); font-size: 13px; padding-block: 7px; }
+.w-del { border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
+.w-del:hover { background: var(--fill); color: var(--ink); }
+.wallet .btn.ghost { justify-self: start; }
+.range { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.range input { flex: 1 1 140px; accent-color: var(--accent); }
+.range output { font-variant-numeric: tabular-nums; font-size: 13px; }
+
+/* Your cards */
+.wsec { display: grid; gap: 14px; }
+.wgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.wcard { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.wcard h4 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+.wcard .big { margin: 0; font-size: 15px; }
+.wcard .sub, .wtip .sub { font-size: 12.5px; color: var(--muted); margin: 0; }
+.wcard.pair { margin-top: -6px; }
+.wtip { font-size: 13.5px; line-height: 1.45; }
+.wtip ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 5px; }
+.wtable { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.wtable td { padding: 7px 8px 7px 0; border-top: 1px solid var(--hair); vertical-align: top; }
+.wtable td:last-child { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+.wadd { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.wadd .art.sm { width: 52px; }
+.wgain { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; display: grid; color: var(--good); }
+.wgain .sub { font-weight: 400; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--link); font: inherit; text-align: left; cursor: pointer; }
+.linkbtn:hover { text-decoration: underline; }
+.linkbtn.strong { color: var(--ink); font-weight: 600; }
+.cite { font-size: 11.5px; color: var(--muted); }
+.meter { position: relative; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--good) 0 30%, var(--warn) 30% 50%, var(--bad) 50% 100%); }
+.meter i { position: absolute; top: -5px; width: 4px; height: 20px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px var(--surface); transform: translateX(-2px); }
+.meter-scale { position: relative; height: 16px; font-size: 11px; color: var(--muted); }
+.meter-scale span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.meter-scale span:first-child { left: 0; transform: none; }
+.meter-scale span:last-child { right: 0; transform: none; }
+@media (max-width: 420px) { .meter-scale span[style*="left:10%"] { display: none; } }
 
 /* Info tips */
 .info { width: 18px; height: 18px; border-radius: 50%; border: 0; background: var(--fill); color: var(--muted); font: 600 11px/1 var(--font); display: inline-grid; place-items: center; padding: 0; cursor: help; flex: none; }
@@ -403,6 +444,42 @@ table.factors { border-collapse: collapse; width: 100%; min-width: 640px; font-s
 table.factors th, table.factors td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--hair); vertical-align: top; }
 table.factors th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
 table.factors tr:last-child td { border-bottom: 0; }
+table.factors.narrow { min-width: 0; }
+.prose [id^="guide-"] { scroll-margin-top: 80px; }
+table.factors.narrow td:first-child { white-space: nowrap; }
+.prose .sub { font-size: 13px; color: var(--muted); margin: 0; }
+.prose h4 { font-size: 17px; margin: 6px 0 0; }
+
+/* Credit guide graphics */
+.climb { list-style: none; padding: 0; margin: 4px 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.climb li { display: grid; grid-template-rows: 150px auto; gap: 12px; max-width: none; }
+.climb-bar { align-self: end; height: calc(36px + var(--h) * 28px); border-radius: 14px 14px 6px 6px; background: var(--art-classic); color: #fff; display: flex; justify-content: center; padding-top: 9px; font-weight: 700; font-size: 15px; box-shadow: var(--shadow); }
+.climb-t b { display: block; font-size: 16px; }
+.climb-t .when { font-size: 12.5px; color: var(--promo); font-weight: 600; }
+.climb-t p { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+@media (max-width: 760px) {
+  .climb { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .climb li { grid-template-rows: none; grid-template-columns: 40px minmax(0, 1fr); align-items: start; }
+  .climb-bar { align-self: start; width: 40px; height: 40px; border-radius: 50%; padding: 0; align-items: center; }
+}
+.gauge-demo { max-width: 560px; display: grid; gap: 6px; }
+.zones { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.zones i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.zones .z1, .zones .z2 { background: var(--good); } .zones .z2 { opacity: .6; } .zones .z3 { background: var(--warn); } .zones .z4 { background: var(--bad); }
+.lower { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 12px; }
+.lcard { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; }
+.lcard h4 { margin: 0 0 6px; font-size: 16px; }
+.lcard ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.prose .lcard li { font-size: 14px; }
+.scorebar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; gap: 2px; max-width: 640px; }
+.scorebar span { display: grid; place-items: center; color: #fff; font-size: 12.5px; font-weight: 600; min-width: 0; }
+.s0 { background: var(--accent); } .s1 { background: #5e5ce6; } .s2 { background: #30b0c7; } .s3 { background: #34c759; }
+.s4 { background: repeating-linear-gradient(45deg, var(--fill) 0 6px, var(--fill-2) 6px 12px); color: var(--muted) !important; }
+.score-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px 18px; }
+.score-list > div { font-size: 14px; }
+.score-list i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+.score-list p { margin: 3px 0 0; font-size: 13.5px; color: var(--muted); }
+
 .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 18px; font-size: 15px; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; }
@@ -422,7 +499,7 @@ table.factors tr:last-child td { border-bottom: 0; }
       <a href="#compare" data-view="compare">Compare<span class="count" id="navCount" hidden></span></a>
       <a href="#promos" data-view="promos">Promos</a>
       <a href="#changes" data-view="changes">What changed</a>
-      <a href="#factors" data-view="factors">What banks check</a>
+      <a href="#guide" data-view="factors">Credit guide</a>
       <a href="#data" data-view="data">About the data</a>
     </nav>
     <button type="button" class="btn sm" id="installBtn" hidden>Install app</button>
@@ -457,8 +534,7 @@ table.factors tr:last-child td { border-bottom: 0; }
               <div class="q"><div class="qh"><label for="age">Age</label><span data-info="age"></span></div><select id="age"></select></div>
               <div class="q"><div class="qh"><label for="income">Gross income</label><span class="sub">before tax, that you can document</span><span data-info="income"></span></div><select id="income"></select></div>
               <div class="q"><div class="qh"><label for="emp">Work</label><span data-info="emp"></span></div><select id="emp"></select></div>
-              <div class="q"><div class="qh"><span class="ql" id="cardLbl">Already have a bank credit card?</span><span data-info="card"></span></div><div class="segc" role="radiogroup" aria-labelledby="cardLbl" id="card"></div></div>
-              <div class="q" id="limitQ"><div class="qh"><span class="ql" id="limitLbl">Highest limit on it</span><span data-info="limit"></span></div><div class="segc" role="radiogroup" aria-labelledby="limitLbl" id="limit"></div></div>
+              <div class="q"><div class="qh"><span class="ql" id="cardLbl">Credit cards you have now</span><span data-info="card"></span></div><div class="segc" role="radiogroup" aria-labelledby="cardLbl" id="card"></div><div class="wallet" id="wallet"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="banksLbl">Banks where you have an account</span><span data-info="banks"></span></div><div class="chips" id="banks" aria-labelledby="banksLbl"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="regionLbl">Where you live or work</span><span data-info="region"></span></div><div class="segc" role="radiogroup" aria-labelledby="regionLbl" id="region"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="creditLbl">Credit record</span><span class="sub">optional</span><span data-info="credit"></span></div><div class="segc" role="radiogroup" aria-labelledby="creditLbl" id="credit"></div></div>
@@ -482,6 +558,7 @@ table.factors tr:last-child td { border-bottom: 0; }
               <div class="q"><div class="qh"><span class="ql" id="feeLbl">Annual fee</span><span data-info="feeTol"></span></div><div class="segc" role="radiogroup" aria-labelledby="feeLbl" id="feeTol"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="perksLbl">Nice to have</span><span data-info="perks"></span></div><div class="chips" id="perks" aria-labelledby="perksLbl"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="ecoLbl">Stores you use a lot</span><span data-info="eco"></span></div><div id="eco" aria-labelledby="ecoLbl" style="display:grid;gap:10px"></div></div>
+              <div class="q"><div class="qh"><label for="mv">What an airline mile is worth to you</label><span data-info="mv"></span></div><div class="range"><input type="range" id="mv" min="0.2" max="1" step="0.05"><output for="mv" id="mvOut"></output><button type="button" class="btn ghost sm" id="mvReset" hidden>Reset</button></div></div>
               <div class="q"><div class="qh"><span class="ql" id="balLbl">How you pay your bill</span><span data-info="balance"></span></div><div class="segc" role="radiogroup" aria-labelledby="balLbl" id="balance"></div></div>
               <label class="toggle"><input type="checkbox" class="switch" id="promos" checked> <span>Count lifetime fee-waiver promos when I'd meet the spend</span></label>
             </div>
@@ -561,10 +638,14 @@ table.factors tr:last-child td { border-bottom: 0; }
     ["self", "Business owner / self-employed"], ["freelance", "Freelancer or gig worker"],
     ["ofw", "OFW or seafarer"], ["retired", "Retired / pensioner"], ["none", "Student or not working"]
   ];
-  const CARDS = [["none", "No"], ["lt6", "< 6 mo"], ["6to11", "6–11 mo"], ["12plus", "1 yr+"]];
-  const CARD_MONTHS = { none: 0, lt6: 3, "6to11": 6, "12plus": 12 };
-  const LIMITS = [["lt30", "< ₱30k"], ["30to49", "₱30k–49k"], ["50plus", "₱50k+"]];
-  const LIMIT_VAL = { lt30: 0, "30to49": 30000, "50plus": 50000 };
+  const CARDS = [["none", "None yet"], ["yes", "I have one or more"]];
+  const HELD = [["lt6", "Had it under 6 months"], ["6to11", "6–11 months"], ["1to2", "1–2 years"], ["2plus", "2+ years"]];
+  const HELD_MONTHS = { lt6: 3, "6to11": 6, "1to2": 12, "2plus": 24 };
+  // Limit brackets, never exact figures. `lo` is the bottom of each bracket; "Under ₱30k" counts as ₱15k for utilization.
+  const LIMITS = [["skip", "Limit: rather not say"], ["lt30", "Limit under ₱30k"], ["30to49", "₱30k–49k"], ["50to99", "₱50k–99k"], ["100to249", "₱100k–249k"], ["250to499", "₱250k–499k"], ["500to999", "₱500k–999k"], ["1m", "₱1M or more"]];
+  const LIMIT_LO = { lt30: 0, "30to49": 30000, "50to99": 50000, "100to249": 100000, "250to499": 250000, "500to999": 500000, "1m": 1000000 };
+  const limitFor = lo => lo === 0 ? 15000 : lo;
+  const limitText = lo => lo === 0 ? "under ₱30k" : lo >= 1000000 ? "₱1M+" : `₱${Math.round(lo / 1000)}k+`;
   const REGIONS = [["mm", "Metro Manila"], ["luzon", "Luzon"], ["visayas", "Visayas"], ["mindanao", "Mindanao"]];
   const PREFS = [["any", "Any"], ["cash", "Cashback"], ["points", "Points"], ["miles", "Miles"]];
   const FEES = [["free", "Free or waivable"], ["ok", "OK if it pays"]];
@@ -590,10 +671,9 @@ table.factors tr:last-child td { border-bottom: 0; }
       best: "Comfortably above the card's floor, with a BIR 2316 or ITR to prove it.", worst: "No documented income. Cash income with no ITR usually counts as zero; a secured card is the way in." },
     emp: { why: "Banks want steady income they can verify. Regular employees are easiest. Business owners and freelancers need filed tax returns, usually covering 2+ years.",
       best: "Regular employee for a year or more.", worst: "Freelance, or a new job, with no filed ITR yet." },
-    card: { why: "An existing card proves you already handle credit. Many banks approve 'card-to-card': your other card's statement replaces payslips, and your new limit is based on the old one.",
-      best: "A card held 1+ year and always paid on time.", worst: "No card yet. Not a dealbreaker, but fewer banks will say yes and limits start small." },
-    limit: { why: "Some banks require a minimum limit on your other card (Maybank ₱30,000; Metrobank ₱25,000–₱50,000) and size your new limit from it.",
-      best: "₱50,000 or more.", worst: "Under ₱30,000 rules out a few cards." },
+    card: { why: "An existing card proves you already handle credit. Several banks accept it card-to-card, in place of payslips, and often base your new limit on it. Some require a minimum limit on it (Maybank ₱30,000; Metrobank ₱25,000–₱50,000). Pick your cards to see which card to use where, the best one to add, and what to do with your limit. The limit is a bracket, optional, and never leaves this page.",
+      best: "A card held 1+ year, always paid on time, with a ₱50,000+ limit.", worst: "No card yet. Not a dealbreaker, but fewer banks will say yes and limits start small." },
+    mv: { why: "Miles are worth the most when you redeem them for flights, often ₱0.50 or more each, and less for vouchers or goods, around ₱0.30. Points that convert to miles use this value too. Leave it alone and the app uses ₱0.50 if you picked Miles, otherwise ₱0.30." },
     banks: { why: "Banks know their own depositors. An account with history can unlock pre-approved offers, depositor-only cards and secured cards.",
       best: "An account you've used for 6+ months at the bank you're applying to.", worst: "No account there. You can still apply; it's one less thing in your favor." },
     region: { why: "Banks have to deliver the card and be able to reach you. EastWest only accepts applicants in listed cities.",
@@ -618,7 +698,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   }
 
   const st = {
-    age: "21-59", income: 5, emp: "employed1", card: "6to11", limit: "30to49",
+    age: "21-59", income: 5, emp: "employed1", card: "yes", wallet: [{ id: "", held: "6to11", limit: "30to49" }], mv: null,
     banks: new Set(["BPI"]), region: "mm", pref: "cash", feeTol: "free",
     perks: new Set(), eco: new Set(), balance: "full", promos: true, credit: "skip", residency: "skip",
     spend: { ...PRESETS.typical }
@@ -646,7 +726,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     fillSelect($("#income"), INCOMES.map(x => [x.i, x.label]), st.income);
     fillSelect($("#emp"), EMPS, st.emp);
     seg($("#card"), "card", CARDS, "radio", v => v === st.card);
-    seg($("#limit"), "limit", LIMITS, "radio", v => v === st.limit);
+    renderWallet();
     seg($("#banks"), "banks", BANK_KEYS.map(k => [k, D.banks[k].name]), "checkbox", v => st.banks.has(v));
     seg($("#region"), "region", REGIONS, "radio", v => v === st.region);
     seg($("#pref"), "pref", PREFS, "radio", v => v === st.pref);
@@ -665,19 +745,40 @@ table.factors tr:last-child td { border-bottom: 0; }
       <div class="spend-row"><label for="sp-${c.id}">${esc(c.label)}<span>${esc(c.hint)}</span></label>
       <div class="money"><span>₱</span><input id="sp-${c.id}" data-cat="${c.id}" type="number" inputmode="numeric" min="0" step="500" value="${st.spend[c.id] || 0}"></div></div>`).join("");
     document.querySelectorAll("[data-info]").forEach(el => { el.outerHTML = infoTip(el.dataset.info); });
-    $("#limitQ").hidden = st.card === "none";
+    syncMv();
+  }
+  // Card picker: every card by bank, plus "another card" per bank for ones not listed.
+  const WALLET_OPTS = `<option value="">Which card? (optional)</option>` + BANK_KEYS.map(b => `<optgroup label="${esc(b)}">${D.cards.filter(c => c.bank === b).map(c => `<option value="${c.id}">${esc(b)} ${esc(c.name)}${c.status === "closed" ? " (no longer offered)" : ""}</option>`).join("")}<option value="other:${esc(b)}">Another ${esc(b)} card</option></optgroup>`).join("") + `<optgroup label="Other banks"><option value="other:">A card from another bank</option></optgroup>`;
+  const newWalletRow = () => ({ id: "", held: "1to2", limit: "skip" });
+  function renderWallet() {
+    const opt = (items, v) => items.map(([k, l]) => `<option value="${esc(k)}"${k === v ? " selected" : ""}>${esc(l)}</option>`).join("");
+    $("#wallet").innerHTML = st.wallet.map((w, i) => `
+      <div class="wrow">
+        <div class="wrow-top"><select class="w-card" aria-label="Card ${i + 1}: which card">${WALLET_OPTS.replace(`value="${esc(w.id)}"`, `value="${esc(w.id)}" selected`)}</select><button type="button" class="w-del" data-wdel="${i}" aria-label="Remove card ${i + 1}">×</button></div>
+        <div class="wrow-sub"><select class="w-held" aria-label="Card ${i + 1}: how long you've had it">${opt(HELD, w.held)}</select><select class="w-limit" aria-label="Card ${i + 1}: credit limit">${opt(LIMITS, w.limit)}</select></div>
+      </div>`).join("") + `<button type="button" class="btn ghost sm" id="addCard">+ Add another card</button>`;
+    $("#wallet").hidden = st.card !== "yes";
+  }
+  const readWallet = () => [...document.querySelectorAll("#wallet .wrow")].map(r => ({ id: r.querySelector(".w-card").value, held: r.querySelector(".w-held").value, limit: r.querySelector(".w-limit").value }));
+  // The mile slider follows the reward preference until someone moves it.
+  function syncMv() {
+    const el = $("#mv"), auto = st.mv == null, v = auto ? (st.pref === "miles" ? D.meta.mileValue.travel : D.meta.mileValue.cash) : st.mv;
+    el.value = v; $("#mvOut").textContent = `₱${v.toFixed(2)}${auto ? " (default)" : ""}`; $("#mvReset").hidden = auto;
   }
   function readForm() {
     st.age = $("#age").value; st.income = +$("#income").value; st.emp = $("#emp").value;
     const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
     const checks = n => new Set([...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value));
-    st.card = radio("card"); st.limit = radio("limit") || "lt30"; st.region = radio("region");
+    st.card = radio("card"); st.wallet = readWallet(); st.region = radio("region");
+    if (st.card === "yes" && !st.wallet.length) { st.wallet = [newWalletRow()]; renderWallet(); }
+    $("#wallet").hidden = st.card !== "yes";
+    st.mv = $("#mv").dataset.set ? +$("#mv").value : null;
     st.pref = radio("pref"); st.feeTol = radio("feeTol"); st.balance = radio("balance");
     st.credit = radio("credit") || "skip"; st.residency = radio("residency") || "skip";
     st.banks = checks("banks"); st.perks = checks("perks"); st.eco = checks("eco");
     st.promos = $("#promos").checked;
     document.querySelectorAll("#spend input").forEach(i => { st.spend[i.dataset.cat] = Math.max(0, +i.value || 0); });
-    $("#limitQ").hidden = st.card === "none";
+    syncMv();
   }
 
   /* ---------- Info tips: hover on desktop, tap anywhere ---------- */
@@ -712,12 +813,31 @@ table.factors tr:last-child td { border-bottom: 0; }
   const membershipMissing = c => c.needsMembership && !st.eco.has(c.needsMembership.eco);
   const depositOf = c => c.secured && c.secured.minDeposit != null ? c.secured.minDeposit : null;
 
+  // The cards someone holds. A row may name a card, only a bank, or nothing; limits are optional brackets.
+  let wal = { rows: [], owned: new Set(), anyMonths: 0 };
+  function walletInfo() {
+    const rows = st.card !== "yes" ? [] : st.wallet.map(w => {
+      const card = w.id && !w.id.startsWith("other:") ? D.cards.find(c => c.id === w.id) || null : null;
+      const bank = card ? card.bank : w.id.startsWith("other:") ? w.id.slice(6) || null : null;
+      return { ...w, card, bank, months: HELD_MONTHS[w.held] || 0, limitLo: w.limit in LIMIT_LO ? LIMIT_LO[w.limit] : null };
+    });
+    return { rows, owned: new Set(rows.filter(r => r.card).map(r => r.card.id)), anyMonths: Math.max(0, ...rows.map(r => r.months)) };
+  }
+  // Card-to-card rules are about another bank's card. A row with no bank counts as another bank's.
+  function otherCard(bank) {
+    const rows = wal.rows.filter(r => r.bank !== bank);
+    const known = rows.filter(r => r.limitLo != null);
+    return { months: Math.max(0, ...rows.map(r => r.months)), limit: known.length ? Math.max(...known.map(r => r.limitLo)) : null, any: rows.length > 0 };
+  }
+  const sameBank = bank => wal.rows.filter(r => r.bank === bank);
+  const bankInfo = b => D.banks[b] || {};
+
   function evaluate(card) {
     const r = { status: "ok", reasons: [], notes: [] };
     const bump = s => { if (ORDER[s] > ORDER[r.status]) r.status = s; };
     const age = AGES.find(a => a.id === st.age);
     const inc = INCOMES[st.income];
-    const months = CARD_MONTHS[st.card];
+    const oc = otherCard(card.bank), months = oc.months, mine = sameBank(card.bank);
     if (card.age) {
       const [mn, mx] = card.age;
       if (age.hi < mn || age.lo > mx) { bump("no"); r.reasons.push(`Principal applicants must be ${mn}–${mx}`); }
@@ -737,8 +857,16 @@ table.factors tr:last-child td { border-bottom: 0; }
       } else if (req) {
         if (req <= inc.lo) { /* clears the floor */ }
         else if (req <= inc.hi) { bump("edge"); r.notes.push(`Needs ${lbl}, which falls inside your bracket`); }
-        else if (card.altCard && months >= card.altCard.months && LIMIT_VAL[st.limit] >= card.altCard.minLimit) {
+        else if (card.altCard && months >= card.altCard.months && (oc.limit ?? 0) >= card.altCard.minLimit) {
           bump("stretch"); r.notes.push(`Below the ${peso(req)} floor, but ${card.bank} also lists holding another bank's card for ${card.altCard.months}+ months (₱${card.altCard.minLimit / 1000}k+ limit) as a way in`);
+        }
+        else if (bankInfo(card.bank).cardForIncome && months >= 6 && oc.limit != null && oc.limit >= req / 4) {
+          bump("stretch"); r.viaLimit = true;
+          r.notes.push(`Below the ${peso(req)} income floor, but ${card.bank} accepts another bank's card in place of income documents, and your ${limitText(oc.limit)} limit is high for this card. ${card.bank} still decides and may ask for proof of income.`);
+        }
+        else if (mine.length && bankInfo(card.bank).sharedLimit) {
+          bump("stretch"); r.viaBank = true;
+          r.notes.push(`Below the ${peso(req)} income floor, but ${card.bank} lets cardholders in good standing ask for another card on their account. It would share your current ${card.bank} limit, and ${card.bank} still reviews the request.`);
         }
         else if (inc.hi >= 0.8 * req) { bump("stretch"); r.notes.push(`Needs ${lbl}, a little above your bracket`); }
         else { bump("no"); r.reasons.push(`Needs ${lbl}`); }
@@ -753,8 +881,10 @@ table.factors tr:last-child td { border-bottom: 0; }
     }
     if (card.needsCard) {
       if (months < card.needsCard.months) { bump("no"); r.reasons.push(`Needs another bank's card held ${card.needsCard.months}+ months`); }
-      else if (card.needsCard.minLimit && LIMIT_VAL[st.limit] < card.needsCard.minLimit) { bump("no"); r.reasons.push(`Your other card's limit must be ${peso(card.needsCard.minLimit)}+`); }
+      else if (card.needsCard.minLimit && oc.limit == null) r.notes.push(`Your other card needs a limit of ${peso(card.needsCard.minLimit)} or more`);
+      else if (card.needsCard.minLimit && oc.limit < card.needsCard.minLimit) { bump("no"); r.reasons.push(`Your other card's limit must be ${peso(card.needsCard.minLimit)}+`); }
     }
+    if (mine.length && !r.viaBank) r.notes.push(bankInfo(card.bank).sharedLimit ? `You already have a ${card.bank} card; this one would share its limit` : `You already have a ${card.bank} card; ask ${card.bank} about adding this one instead of a fresh application`);
     if (card.areas === "eastwest" && st.region !== "mm") { bump("stretch"); r.notes.push("EastWest only serves listed cities outside Metro Manila; check that yours is one"); }
     if (st.residency === "foreign") {
       const f = (D.foreigners || {})[card.bank];
@@ -783,11 +913,13 @@ table.factors tr:last-child td { border-bottom: 0; }
       else { p -= 1; why.push("Income is at or under the floor"); }
     }
     if (card.status === "depositor") { p += 1; why.push(`Offered to ${card.depositorBank} clients`); }
-    const m = CARD_MONTHS[st.card];
+    const oc = otherCard(card.bank), m = oc.months;
     if (m >= 12) { p += 1; why.push("A card held 1+ year often gets you approved card-to-card"); }
     else if (m >= 6) { p += 0.5; why.push("Your existing card helps"); }
-    else if (m === 0 && card.bank !== "Maya") { p -= 0.5; why.push("No credit card history yet"); }
-    if (st.banks.has(card.bank)) { p += 1; why.push(`You already bank with ${card.bank}`); }
+    else if (wal.anyMonths === 0 && card.bank !== "Maya") { p -= 0.5; why.push("No credit card history yet"); }
+    if (oc.limit != null && req && oc.limit >= req / 2) { p += 0.5; why.push("Your other card's limit is high for this card"); }
+    if (sameBank(card.bank).length) { p += 1; why.push(`You already have a ${card.bank} card`); }
+    else if (st.banks.has(card.bank)) { p += 1; why.push(`You already bank with ${card.bank}`); }
     const ease = (D.banks[card.bank] || {}).ease ?? 2;
     if (ease === 3) { p += 0.5; why.push(`${card.bank} is often described as easier to get`); }
     if (ease === 1) { p -= 0.5; why.push(`${card.bank} is often described as strict`); }
@@ -804,7 +936,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   }
 
   function unitValue(earn, prefMiles) {
-    const mv = prefMiles ? D.meta.mileValue.travel : D.meta.mileValue.cash;
+    const mv = st.mv ?? (prefMiles ? D.meta.mileValue.travel : D.meta.mileValue.cash);
     if (earn.unit === "cash") return 0.01;
     if (earn.unit === "miles") return mv / 100;
     // Points: take whichever redemption is worth more, cash-like credit or airline miles.
@@ -903,6 +1035,86 @@ table.factors tr:last-child td { border-bottom: 0; }
     return { p, why };
   }
 
+  /* ---------- Combining cards ---------- */
+  const earns = c => !!(c && c.earn && c.earn.unit);
+  // % back per category, net of the foreign-purchase fee. `bonusOff` drops bonuses that need a minimum spend.
+  function rateTable(card, bonusOff) {
+    const o = { ...userRateOpts(card), bonusOff };
+    const t = {};
+    for (const c of D.categories) t[c.id] = rateFor(card, c.id, o).pct - (c.id === "foreign" ? card.fx || 0 : 0);
+    return t;
+  }
+  // Sends each category to the card that pays most on it. When a card's monthly cap runs out, the rest
+  // moves to the next card. A card that wouldn't reach its minimum spend is re-run without its bonus.
+  function portfolio(cards) {
+    const s = st.spend;
+    const cats = D.categories.map(c => c.id).filter(id => (s[id] || 0) > 0).sort((a, b) => s[b] - s[a]);
+    const off = new Set();
+    let out;
+    for (let pass = 0; pass < 3; pass++) {
+      const tables = new Map(cards.map(c => [c.id, rateTable(c, off.has(c.id))]));
+      const left = new Map(cards.map(c => [c.id, c.earn.capMonth || (c.earn.capYear ? c.earn.capYear / 12 : Infinity)]));
+      const spendOn = {}, rewardOn = {}, assign = {};
+      cards.forEach(c => { spendOn[c.id] = 0; rewardOn[c.id] = 0; });
+      for (const cat of cats) {
+        let amt = s[cat];
+        const ranked = cards.map(c => ({ c, pct: tables.get(c.id)[cat] })).sort((a, b) => b.pct - a.pct);
+        assign[cat] = [];
+        for (const { c, pct } of ranked) {
+          if (amt <= 0) break;
+          const room = pct > 0 ? left.get(c.id) / (pct / 100) : Infinity;
+          const part = Math.min(amt, room);
+          if (part <= 0) continue;
+          const val = part * pct / 100;
+          if (pct > 0) left.set(c.id, left.get(c.id) - val);
+          spendOn[c.id] += part; rewardOn[c.id] += val; amt -= part;
+          assign[cat].push({ id: c.id, amt: part, pct });
+        }
+        // Every card is capped out: the rest still has to go somewhere, and earns nothing extra.
+        if (amt > 0 && ranked.length) { spendOn[ranked[0].c.id] += amt; assign[cat].push({ id: ranked[0].c.id, amt, pct: 0 }); }
+      }
+      out = { spendOn, rewardOn, assign, month: Object.values(rewardOn).reduce((a, b) => a + b, 0) };
+      const nonEss = id => (out.assign ? Object.entries(out.assign) : []).filter(([k]) => !["groceries", "fuel", "drugstore"].includes(k)).reduce((a, [, arr]) => a + arr.filter(x => x.id === id).reduce((p, x) => p + x.amt, 0), 0);
+      const miss = cards.filter(c => !off.has(c.id) && ((c.earn.minSpend && spendOn[c.id] < c.earn.minSpend) || (c.earn.minSpendNonEssential && nonEss(c.id) < c.earn.minSpendNonEssential)));
+      if (!miss.length) break;
+      miss.forEach(c => off.add(c.id));
+    }
+    out.year = out.month * 12;
+    return out;
+  }
+  // Rewards for a set of cards, minus the annual fees of `newCards` given the spend each would get.
+  function setValue(cards, newCards) {
+    const p = portfolio(cards);
+    const fee = newCards.reduce((a, c) => a + fees(c, (p.spendOn[c.id] || 0) * 12).ongoing, 0);
+    return { ...p, fee, net: p.year - fee };
+  }
+  // What each card someone could get adds on top of the cards they hold. Fees on cards they hold don't count.
+  function walletPlan() {
+    const mine = wal.rows.map(r => r.card).filter(earns).filter((c, i, a) => a.indexOf(c) === i);
+    if (!mine.length) return null;
+    const base = portfolio(mine);
+    const weight = r => 0.5 + 0.5 * r.ap.score;
+    const adds = lastRun.live.filter(r => !r.ev.owned && !r.ev.secured && earns(r.card)).map(r => {
+      const v = setValue([...mine, r.card], [r.card]);
+      return { r, gain: v.net - base.year, extra: v.year - base.year, fee: v.fee, v };
+    }).filter(x => x.gain > 0).sort((a, b) => b.gain * weight(b.r) - a.gain * weight(a.r));
+    return { mine, base, adds };
+  }
+  // For people without a card yet: the best two cards together, if two beat one by a useful amount.
+  function bestPair() {
+    const pool = lastRun.live.filter(r => r.ev.status !== "stretch" && !r.ev.secured && earns(r.card) && r.ap.score >= 0.6).sort((a, b) => b.net - a.net).slice(0, 18);
+    if (pool.length < 2) return null;
+    const single = pool.map(r => ({ r, v: setValue([r.card], [r.card]) })).sort((a, b) => b.v.net - a.v.net)[0];
+    let best = null;
+    for (let i = 0; i < pool.length; i++) for (let j = i + 1; j < pool.length; j++) {
+      const a = pool[i].card, b = pool[j].card;
+      if (a.bank === b.bank && bankInfo(a.bank).sharedLimit) continue;
+      const v = setValue([a, b], [a, b]);
+      if (!best || v.net > best.v.net) best = { a: pool[i], b: pool[j], v };
+    }
+    return best && best.v.net - single.v.net >= 600 ? { ...best, single } : null;
+  }
+
   /* 1–5 ratings by use case. These describe the card, not your answers, so every store bonus counts. */
   const stars = p => p >= 4 ? 5 : p >= 2 ? 4 : p >= 0.9 ? 3 : p >= 0.4 ? 2 : 1;
   function ratings(card) {
@@ -945,15 +1157,18 @@ table.factors tr:last-child td { border-bottom: 0; }
   let lastRun = null;
   function run() {
     const annualSpend = Object.values(st.spend).reduce((a, b) => a + b, 0) * 12;
+    wal = walletInfo();
     const listed = D.cards.filter(c => c.status === "closed" || c.status === "invite");
     const rows = D.cards.filter(c => !listed.includes(c)).map(card => {
-      const ev = evaluate(card);
+      const owned = wal.owned.has(card.id);
+      // A card you already hold isn't judged again.
+      const ev = owned ? { status: "ok", reasons: [], notes: ["You already have this card"], owned: true, secured: !!card.secured } : evaluate(card);
       const rw = rewards(card);
       const fe = fees(card, annualSpend);
       const fx = (st.spend.foreign || 0) * 12 * card.fx / 100;
       const net = rw.year - fe.ongoing - fx;
       const net1 = rw.year - fe.y1 - fx;
-      const ap = ev.status === "no" ? null : approval(card, ev);
+      const ap = owned ? { label: "You have it", score: 1, why: ["Already in your wallet"] } : ev.status === "no" ? null : approval(card, ev);
       const ft = fit(card, rw, fe);
       return { card, ev, rw, fe, fx, net, net1, ap, ft, score: -1 };
     });
@@ -1004,7 +1219,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   }
 
   /* ---------- Small renderers ---------- */
-  const apClass = l => l === "Strong" || l === "Very likely" ? "good" : l === "Fair" || l === "If offered" ? "warn" : "bad";
+  const apClass = l => l === "Strong" || l === "Very likely" || l === "You have it" ? "good" : l === "Fair" || l === "If offered" ? "warn" : "bad";
   const rewardKind = c => c.earn.unit === "cash" ? (c.earn.base === 0 && !c.earn.cats && !c.earn.eco && !c.earn.cashCats && !c.earn.rotating ? "None" : "Cashback") : c.earn.unit === "miles" ? "Airline miles" : c.earn.toMiles ? "Points → miles" : "Points";
   const artKind = c => c.secured ? "secured" : ({ Gold: "gold", Platinum: "platinum", Titanium: "titanium", Signature: "black", World: "black", Infinite: "black" })[c.tier] || "classic";
   const netName = c => ({ "Mastercard / Visa": "MC · VISA", Mastercard: "MASTERCARD", Visa: "VISA", Amex: "AMEX", JCB: "JCB", UnionPay: "UNIONPAY", Diners: "DINERS" })[c.network] || (c.network || "").toUpperCase();
@@ -1017,6 +1232,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   function picks(live) {
     const used = new Set(); const out = [];
     const add = (label, arr) => { const r = arr.find(x => !used.has(x.card.id)); if (r) { used.add(r.card.id); out.push({ label, r }); } };
+    live = live.filter(r => !r.ev.owned);
     const good = live.filter(r => r.ev.status !== "stretch");
     const regular = good.filter(r => !r.ev.secured);
     add("Best match", good.length ? good : live);
@@ -1030,7 +1246,8 @@ table.factors tr:last-child td { border-bottom: 0; }
 
   function badgeRow(r) {
     const b = [];
-    if (r.ap) b.push(`<span class="b ${apClass(r.ap.label)}">${esc(r.ap.label)} odds</span>`);
+    if (r.ev.owned) b.push(`<span class="b good">You have this</span>`);
+    else if (r.ap) b.push(`<span class="b ${apClass(r.ap.label)}">${esc(r.ap.label)} odds</span>`);
     else b.push(`<span class="b bad">Not eligible yet</span>`);
     if (r.ev.status === "stretch") b.push(`<span class="b warn">Stretch</span>`);
     if (r.ev.status === "edge") b.push(`<span class="b warn">Check income</span>`);
@@ -1088,7 +1305,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     if (c.needsMembership) elig.push(`Paid ${esc(c.needsMembership.label)} membership`);
     const d = bank.docs || {};
     const reqBody = `
-      <div class="you"><b>Your odds: ${esc(r.ap ? r.ap.label : "Not eligible yet")}.</b> ${esc([...(r.ap ? r.ap.why : []), ...r.ev.reasons].join(". "))}${r.ev.reasons.length || (r.ap && r.ap.why.length) ? "." : ""}</div>
+      ${r.ev.owned ? `<div class="you"><b>You have this card.</b> The requirements below are for reference.</div>` : `<div class="you"><b>Your odds: ${esc(r.ap ? r.ap.label : "Not eligible yet")}.</b> ${esc([...(r.ap ? r.ap.why : []), ...r.ev.reasons].join(". "))}${r.ev.reasons.length || (r.ap && r.ap.why.length) ? "." : ""}</div>`}
       ${r.ev.notes.length ? `<div><h5>For your situation</h5>${ul(r.ev.notes.map(esc))}</div>` : ""}
       <div><h5>Eligibility</h5>${ul(elig)}</div>
       <div><h5>IDs</h5>${ul((d.ids || []).map(esc))}</div>
@@ -1227,6 +1444,138 @@ table.factors tr:last-child td { border-bottom: 0; }
     </div>`;
   }
 
+  /* ---------- Your cards ---------- */
+  const cite = key => { const s = src(key); return s ? ` <a class="cite" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.label)}">source</a>` : ""; };
+  const cardName = c => `${c.bank} ${c.name}`;
+  const catLabel = id => (D.categories.find(c => c.id === id) || {}).label || id;
+  const monthlySpend = () => Object.values(st.spend).reduce((a, b) => a + b, 0);
+  const C2C_BANKS = () => BANK_KEYS.filter(b => bankInfo(b).cardForIncome);
+  const SHORT_CAT = { groceries: "groceries", dining: "dining", online: "online shopping", shopping: "malls", fuel: "fuel and transport", utilities: "utility bills", telco: "phone and internet", drugstore: "drugstores", travel: "travel", foreign: "foreign-currency spend", other: "everything else" };
+  const shortCat = id => SHORT_CAT[id] || catLabel(id).toLowerCase();
+  const catsFor = (assign, id) => Object.entries(assign).filter(([, arr]) => arr[0] && arr[0].id === id).map(([k]) => k).sort((a, b) => (a === "other") - (b === "other")).map(shortCat);
+  const andList = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+  const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+
+  // Spending as a share of the limit, on a 0–100% scale with the usual 30% target marked.
+  function utilMeter(u) {
+    const at = Math.min(100, Math.round(u * 100));
+    return `<div class="meter" role="img" aria-label="You use about ${at}% of your limit"><i style="left:${at}%"></i></div>
+      <div class="meter-scale"><span>0%</span><span style="left:10%">10%</span><span style="left:30%">30% target</span><span style="left:50%">50%</span><span>100%</span></div>`;
+  }
+
+  function limitCard() {
+    const known = wal.rows.filter(r => r.limitLo != null);
+    const spend = monthlySpend();
+    const banks = [...new Set(wal.rows.map(r => r.bank).filter(Boolean))];
+    const tips = [];
+    let head = "";
+    if (known.length) {
+      // Count each bank once: many banks (BDO for one) share one limit across your cards.
+      const per = new Map();
+      known.forEach((r, i) => { const k = r.bank || "row" + i; per.set(k, Math.max(per.get(k) || 0, limitFor(r.limitLo))); });
+      const total = [...per.values()].reduce((a, b) => a + b, 0);
+      const u = spend / total;
+      const at = Math.round(u * 100);
+      const verdict = u <= 0.1 ? "Lots of room. No need to ask for more." : u <= 0.3 ? `Healthy. 30% or less is the usual target.${cite("mmcli")}`
+        : u <= 0.5 ? `Above the usual 30% target.${cite("mmcli")} Ask for more once your card is 6+ months old, or split spending across a second card.`
+        : "High. A nearly full card reads as strain, even if you pay in full. Ask for an increase or add a second card.";
+      head = `<p class="big">You use about <b>${at}%</b> of ${limitText(total)} in limits each month.</p>${utilMeter(u)}<p class="sub">${verdict}</p>`;
+      const monthlyInc = INCOMES[st.income].lo / 12;
+      if (monthlyInc > 0 && total >= 5 * monthlyInc) {
+        const steps = lastRun.live.filter(r => !r.ev.owned && !r.ev.secured && bankInfo(r.card.bank).cardForIncome && !banks.includes(r.card.bank)).sort((a, b) => b.net - a.net).slice(0, 3);
+        tips.push(`<b>Your limit is high for the income you entered. Keep it working for you:</b><ul>
+          <li>Don't cut it to match your pay. A lower limit doesn't lower your costs, and the same spending would use a bigger share of it.</li>
+          <li>Keep it active and clean. Use it every month and pay in full: limits on cards left unused for about a year often get lowered,${cite("mmcli")} and banks can lower a limit when they see risk.${cite("ewTerms")}</li>
+          <li>Use it as a stepping stone. ${andList(C2C_BANKS())} accept another bank's card in place of payslips, and banks often base a new limit on the one you have.${cite("mmcli")}${steps.length ? ` Best value for you there: ${steps.map(r => `<button type="button" class="linkbtn" data-go="${r.card.id}">${esc(cardName(r.card))}</button>`).join(", ")}.` : ""}</li>
+          ${banks.filter(b => bankInfo(b).sharedLimit).map(b => `<li>Another ${esc(b)} card would share this limit, so it adds rewards, not credit.${cite("bdoAdd")}</li>`).join("")}
+        </ul>`);
+      }
+    } else {
+      head = `<p class="sub">Add a limit bracket to any card above to see how much of it you use and what to do with it.</p>`;
+    }
+    const young = wal.rows.filter(r => r.months < 6);
+    if (young.length) tips.push(`<b>Under 6 months?</b> Banks usually review limits every 6–12 months, and asking sooner can count against you.${cite("mmcli")}`);
+    if (banks.length) tips.push(`<b>How to ask for more:</b><ul>${banks.map(b => { const c = bankInfo(b).cli; return `<li><b>${esc(b)}:</b> ${esc(c ? c.text : D.cliGeneric)}${c && c.url ? ` <a class="cite" href="${esc(c.url)}" target="_blank" rel="noopener">${c.via === "official" ? "bank's page" : "source"}</a>` : ""}</li>`; }).join("")}</ul>`);
+    const caps = banks.flatMap(b => [bankInfo(b).subLimit ? `<li><b>${esc(b)}:</b> ${esc(bankInfo(b).subLimit.text)} <a class="cite" href="${esc(bankInfo(b).subLimit.url)}" target="_blank" rel="noopener">bank's page</a></li>` : "",
+      ((D.community || {})[b] || {}).app && D.community[b].app.lock ? `<li><b>${esc(b)}:</b> lock and unlock the card in the app when you're not using it.${cite("redditApp")}</li>` : ""]).filter(Boolean);
+    if (caps.length) tips.push(`<b>Want a ceiling without cutting your limit?</b><ul>${caps.join("")}</ul>`);
+    return `<div class="wcard"><h4>Your limit</h4>${head}${tips.map(t => `<div class="wtip">${t}</div>`).join("")}<p class="sub"><a href="#guide" data-scroll="lower">Should you ever lower your limit?</a></p></div>`;
+  }
+
+  function promosCard() {
+    const banks = [...new Set(wal.rows.map(r => r.bank).filter(Boolean))];
+    if (!banks.length) return "";
+    const welcome = p => /welcome|new (card|applicant)|first[- ]year/i.test(p.title + " " + (p.detail || ""));
+    const blocks = banks.map(b => {
+      const seen = new Set(), list = [];
+      for (const c of D.cards.filter(c => c.bank === b)) for (const p of visiblePromos(c)) {
+        if (p.until && !isActive(p.until)) continue;
+        const k = p.title + "|" + (p.until || "");
+        if (seen.has(k)) { const hit = list.find(x => x.k === k); if (hit && wal.owned.has(c.id)) hit.yours = true; continue; }
+        seen.add(k); list.push({ k, p, c, yours: wal.owned.has(c.id) });
+      }
+      list.sort((x, y) => (y.yours - x.yours) || (welcome(x.p) - welcome(y.p)) || ((x.p.until || "9999") < (y.p.until || "9999") ? -1 : 1));
+      return `<div class="wtip"><b>${esc(b)}</b>${list.length ? `<ul>${list.slice(0, 4).map(x => `<li>${esc(x.p.title)}${x.yours ? ` <span class="b good">on your card</span>` : welcome(x.p) ? ` <span class="b">for new applicants</span>` : ""}<span class="sub"> · ${x.p.until ? "to " + esc(fmtDate(x.p.until)) : "no end date shown"}</span></li>`).join("")}</ul>${list.length > 4 ? `<button type="button" class="linkbtn" data-promobank="${esc(b)}">All ${list.length} ${esc(b)} promos</button>` : ""}` : `<p class="sub" style="margin:4px 0 0">No current ${esc(b)} promos on file.</p>`}</div>`;
+    });
+    return `<div class="wcard"><h4>Promos at your banks</h4>${blocks.join("")}<p class="sub">Most need registration or a minimum spend. Read the bank's terms first.</p></div>`;
+  }
+
+  function walletHtml() {
+    if (st.card !== "yes" || !wal.rows.length) return "";
+    const plan = walletPlan();
+    let use = "", add = "";
+    if (plan) {
+      // Categories that go to the same card at the same rate share a row. The row holding
+      // "everything else" is labeled that way, since the other rows are the exceptions.
+      const groups = new Map();
+      for (const c of D.categories.filter(c => (st.spend[c.id] || 0) > 0)) {
+        const a = plan.base.assign[c.id] || [];
+        if (!a[0]) continue;
+        const key = a[0].id + "|" + a[0].pct.toFixed(2) + "|" + (a[1] && a[1].id !== a[0].id ? a[1].id : "");
+        if (!groups.has(key)) groups.set(key, { a, cats: [] });
+        groups.get(key).cats.push(c.id);
+      }
+      const rows = [...groups.values()].map(g => {
+        const main = D.cards.find(x => x.id === g.a[0].id);
+        const then = g.a[1] && g.a[1].id !== g.a[0].id && D.cards.find(x => x.id === g.a[1].id);
+        const label = g.cats.includes("other") ? (groups.size === 1 ? "Everything" : "Everything else") : cap1(andList(g.cats.map(shortCat)));
+        const p0 = g.a[0].pct;
+        const rate = p0 > 0 ? pct(p0) + " back" : p0 < 0 ? "fee " + pct(-p0) : "nothing back";
+        return `<tr><td>${esc(label)}${then ? `<span class="sub"><br>then ${esc(cardName(then))} after the cap</span>` : ""}</td><td><button type="button" class="linkbtn" data-go="${main.id}">${esc(cardName(main))}</button></td><td>${rate}${g.cats.includes("foreign") ? `<span class="sub"><br>after its foreign fee</span>` : ""}</td></tr>`;
+      }).join("");
+      const unnamed = wal.rows.filter(r => !r.card).length;
+      use = `<div class="wcard"><h4>Which card to use where</h4><p class="big">Your cards earn about <b>${peso(plan.base.year)}</b> a year on this spending.</p>
+        <table class="wtable"><tbody>${rows}</tbody></table>
+        ${unnamed ? `<p class="sub">${unnamed === 1 ? "One card has" : unnamed + " cards have"} no name picked, so ${unnamed === 1 ? "it isn't" : "they aren't"} counted here.</p>` : ""}</div>`;
+      const top = [];
+      for (const x of plan.adds) { if (top.length === 3) break; if (!top.some(t => t.r.card.bank === x.r.card.bank && Math.round(t.gain) === Math.round(x.gain))) top.push(x); }
+      const sharedBanks = [...new Set(wal.rows.map(r => r.bank).filter(b => b && bankInfo(b).sharedLimit))];
+      const sameAdds = sharedBanks.map(b => plan.adds.find(x => x.r.card.bank === b)).filter(x => x && !top.includes(x));
+      const addRow = x => {
+        const wins = catsFor(x.v.assign, x.r.card.id);
+        return `<div class="wadd">${art(x.r.card, "sm")}<div style="min-width:0"><button type="button" class="linkbtn strong" data-go="${x.r.card.id}">${esc(cardName(x.r.card))}</button>
+          <div class="sub">${wins.length ? "Best for " + esc(andList(wins.length > 3 ? [...wins.slice(0, 3), "more"] : wins)) : "Adds a little everywhere"} · ${x.r.ap ? esc(x.r.ap.label) + " odds" : ""}${x.r.ev.status === "stretch" ? " · stretch" : ""}${x.fee ? ` · ${peso(x.fee)} fee counted` : ""}</div></div>
+          <div class="wgain">+${peso(x.gain)}<span class="sub">a year</span></div></div>`;
+      };
+      add = `<div class="wcard"><h4>Best card to add</h4>${top.length ? top.map(addRow).join("") : `<p class="sub">Your cards already cover this spending well. No card you'd likely get adds more than its fee.</p>`}
+        ${sameAdds.map(x => `<p class="sub">Another ${esc(x.r.card.bank)} card shares your current limit:</p>${addRow(x)}`).join("")}
+        <p class="sub">Gains are on top of what your cards earn now, after the new card's annual fee.</p></div>`;
+    } else {
+      use = `<div class="wcard"><h4>Which card to use where</h4><p class="sub">Pick which cards you have (top of the form) to see where to use each one and which card would add the most.</p></div>`;
+    }
+    return `<div class="wsec"><div class="res-head"><h2>Your cards</h2><p>${wal.rows.length} card${wal.rows.length === 1 ? "" : "s"} · nothing you pick here leaves this page</p></div>
+      <div class="wgrid">${use}${add}${limitCard()}${promosCard()}</div></div>`;
+  }
+
+  function pairHtml() {
+    if (st.card === "yes" && wal.rows.some(r => r.card)) return "";
+    const p = bestPair();
+    if (!p) return "";
+    const uses = id => catsFor(p.v.assign, id);
+    const side = r => `<div class="wadd">${art(r.card, "sm")}<div style="min-width:0"><button type="button" class="linkbtn strong" data-go="${r.card.id}">${esc(cardName(r.card))}</button><div class="sub">Use it for ${esc(andList(uses(r.card.id)) || "everything else")}</div></div><div>${cmpBtn(r.card.id)}</div></div>`;
+    return `<div class="wcard pair"><h4>Two cards, better together</h4><p class="big"><b>${peso(p.v.net)}</b> a year together, ${peso(p.v.net - p.single.v.net)} more than the best single card.</p>${side(p.a)}${side(p.b)}<p class="sub">After both annual fees. Apply a few months apart: each application shows on your credit record.</p></div>`;
+  }
+
   /* ---------- Find view ---------- */
   function renderResults() {
     const { live, out, listed, annualSpend } = run();
@@ -1254,6 +1603,8 @@ table.factors tr:last-child td { border-bottom: 0; }
     $("#results").innerHTML = `
       <div class="res-head"><h2>Your matches</h2><p>${D.cards.length} cards checked · ${groups.fit.length} fit · based on ${peso(total)} a month</p></div>
       ${warn.join("")}
+      ${walletHtml()}
+      ${wal.rows.length ? `<div class="res-head"><h2>New cards for you</h2></div>` : ""}
       <div class="picks">${pk.map((p, i) => `
         <div class="pick${i === 0 ? " lead" : ""}">
           ${art(p.r.card, i === 0 ? "lg" : "md")}
@@ -1265,6 +1616,7 @@ table.factors tr:last-child td { border-bottom: 0; }
             <div class="pk-actions"><button type="button" class="btn sm" data-go="${p.r.card.id}">Learn more</button>${cmpBtn(p.r.card.id)}</div>
           </div>
         </div>`).join("")}</div>
+      ${pairHtml()}
       <div class="toolbar">
         <div class="tabs" role="group" aria-label="Which cards to show">${tabs.map(([k, l, n]) => `<button type="button" data-tab="${k}" aria-pressed="${view.tab === k}">${esc(l)}<span class="n">${n}</span></button>`).join("")}</div>
         <div class="tools">
@@ -1479,7 +1831,7 @@ table.factors tr:last-child td { border-bottom: 0; }
       ["Gross annual income", "Every bank sets a floor per card, from ₱120,000 (PNB) to ₱3,000,000 (Security Bank World).", "Asked, as a bracket"],
       ["Work type and tenure", "Security Bank wants 1+ year as a regular employee; Metrobank 6+ months. Self-employed need 2–3 years of filed returns.", "Asked"],
       ["Age", "Most banks take principal applicants from 21. Upper limits vary: BDO 60, Security Bank 65, Metrobank 70.", "Asked, as a bracket"],
-      ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: how long and the limit range"],
+      ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: which cards (optional), how long, and the limit as a bracket (optional)"],
       ["Relationship with the bank", "Depositors get pre-approved offers, depositor-only cards (BPI Free+, EastWest Priority) and secured cards.", "Asked: which banks, no balances"],
       ["Where you live", "EastWest only serves listed cities. Most banks need a deliverable Philippine address.", "Asked, as a region"],
       ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Asked, optional (skipped = assumed clean)"],
@@ -1488,8 +1840,74 @@ table.factors tr:last-child td { border-bottom: 0; }
       ["Contact numbers", "Metrobank and Security Bank ask for a landline; EastWest for a business landline.", "Shown in each card's requirements"],
       ["Documents", "Government ID, TIN/SSS/PhilID number, and proof of income: BIR 2316 or ITR, recent payslips, or a COE. Self-employed add audited financials and DTI/SEC papers.", "Listed per bank in each card"]
     ];
-    $("#view-factors").innerHTML = `
-      <h2>What banks check.</h2>
+    const climb = [
+      ["Start", "Month 0", "Your first card, or a secured card backed by a deposit if no bank will say yes yet. First limits are often small."],
+      ["Build", "Months 1–6", "Pay the full statement balance by the due date every month. Keep what you owe under about 30% of your limit."],
+      ["Ask", "Month 6+", `Request a higher limit. Banks usually review accounts every 6–12 months; asking sooner can count against you. BDO takes requests from 6 months, Security Bank from 12.`],
+      ["Branch out", "Months 6–12+", "Apply card-to-card: BPI, EastWest, PNB and UnionBank accept your card in place of payslips, and banks often base the new limit on the one you have."],
+      ["Upgrade", "Year 2+", "Ask your bank to move you to a higher card instead of applying fresh. Your history carries over; premium cards still check income."]
+    ];
+    const score = [["Payment history", 35, "Pay at least the minimum by the due date, ideally the full balance. Auto-debit helps."], ["Credit utilization", 30, "Keep balances under about 30% of your limits."], ["Length of history", 15, "Keep your oldest card open, even if you rarely use it."], ["Types of credit", 10, "A mix of cards and loans can help. Don't borrow just for this."], ["New applications", null, "Space applications out; each one shows on your record."]];
+    const withCli = BANK_KEYS.filter(b => bankInfo(b).cli);
+    const guide = `
+      <h2>Credit guide.</h2>
+      <p>How limits grow, what goes into your credit score, and how to use what you have. A clean record and a healthy limit are what unlock the better cards in this app.</p>
+
+      <h3 id="guide-grow">How a limit grows</h3>
+      <ol class="climb">${climb.map(([t, w, x], i) => `<li style="--h:${i}"><div class="climb-bar"><span>${i + 1}</span></div><div class="climb-t"><b>${t}</b><span class="when">${w}</span><p>${esc(x)}</p></div></li>`).join("")}</ol>
+      <p class="sub">Timing from MoneyMax${cite("mmcli")}, BDO${cite("bdoFaq")} and Security Bank${cite("sbCli")}. Card-to-card banks are the ones whose document lists accept another bank's card.</p>
+
+      <h3 id="guide-use">Use your limit well</h3>
+      <div class="gauge-demo">${utilMeter(0.22)}</div>
+      <div class="zones"><span><i class="z1"></i>Under 10%: lots of room</span><span><i class="z2"></i>10–30%: healthy</span><span><i class="z3"></i>30–50%: ask for more or spread it out</span><span><i class="z4"></i>Over 50%: reads as strain</span></div>
+      <p>Utilization is what you owe divided by your total limit. With ₱20,000 a month on a ₱100,000 limit, you're at 20%. MoneyMax puts the ideal at 30% or less.${cite("mmcli")} A higher limit lowers the share without changing your spending, which is why cutting a limit usually works against you.</p>
+      <ul>
+        <li><b>Pay in full.</b> Interest of up to 3% a month (36% a year) wipes out any reward.</li>
+        <li><b>Skip cash advances.</b> They charge a fee and interest from the day you take them.</li>
+        <li><b>Use each card where it pays most.</b> Add your cards under “Credit cards you have now” on the Find page for a which-card-where list.</li>
+        <li><b>Keep every card active.</b> Limits on cards left unused for about a year often get lowered.${cite("mmcli")}</li>
+        <li><b>Going abroad?</b> Ask for a temporary increase instead of a permanent one. RCBC's Bonus Travel Limit adds up to 100% for your trip.${cite("rcbcTravel")}</li>
+      </ul>
+
+      <h3 id="guide-lower">Should you lower your limit?</h3>
+      <div class="lower">
+        <div class="lcard"><h4>Usually keep it</h4><ul>
+          <li>You pay in full each month.</li>
+          <li>You plan to apply card-to-card. Banks often size a new limit from your current one.${cite("mmcli")}</li>
+          <li>A lower limit raises your utilization for the same spending.</li>
+          <li>Getting it back later means a new request, often with income documents.</li></ul></div>
+        <div class="lcard"><h4>Lowering can make sense</h4><ul>
+          <li>You've overspent, and alerts and caps haven't helped.</li>
+          <li>A lender for a big loan, like a home loan, tells you unused limits count against you. Ask them first.</li>
+          <li>You'd rather have less at risk if the card is misused. Report a lost card right away either way.</li></ul></div>
+        <div class="lcard"><h4>Try these first</h4><ul>
+          <li>BDO: give the Virtual Card a lower sub-limit for online shopping.${cite("bdoVirtual")}</li>
+          <li>Metrobank: set a spending cap on each supplementary card.${cite("mbSupp")}</li>
+          <li>Most bank apps let you lock and unlock the card.${cite("redditApp")}</li>
+          <li>Turn on SMS or app alerts for every purchase.</li></ul></div>
+      </div>
+      <p class="sub">Banks can raise or lower your limit on their own, and don't always say why.${cite("ewTerms")}</p>
+
+      <h3 id="guide-ask">How to ask each bank for more</h3>
+      <div class="card"><table class="factors narrow"><thead><tr><th>Bank</th><th>How</th></tr></thead><tbody>
+        ${withCli.map(b => { const c = bankInfo(b).cli; return `<tr><td><b>${esc(b)}</b></td><td>${esc(c.text)} <a class="cite" href="${esc(c.url)}" target="_blank" rel="noopener">${c.via === "official" ? "bank's page" : "via MoneyMax"}</a></td></tr>`; }).join("")}
+        <tr><td><b>Others</b></td><td>${esc(D.cliGeneric)}</td></tr></tbody></table></div>
+      <p class="sub">Another BDO card shares your existing BDO limit, so it adds rewards, not credit.${cite("bdoAdd")}</p>
+
+      <h3 id="guide-score">Your credit score</h3>
+      <p>Banks and lenders report your cards and loans to the Credit Information Corporation (CIC). When you apply, the bank checks that record, often through an accredited credit bureau.</p>
+      <div class="scorebar" role="img" aria-label="Credit score factors: payment history 35%, credit utilization 30%, length of history 15%, types of credit 10%, new applications not stated">${score.map(([n, w], i) => `<span class="s${i}" style="flex:${w || 10}">${w ? w + "%" : "?"}</span>`).join("")}</div>
+      <div class="score-list">${score.map(([n, w, t], i) => `<div><i class="s${i}"></i><b>${n}</b> <span class="sub">${w ? w + "%" : "weight not stated"}</span><p>${esc(t)}</p></div>`).join("")}</div>
+      <p class="sub">Weights and the 300–850 range are from RCBC's explainer, which calls 700–759 good.${cite("rcbcScore")} Bureaus don't all use the same scale, so read your score against the scale on your own report.</p>
+      <h4>Check your own report</h4>
+      <ul>
+        <li><b>From a bank or lender:</b> under the CIC's Direct-to-Consumer program, any accessing entity (most banks and lenders) can give you your CIC credit report.${cite("cicD2C")}</li>
+        <li><b>From a credit bureau:</b> CIC-accredited bureaus include CIBI, CRIF and TransUnion.${cite("cicSAE")} Some apps charge per check; RCBC's 2024 article cites ₱199 on CIBI's app.${cite("rcbcScore")}</li>
+        <li><b>Something wrong?</b> File a dispute with the CIC to have it corrected.${cite("cicDispute")}</li>
+      </ul>
+    `;
+    $("#view-factors").innerHTML = guide + `
+      <h2 id="guide-check" style="margin-top:48px">What banks check.</h2>
       <p>Banks weigh these when they decide on a credit card application. The app only asks for broad brackets, never names, numbers or IDs, and nothing leaves this page.</p>
       <div class="card"><table class="factors"><thead><tr><th>Factor</th><th>How banks use it</th><th>In this app</th></tr></thead>
       <tbody>${rows.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
@@ -1555,7 +1973,8 @@ table.factors tr:last-child td { border-bottom: 0; }
 
   /* ---------- Views ---------- */
   const VIEWS = ["find", "compare", "promos", "changes", "factors", "data"];
-  const currentView = () => VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "find";
+  // #guide is the credit guide's address; its section kept the old "factors" id.
+  const currentView = () => { const h = location.hash.slice(1) === "guide" ? "factors" : location.hash.slice(1); return VIEWS.includes(h) ? h : "find"; };
   let lastView = null;
   function showView() {
     const v = currentView();
@@ -1579,6 +1998,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   const update = () => { clearTimeout(t); t = setTimeout(() => { readForm(); updateTotal(); renderResults(); }, 80); };
   function updateTotal() { $("#spendTotal").textContent = peso(Object.values(st.spend).reduce((a, b) => a + b, 0)); }
   updateTotal();
+  $("#mv").addEventListener("input", e => { e.target.dataset.set = "1"; });
   $("#form").addEventListener("input", update);
   $("#form").addEventListener("change", update);
   $("#form").addEventListener("submit", e => e.preventDefault());
@@ -1613,6 +2033,18 @@ table.factors tr:last-child td { border-bottom: 0; }
     const cp = e.target.closest("[data-copy]");
     if (cp) { e.preventDefault(); copyLink(cp.dataset.copy); return; }
     if (e.target.closest("#installBtn") && installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; $("#installBtn").hidden = true; }); return; }
+    if (e.target.closest("#addCard")) { st.wallet = readWallet(); st.wallet.push(newWalletRow()); renderWallet(); update(); const sel = document.querySelectorAll("#wallet .w-card"); if (sel.length) sel[sel.length - 1].focus(); return; }
+    const del = e.target.closest("[data-wdel]");
+    if (del) {
+      st.wallet = readWallet(); st.wallet.splice(+del.dataset.wdel, 1);
+      if (!st.wallet.length) { st.card = "none"; $("#card-none").checked = true; }
+      renderWallet(); update(); return;
+    }
+    const pb = e.target.closest("[data-promobank]");
+    if (pb) { view.promoBank = pb.dataset.promobank; location.hash = "#promos"; return; }
+    const sc = e.target.closest("[data-scroll]");
+    if (sc) { e.preventDefault(); if (currentView() !== "factors") { location.hash = "#guide"; } setTimeout(() => { const t = document.getElementById("guide-" + sc.dataset.scroll); if (t) t.scrollIntoView({ block: "start" }); }, 60); return; }
+    if (e.target.closest("#mvReset")) { delete $("#mv").dataset.set; update(); return; }
     const jump = e.target.closest("[data-jump]");
     if (jump) { e.preventDefault(); $("#results").scrollIntoView({ behavior: "smooth" }); return; }
     if (e.target.closest("#heroGo")) { e.preventDefault(); $("#results").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }

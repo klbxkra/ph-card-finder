@@ -43,7 +43,7 @@ const PNB_CARDS = { url: "https://www.pnb.com.ph/card/", how: "Pick the card on 
 
 window.PHCC_DATA = {
   meta: {
-    version: "2026.10.25-1",
+    version: "2026.10.25-2",
     dataAsOf: "2026-10-25",
     interestCapNote: "BSP Circular No. 1165 (2023) caps credit card interest at 3% a month (36% a year), installment add-on at 1% a month and the cash advance fee at ₱200.",
     mileValue: { travel: 0.5, cash: 0.3 },
@@ -52,9 +52,12 @@ window.PHCC_DATA = {
       "Points use the bank's own published conversion where there is one, taking whichever is worth more to you: cash or voucher credit, or airline miles at the mile value above. BPI: 20,000 points = ₱1,000 shopping credit, and Signature or Platinum Rewards miles with the bonus. Metrobank: ₱500 cash credit for 17,500 or 10,100 points depending on the card. HSBC: ₱500 for 10,000 points (Red) or 5,000 (Premier). Maybank: 8,000 TreatsPoints = ₱500. Security Bank: 2,227 points = ₱100 in Go Rewards. RCBC: 15,000 points = ₱2,250. BDO Peso Points: ₱1 each. PNB: 4 points = ₱1. EastWest Puregold: ₱1 a point in P-Wallet.",
       "Points with no published peso value (EastWest Limitless, UnionBank, Maya Miles, China Bank, BDO Amex Blue) are valued so the card's base rate lands near 0.3%, a common floor for Philippine points programs. These cards are marked 'value assumed'.",
       "Co-brand rates only count if you pick that store in 'Places you use a lot'.",
-      "Rebate rules we could not confirm are flagged on the card and not guessed."
+      "Rebate rules we could not confirm are flagged on the card and not guessed.",
+      "Your existing limit: BPI, EastWest, PNB and UnionBank accept another bank's card in place of income documents. If you've held that card 6+ months and its limit is at least a quarter of a card's yearly income floor, the app marks the card a stretch instead of out of reach. Banks don't publish a rule like this; it's the app's rough guide.",
+      "Combining cards: each spending category goes to the card that pays the most on it. Once a card hits its monthly cap, the rest goes to the next card, and bonuses that need a minimum spend are dropped when that card wouldn't reach it. Quarterly bonus categories aren't counted in combinations."
     ],
     changelog: [
+      { date: "2026-10-25", note: "v5: Added how to ask each bank for a higher limit (BDO, Security Bank, RCBC and EastWest from their own pages; Metrobank and UnionBank from MoneyMax), BDO's shared limit across cards and its adjustable Virtual Card sub-limit, and sources for the new credit guide (CIC, accredited credit bureaus, RCBC's credit score explainer)." },
       { date: "2026-10-25", note: "Added community notes cited to r/PHCreditCards threads (the recommendations megathread and the bank app features table), each bank's app features, and which banks accept foreign residents. MoneyMax-only welcome gifts are now marked as third-party offers." },
       { date: "2026-10-24", note: "v4: Added what each rewards program's points, miles and cashback can be used for, with conversion rates from the banks' own pages. Point values now use those official rates for BPI, Metrobank, HSBC, Maybank and Security Bank instead of assumptions; BPI and Metrobank points are worth less than assumed before. Corrected Security Bank's airline table: 6,667 points buys 1,000 AirAsia points, and Mabuhay Miles cost 11,667 points per 1,000. Added BPI's Rewards Accelerator promo (to Dec 15, 2026)." },
       { date: "2026-10-24", note: "v3: Full lineups. Added 86 cards you can apply for or be offered, plus 2 closed or invite-only listings: every BDO card from BDO's own pages (including Visa Platinum, Visa Signature, Amex Platinum, Diners, JCB and UnionPay), EastWest's KrisFlyer, JCB, Gold and Privilege cards, Metrobank's PSBank, Toyota Platinum, Platinum and Hype, the rest of RCBC (fees from RCBC's fee table), and the remaining UnionBank, PNB, China Bank, Maybank and relationship cards from the fee-table compilation. AUB isn't listed: no current source shows its cards." },
@@ -70,7 +73,20 @@ window.PHCC_DATA = {
     mmub:{ label: "MoneyMax UnionBank cards, updated Oct 16, 2026", url: "https://www.moneymax.ph/credit-card/partners/unionbank", kind: "aggregator" },
     rcbcfees: { label: "RCBC card fees and charges", url: "https://rcbccredit.com/card-fees-and-charges", kind: "official" },
     redditMega: { label: "r/PHCreditCards recommendations megathread (replies archived Mar 2025)", url: "https://www.reddit.com/r/PHCreditCards/comments/18dcaz4/ph_credit_cards_recommendations_whats_a_good/", kind: "community" },
-    redditApp: { label: "r/PHCreditCards bank app features table (updated Apr 2, 2025)", url: "https://www.reddit.com/r/PHCreditCards/comments/170feu1/philippines_credit_cards_bank_app_features/", kind: "community" }
+    redditApp: { label: "r/PHCreditCards bank app features table (updated Apr 2, 2025)", url: "https://www.reddit.com/r/PHCreditCards/comments/170feu1/philippines_credit_cards_bank_app_features/", kind: "community" },
+    mmcli: { label: "MoneyMax: how to increase your credit card limit, updated Aug 20, 2026", url: "https://www.moneymax.ph/credit-card/blog/increase-credit-card-limit", kind: "aggregator" },
+    bdoFaq: { label: "BDO credit card FAQs: credit limit, increases, another card", url: "https://www.bdo.com.ph/personal/cards/credit-cards/credit-card-application-faqs", kind: "official" },
+    bdoAdd: { label: "BDO: get another BDO credit card (shared credit limit)", url: "https://www.bdo.com.ph/personal/cards/credit-cards/additional-bdo-credit-card", kind: "official" },
+    bdoVirtual: { label: "BDO Virtual Card (adjustable sub-limit)", url: "https://www.bdo.com.ph/personal/cards/credit-cards/virtual-card", kind: "official" },
+    sbCli: { label: "Security Bank: how to request a credit limit increase", url: "https://help.securitybank.com/credit-limit/how-can-i-request-for-a-credit-limit-increase", kind: "official" },
+    ewCards: { label: "EastWest cards: ESTA self-service, including limit increases", url: "https://www.eastwestbanker.com/cards/creditcards-4", kind: "official" },
+    ewTerms: { label: "EastWest credit card terms (the bank sets, raises or lowers limits)", url: "https://cms.eastwestbanker.com/node/2354", kind: "official" },
+    rcbcTravel: { label: "RCBC Bonus Travel Limit", url: "https://rcbccredit.com/features-and-benefits/travel/bonus-travel-limit", kind: "official" },
+    mbSupp: { label: "Metrobank supplementary cards (shared limit, spending caps)", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/supplementary", kind: "official" },
+    cicD2C: { label: "CIC Direct-to-Consumer program: get your own credit report", url: "https://www.creditinfo.gov.ph/d2cprogram", kind: "government" },
+    cicSAE: { label: "CIC-accredited credit bureaus (CIBI, CRIF, TransUnion and others)", url: "https://www.creditinfo.gov.ph/SAElist", kind: "government" },
+    cicDispute: { label: "CIC dispute resolution: correct your credit report", url: "https://www.creditinfo.gov.ph/dispute/", kind: "government" },
+    rcbcScore: { label: "RCBC: credit scores in the Philippines (Mar 27, 2024)", url: "https://rcbccredit.com/blogs/credit-score-philippines-everything-you-need-to-know-50", kind: "official" }
   },
 
   /* Community notes with citations, and the subreddit's bank-app feature table.
@@ -320,6 +336,7 @@ window.PHCC_DATA = {
 
   banks: {
     BPI: {
+      cardForIncome: true,
       name: "BPI", site: "https://www.bpi.com.ph/personal/cards/credit-cards",
       ease: 2, cardToCard: true,
       lookFor: "Accepts another bank's credit card statement in place of payslips. Also offers 'Express Start', a card backed by a deposit hold-out.",
@@ -341,7 +358,10 @@ window.PHCC_DATA = {
         ids: ["Any valid government photo ID, front and back: PhilSys ID, passport, driver's license, SSS ID"],
         income: ["Employed: latest BIR-stamped ITR or BIR 2316 signed by your employer (required)", "Plus one of: latest full-month payslip, original COE showing status, tenure and pay, or your last 2 months of statements from another credit card"],
         foreign: ["Employment contract or COE, plus a valid visa and work permit or ACR/ICR"]
-      }
+      },
+      cli: { text: "Call the BDO Contact Center at (+632) 8888-0000, at least 6 months after the card was issued. The account must be in good standing, and BDO may ask for income documents.", url: "https://www.bdo.com.ph/personal/cards/credit-cards/credit-card-application-faqs", via: "official" },
+      sharedLimit: { text: "A second BDO card shares the limit of the one you have. Each card still gets its own statement and annual fee. Ask for one while your account is in good standing.", url: "https://www.bdo.com.ph/personal/cards/credit-cards/additional-bdo-credit-card", via: "official" },
+      subLimit: { text: "The BDO Virtual Card (for online shopping) has its own sub-limit inside your main limit. Call the Contact Center to set it lower or higher without touching your main limit.", url: "https://www.bdo.com.ph/personal/cards/credit-cards/virtual-card", via: "official" }
     },
     Metrobank: {
       name: "Metrobank", site: "https://www.metrobank.com.ph/personal/cards/credit-cards",
@@ -353,7 +373,9 @@ window.PHCC_DATA = {
         ids: ["Your PhilID, TIN, SSS, GSIS or UMID number", "PhilID or another valid government photo ID with date of birth and signature", "An active landline (business or residence) and a mobile number"],
         income: ["Employed: BIR-stamped ITR and/or BIR 2316, plus your last 3 months of payslips. Employees of top-1,000 corporations add an original COE", "Self-employed: latest audited financial statements and ITR, both stamped"],
         foreign: ["Proof of income or employment, plus ACR, ICR or visa"]
-      }
+      },
+      cli: { text: "Message Metrobank Card on Facebook Messenger, or call (+632) 88-700-700, for a temporary or permanent increase.", url: "https://www.moneymax.ph/credit-card/blog/increase-credit-card-limit", via: "aggregator" },
+      subLimit: { text: "Supplementary cards share your limit, and you can set a spending cap for each one.", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/supplementary", via: "official" }
     },
     "Security Bank": {
       name: "Security Bank", site: "https://www.securitybank.com/personal/credit-cards/",
@@ -365,7 +387,7 @@ window.PHCC_DATA = {
         ids: ["Government-issued photo ID", "Landline number and email address"],
         income: ["Employed: 1 month's payslip, a signed COE, or your ITR", "Self-employed: ITR, 2 years of audited financial statements, business permit and DTI/SEC registration"]
       },
-      cli: { text: "Use the 'Increase credit limit' online form on Security Bank's credit card page.", url: "https://www.securitybank.com/personal/credit-cards/", via: "official" }
+      cli: { text: "After 12 months with a Security Bank card, apply through the online Card Services form with your latest ITR, 3 months of payslips or a COE (self-employed: proof of business plus ITR or 3 years of audited financials). Expect an answer in 3–5 days.", url: "https://help.securitybank.com/credit-limit/how-can-i-request-for-a-credit-limit-increase", via: "official" }
     },
     RCBC: {
       name: "RCBC", site: "https://rcbccredit.com/credit-cards",
@@ -376,9 +398,11 @@ window.PHCC_DATA = {
         via: "official",
         ids: ["One valid Philippine government photo ID for e-KYC: driver's license, passport, PhilPost, PRC, SSS, TIN, UMID, visa/residence, voter's ID or PhilSys", "A selfie taken during the online application"],
         income: ["Employed: BIR- or bank-stamped ITR/W2, latest payslip, or a COE with annual income signed by HR (no older than 6 months)", "Self-employed: stamped audited financial statements plus ITR"]
-      }
+      },
+      cli: { text: "Call RCBC's customer service hotline; RCBC may ask for payslips or an ITR. Before a trip abroad, ask for the Bonus Travel Limit: up to 100% more limit for your travel dates if your account is current.", url: "https://rcbccredit.com/features-and-benefits/travel/bonus-travel-limit", via: "official" }
     },
     UnionBank: {
+      cardForIncome: true,
       name: "UnionBank", site: "https://www.unionbankph.com/credit-cards",
       ease: 2, cardToCard: true,
       lookFor: "Apply in the UnionBank app. Other-bank cards must be current and in good standing. The secured card needs a UnionBank savings account.",
@@ -388,9 +412,11 @@ window.PHCC_DATA = {
         ids: ["Valid government photo ID, captured in the UnionBank app"],
         income: ["Proof of income (ITR/2316, COE or payslips), or details of your existing card from another bank"],
         note: "UnionBank's website was in maintenance during this check. Confirm the list in the app."
-      }
+      },
+      cli: { text: "Call UnionBank's customer service at (+632) 8841-8600 or email customer.service@unionbankph.com. Have income documents ready.", url: "https://www.moneymax.ph/credit-card/blog/increase-credit-card-limit", via: "aggregator" }
     },
     EastWest: {
+      cardForIncome: true,
       name: "EastWest", site: "https://www.eastwestbanker.com/cards/creditcards/visa-platinum",
       ease: 3, cardToCard: true,
       lookFor: "Age 21+. Your home or office must be inside EastWest's serviceable cities (most of Metro Manila plus listed cities in Luzon, Cebu, Iloilo, Bacolod, Davao and Cagayan de Oro). Needs a residence landline or mobile plus a business landline. Processing takes 10–15 banking days.",
@@ -400,7 +426,8 @@ window.PHCC_DATA = {
         ids: ["Valid ID with photo and signature: company ID, driver's license, passport, PRC, SSS, BIR or postal ID"],
         income: ["Employed, any one of: BIR 2316/ITR, COE with pay breakdown, appointment letter, salary adjustment memo, last 3 months of payslips, service record (government), or another credit card plus its latest statement", "Self-employed: BIR 1701/ITR plus audited financials (if applicable), or another credit card plus its latest statement"],
         foreign: ["One of: ACR with permanent status, 9(d)/9(g) visa, SIRV, PEZA 47(a)(2) visa, or embassy certification"]
-      }
+      },
+      cli: { text: "Ask ESTA, EastWest's chat assistant, to request a higher limit. EastWest decides the amount and doesn't have to say why it declines.", url: "https://www.eastwestbanker.com/cards/creditcards-4", via: "official" }
     },
     HSBC: {
       name: "HSBC", site: "https://www.hsbc.com.ph/credit-cards/",
@@ -426,6 +453,7 @@ window.PHCC_DATA = {
       cli: { text: "Black Express holders are reviewed for a regular Maya Black after about 6 months.", url: "https://www.mayabank.ph/creditcard/maya-black-express", via: "official" }
     },
     PNB: {
+      cardForIncome: true,
       name: "PNB", site: "https://www.pnb.com.ph/card/",
       ease: 2, cardToCard: true,
       lookFor: "Lowest published income floor (₱120,000 a year) on several cards. Accepts foreign applicants with the right documents. Applications use an online e-sign form linked from each card page.",
