@@ -9,6 +9,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap">
+<meta name="description" content="Find, rank and compare Philippine credit cards for the way you spend, with requirements, rewards and apply links.">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Card Finder">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PH Card Finder">
+<meta property="og:title" content="PH Card Finder">
+<meta property="og:description" content="Find, rank and compare Philippine credit cards for the way you spend, with requirements, rewards and apply links.">
+<meta property="og:url" content="https://klbxkra.github.io/ph-card-finder/">
+<meta property="og:image" content="https://klbxkra.github.io/ph-card-finder/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <style>
@@ -298,12 +315,33 @@ details.cc > summary::-webkit-details-marker { display: none; }
 }
 
 /* Card body */
-.cc-body { border-top: 1px solid var(--hair); padding: 18px; display: grid; gap: 18px; }
+.cc-body { border-top: 1px solid var(--hair); padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .fact { background: var(--fill-2); border-radius: 12px; padding: 10px 12px; min-width: 0; }
 .fact span { font-size: 12px; color: var(--muted); display: block; }
 .fact b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.actions .btn { white-space: normal; text-align: center; }
+.actions .minor { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; flex-basis: 100%; }
+.actions .minor .sub { flex-basis: auto; }
+.toast { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); top: calc(64px + env(safe-area-inset-top, 0px)); background: var(--tip-bg); color: var(--tip-ink); padding: 10px 16px; border-radius: 999px; font-size: 14px; box-shadow: var(--shadow-lg); max-width: calc(100vw - 32px); }
+.toast input { width: min(420px, 70vw); border: 0; border-radius: 6px; padding: 4px 8px; margin-left: 8px; }
+.tp { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; background: var(--surface); box-shadow: var(--shadow); border-radius: 10px; padding: 6px 10px; position: relative; }
+.tp .tip { left: auto; right: 0; width: min(320px, 80vw); }
+.promo-list { display: grid; gap: 12px; }
+.promo-item { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: grid; gap: 6px; }
+.promo-item .ph { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.promo-item h4 { font-size: 17px; }
+.pgroup { display: grid; gap: 10px; }
+.pgroup > h3 { font-size: 21px; font-weight: 600; margin-top: 8px; }
+.chg { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: grid; gap: 10px; }
+.chg h3 { font-size: 21px; font-weight: 600; }
+.chg table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.chg td, .chg th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+.chg th { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.chg .tbl { overflow-x: auto; }
+.chg .ph { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; }
+#installBtn[hidden] { display: none; }
 .redeem-line { margin: -4px 0 0; font-size: 14px; }
 .redeem-line span { color: var(--muted); margin-right: 4px; }
 .actions .sub { flex-basis: 100%; }
@@ -407,9 +445,12 @@ table.factors tr:last-child td { border-bottom: 0; }
     <nav class="links" aria-label="Sections">
       <a href="#find" data-view="find">Find</a>
       <a href="#compare" data-view="compare">Compare<span class="count" id="navCount" hidden></span></a>
+      <a href="#promos" data-view="promos">Promos</a>
+      <a href="#changes" data-view="changes">What changed</a>
       <a href="#factors" data-view="factors">What banks check</a>
       <a href="#data" data-view="data">About the data</a>
     </nav>
+    <button type="button" class="btn sm" id="installBtn" hidden>Install app</button>
     <div class="theme" role="group" aria-label="Appearance">
       <button type="button" data-theme-set="auto" aria-label="Match system appearance" title="Auto"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg></button>
       <button type="button" data-theme-set="light" aria-label="Light appearance" title="Light"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3"/></g></svg></button>
@@ -445,6 +486,8 @@ table.factors tr:last-child td { border-bottom: 0; }
               <div class="q" id="limitQ"><div class="qh"><span class="ql" id="limitLbl">Highest limit on it</span><span data-info="limit"></span></div><div class="segc" role="radiogroup" aria-labelledby="limitLbl" id="limit"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="banksLbl">Banks where you have an account</span><span data-info="banks"></span></div><div class="chips" id="banks" aria-labelledby="banksLbl"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="regionLbl">Where you live or work</span><span data-info="region"></span></div><div class="segc" role="radiogroup" aria-labelledby="regionLbl" id="region"></div></div>
+              <div class="q"><div class="qh"><span class="ql" id="creditLbl">Credit record</span><span class="sub">optional</span><span data-info="credit"></span></div><div class="segc" role="radiogroup" aria-labelledby="creditLbl" id="credit"></div></div>
+              <div class="q"><div class="qh"><span class="ql" id="resLbl">Citizenship and residence</span><span class="sub">optional</span><span data-info="residency"></span></div><div class="segc" role="radiogroup" aria-labelledby="resLbl" id="residency"></div></div>
             </div>
           </div>
 
@@ -477,6 +520,8 @@ table.factors tr:last-child td { border-bottom: 0; }
     </section>
 
     <section id="view-compare" hidden></section>
+    <section id="view-promos" class="prose" style="max-width:none" hidden></section>
+    <section id="view-changes" class="prose" style="max-width:none" hidden></section>
     <section id="view-factors" class="prose" hidden></section>
     <section id="view-data" class="prose" hidden></section>
   </main>
@@ -485,6 +530,7 @@ table.factors tr:last-child td { border-bottom: 0; }
 <div class="dock" id="dock" hidden></div>
 
 <script src="data.js"></script>
+<script src="history.js"></script>
 <script>
 (function () {
   const D = window.PHCC_DATA;
@@ -549,6 +595,10 @@ table.factors tr:last-child td { border-bottom: 0; }
   const FEES = [["free", "Free or waivable"], ["ok", "OK if it pays"]];
   const PERKS = [["lounge", "Airport lounges"], ["lowfx", "Low fee on foreign purchases"], ["simple", "Same rate on everything"]];
   const BALANCE = [["full", "Pay in full"], ["sometimes", "Sometimes carry a balance"]];
+  const CREDIT = [["skip", "Skip"], ["clean", "All on time"], ["late", "Late in last 2 yrs"], ["default", "Unpaid debt"]];
+  const RESIDENCY = [["skip", "Skip"], ["ph", "Filipino"], ["foreign", "Foreigner in PH"], ["abroad", "Living abroad"]];
+  const SITE_URL = "https://klbxkra.github.io/ph-card-finder/";
+  const REPO_URL = "https://github.com/klbxkra/ph-card-finder";
   const PRESETS = {
     light:   { groceries: 4000, dining: 2500, online: 1500, shopping: 1000, fuel: 0, utilities: 2000, telco: 1000, drugstore: 500, travel: 0, foreign: 0, other: 500 },
     typical: { groceries: 7000, dining: 5000, online: 3000, shopping: 2000, fuel: 2000, utilities: 3500, telco: 1500, drugstore: 1000, travel: 0, foreign: 500, other: 1500 },
@@ -578,7 +628,12 @@ table.factors tr:last-child td { border-bottom: 0; }
     feeTol: { why: "'Free or waivable' pushes cards with an unavoidable fee down the list. 'OK if it pays' subtracts the fee from the rewards and lets cards compete on what's left." },
     perks: { why: "<b>Airport lounges:</b> free or discounted access before flights. <b>Low fee on foreign purchases:</b> banks add a fee when you pay in another currency, like USD sites or shopping abroad; 1.7–2% is low, 3–3.5% is high. <b>Same rate on everything:</b> cards that pay one rate on every purchase (like 1% everywhere), so you never have to think about which card to use where." },
     eco: { why: "Only stores where a card in the list pays extra are shown. Shopee, Grab, SM and everything else is already covered by your spending categories above." },
-    balance: { why: "If you sometimes pay less than the full amount, interest (up to 3% a month) costs more than any reward. The app then favors cards with lower interest or interest rebates." }
+    balance: { why: "If you sometimes pay less than the full amount, interest (up to 3% a month) costs more than any reward. The app then favors cards with lower interest or interest rebates." },
+    credit: { why: "Banks pull your record from the Credit Information Corporation (CIC) and check their own lists. Recent missed payments are one of the most common reasons for a decline. This is optional: skip it and the app assumes a clean record.",
+      best: "Every card bill and loan paid on time.", worst: "An unpaid account, or one handed to collections. Settle it first; a secured card is the usual way back." },
+    residency: { why: "Banks issue cards to people who live in the Philippines and can be reached at a local address. Foreign nationals need an ACR I-Card or a resident visa, and not every bank accepts them. Optional.",
+      best: "A Filipino citizen living in the Philippines.", worst: "Living abroad with no Philippine address. Apply while you're home, or keep a local address and number." },
+    thirdParty: { why: "Some welcome gifts only apply when you apply through MoneyMax, a comparison site that earns a referral fee. They're hidden by default. The bank's own offers always show." }
   };
   function infoTip(key) {
     const x = INFO[key]; if (!x) return "";
@@ -590,10 +645,14 @@ table.factors tr:last-child td { border-bottom: 0; }
   const st = {
     age: "21-59", income: 5, emp: "employed1", card: "6to11", limit: "30to49",
     banks: new Set(["BPI"]), region: "mm", pref: "cash", feeTol: "free",
-    perks: new Set(), eco: new Set(), balance: "full", promos: true,
+    perks: new Set(), eco: new Set(), balance: "full", promos: true, credit: "skip", residency: "skip",
     spend: { ...PRESETS.typical }
   };
-  const view = { tab: "fit", sort: "match", q: "", banks: new Set(), nets: new Set(), rewards: new Set(), fee: "any", perks: new Set(), filtersOpen: false, highlight: true };
+  const view = { tab: "fit", sort: "match", q: "", banks: new Set(), nets: new Set(), rewards: new Set(), fee: "any", perks: new Set(), filtersOpen: false, highlight: true,
+    thirdParty: store.get("phcf-3p") === "1", promoBank: "" };
+  // MoneyMax-only gifts need the applicant to go through that site, so they're opt-in.
+  const isThirdParty = p => (typeof p.src === "string" && (p.src === "mm" || p.src === "mmub")) || /MoneyMax/i.test(p.title || "");
+  const visiblePromos = c => (c.promos || []).filter(p => view.thirdParty || !isThirdParty(p));
   const compare = [];
   const MAX_COMPARE = 6;
 
@@ -619,6 +678,8 @@ table.factors tr:last-child td { border-bottom: 0; }
     seg($("#feeTol"), "feeTol", FEES, "radio", v => v === st.feeTol);
     seg($("#perks"), "perks", PERKS, "checkbox", v => st.perks.has(v));
     seg($("#balance"), "balance", BALANCE, "radio", v => v === st.balance);
+    seg($("#credit"), "credit", CREDIT, "radio", v => v === st.credit);
+    seg($("#residency"), "residency", RESIDENCY, "radio", v => v === st.residency);
     const groups = [...new Set(D.ecosystems.map(e => e.group))];
     $("#eco").innerHTML = groups.map(g => {
       const div = document.createElement("div");
@@ -637,6 +698,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     const checks = n => new Set([...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value));
     st.card = radio("card"); st.limit = radio("limit") || "lt30"; st.region = radio("region");
     st.pref = radio("pref"); st.feeTol = radio("feeTol"); st.balance = radio("balance");
+    st.credit = radio("credit") || "skip"; st.residency = radio("residency") || "skip";
     st.banks = checks("banks"); st.perks = checks("perks"); st.eco = checks("eco");
     st.promos = $("#promos").checked;
     document.querySelectorAll("#spend input").forEach(i => { st.spend[i.dataset.cat] = Math.max(0, +i.value || 0); });
@@ -719,6 +781,15 @@ table.factors tr:last-child td { border-bottom: 0; }
       else if (card.needsCard.minLimit && LIMIT_VAL[st.limit] < card.needsCard.minLimit) { bump("no"); r.reasons.push(`Your other card's limit must be ${peso(card.needsCard.minLimit)}+`); }
     }
     if (card.areas === "eastwest" && st.region !== "mm") { bump("stretch"); r.notes.push("EastWest only serves listed cities outside Metro Manila; check that yours is one"); }
+    if (st.residency === "foreign") {
+      const f = (D.foreigners || {})[card.bank];
+      if (f === false) { bump("no"); r.reasons.push(`${card.bank} only accepts Filipino citizens`); }
+      else if (f == null) { bump("stretch"); r.notes.push(`${card.bank} doesn't say whether it accepts foreign residents; ask before applying`); }
+      else r.notes.push("Bring your ACR I-Card or resident visa, plus proof of employment");
+    }
+    if (st.residency === "abroad") { bump("stretch"); r.notes.push("Banks need a Philippine address and phone number; apply while you're home, or keep a local address"); }
+    if (st.credit === "default" && !card.secured) { bump("stretch"); r.notes.push("Most banks decline applicants with unpaid or collected accounts; settle it first, or start with a secured card"); }
+    if (st.credit === "late" && !card.secured) r.notes.push("Recent late payments show on your CIC record; expect a closer review or a lower limit");
     if (card.needsMembership) r.notes.push(`Requires a paid ${card.needsMembership.label} membership`);
     if (card.landline) r.notes.push("Asks for a landline number");
     if (card.status === "offered") { r.offered = true; r.notes.push("You can't apply for this directly. Maya may offer it if Maya Black is declined."); }
@@ -750,6 +821,9 @@ table.factors tr:last-child td { border-bottom: 0; }
     else if (st.emp === "employedNew") p -= 0.25;
     if (ev.estIncome) p -= 0.25;
     if (ev.status === "stretch") p -= 0.5;
+    if (st.credit === "clean") { p += 0.25; why.push("Clean credit record"); }
+    if (st.credit === "late") { p -= 1; why.push("Recent late payments on your record"); }
+    if (st.credit === "default") { p -= 2.5; why.push("Unpaid or collected accounts on your record"); }
     const label = p >= 2 ? "Strong" : p >= 0.75 ? "Fair" : "Long shot";
     return { label, score: label === "Strong" ? 1 : label === "Fair" ? 0.6 : 0.25, why };
   }
@@ -961,6 +1035,8 @@ table.factors tr:last-child td { border-bottom: 0; }
   const netName = c => ({ "Mastercard / Visa": "MC · VISA", Mastercard: "MASTERCARD", Visa: "VISA", Amex: "AMEX", JCB: "JCB", UnionPay: "UNIONPAY", Diners: "DINERS" })[c.network] || (c.network || "").toUpperCase();
   const art = (c, size) => `<span class="art ${artKind(c)} ${size || ""}" aria-hidden="true"><span class="a-bank">${esc(c.bank)}</span><span class="a-chip"></span><span class="a-name">${esc(c.name)}</span><span class="a-net">${esc(netName(c))}</span></span>`;
   const inCompare = id => compare.includes(id);
+  const cardUrl = id => SITE_URL + "#card-" + id;
+  const reportUrl = c => `${REPO_URL}/issues/new?title=${encodeURIComponent(`Data correction: ${c.bank} ${c.name}`)}&body=${encodeURIComponent(`Card: ${c.bank} ${c.name} (${c.id})\nData version: ${D.meta.version}\n\nWhat's wrong:\n\n\nWhat it should be:\n\n\nSource (a link to the bank's page, if you have one):\n`)}`;
   const cmpBtn = id => `<button type="button" class="cmpbtn" data-cmp="${id}" aria-pressed="${inCompare(id)}"${!inCompare(id) && compare.length >= MAX_COMPARE ? " disabled title=\"Compare holds up to 6 cards\"" : ""}>${inCompare(id) ? "✓ Comparing" : "+ Compare"}</button>`;
 
   function picks(live) {
@@ -987,7 +1063,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     if (r.card.status === "depositor") b.push(`<span class="b">Clients only</span>`);
     b.push(`<span class="b">${esc(rewardKind(r.card))}</span>`);
     if (r.fe.ongoing === 0) b.push(`<span class="b good">${r.fe.promoUsed ? "Free via promo" : "No ongoing fee"}</span>`);
-    const live = (r.card.promos || []).filter(p => p.until && isActive(p.until));
+    const live = visiblePromos(r.card).filter(p => p.until && isActive(p.until));
     if (live.length) b.push(`<span class="b promo">Promo to ${esc(fmtDate(live[0].until))}</span>`);
     if (r.card.flags && r.card.flags.length) b.push(`<span class="b warn">${r.card.flags.length === 1 ? esc(r.card.flags[0]) : r.card.flags.length + " data caveats"}</span>`);
     return b.join("");
@@ -1052,11 +1128,23 @@ table.factors tr:last-child td { border-bottom: 0; }
       ${s.cards && s.cards.length ? `<div class="mini">${s.cards.map(x => `<button type="button" data-go="${x.card.id}">${esc(x.card.bank)} ${esc(x.card.name)} · ${s.showIncome ? (reqOf(x.card) ? peso(reqOf(x.card)) + "/yr income" : "income n/a") : peso(x.net) + "/yr"}</button>`).join("")}</div>` : ""}
     </div></li>`).join("")}</ol>`;
 
-    const activePromos = (c.promos || []).filter(p => isActive(p.until));
-    const promoBody = ul((c.promos || []).map(p => {
+    const shownPromos = visiblePromos(c);
+    const hiddenPromos = (c.promos || []).length - shownPromos.length;
+    const activePromos = shownPromos.filter(p => isActive(p.until));
+    const promoBody = ul(shownPromos.map(p => {
       const on = isActive(p.until); const s = src(p.src);
-      return `${on ? "" : "<s>"}<b>${esc(p.title)}</b>${on ? "" : "</s>"} ${esc(p.detail)} <span class="sub" style="display:inline">${p.until ? (on ? `Until ${esc(fmtDate(p.until))}` : `Ended ${esc(fmtDate(p.until))}`) : "No end date shown"}${s ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</span>`;
-    }));
+      return `${on ? "" : "<s>"}<b>${esc(p.title)}</b>${on ? "" : "</s>"}${isThirdParty(p) ? ` <span class="b">via MoneyMax</span>` : ""} ${esc(p.detail)} <span class="sub" style="display:inline">${p.until ? (on ? `Until ${esc(fmtDate(p.until))}` : `Ended ${esc(fmtDate(p.until))}`) : "No end date shown"}${s ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</span>`;
+    })) + (hiddenPromos ? `<p class="sub">${hiddenPromos} MoneyMax offer${hiddenPromos > 1 ? "s" : ""} hidden. Turn on “Show MoneyMax offers” above the list to see ${hiddenPromos > 1 ? "them" : "it"}.</p>` : "");
+    const com = (D.community || {})[c.bank] || {};
+    const APP = [["instant", "Payments post instantly through the bank's own channels"], ["nextDay", "Payments post the next banking day"], ["pending", "App shows pending transactions"], ["lock", "Lock or unlock the card in the app"], ["pin", "View or change your PIN in the app"]];
+    const app = com.app || {};
+    const appList = APP.filter(([k]) => k in app).map(([k, l]) => `${app[k] ? "Yes" : "No"}: ${esc(l)}`);
+    if ("multiFee" in app) appList.push(app.multiFee ? `Multiple-payment fee: ${esc(app.multiFee)}` : "No fee for making several payments in a cycle");
+    const comBody = `
+      ${(com.notes || []).length ? `<div><h5>From r/PHCreditCards</h5>${ul(com.notes.map(n => { const s = src(n.src); return `${esc(n.text)}${s ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener" class="sub" style="display:inline">source</a>` : ""}`; }))}</div>` : ""}
+      ${appList.length ? `<div><h5>${esc(c.bank)} app</h5>${ul(appList)}<p class="sub">From the subreddit's bank app table, updated Apr 2, 2025; apps may have changed since. <a href="${esc(D.sources.redditApp.url)}" target="_blank" rel="noopener">source</a></p></div>` : ""}
+      <div><h5>General impressions</h5><p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not tied to one thread.</p></div>
+      <p><b>${esc(c.bank)} application notes:</b> ${esc(bank.lookFor || "")}</p>`;
     const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean));
     const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
     const earnBody = `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}${c.perks && c.perks.length ? `<div><h5>Perks</h5>${ul(c.perks.map(esc))}</div>` : ""}<div><h5>Good</h5>${ul((c.pros || []).map(esc))}</div><div><h5>Watch out</h5>${ul((c.cons || []).map(esc))}</div>`;
@@ -1087,7 +1175,8 @@ table.factors tr:last-child td { border-bottom: 0; }
         </div>
         ${prog ? `<p class="redeem-line"><span>Use your ${esc(unitWord(c))} for</span> ${esc(prog.short)}</p>` : ""}
         <div class="actions">${applyLink(c)}${officialPage ? `<a href="${esc(officialPage.url)}" target="_blank" rel="noopener">Card details on ${esc(c.bank)}'s site ›</a>` : ""}
-          <span class="sub">Opens the bank's own page in a new tab. Check the address bar before you type any details.</span></div>
+          <span class="sub">Opens the bank's own page in a new tab. Check the address bar before you type any details.</span>
+          <span class="minor"><button type="button" class="btn ghost sm" data-copy="${c.id}">Copy link to this card</button><a class="btn ghost sm" href="${esc(reportUrl(c))}" target="_blank" rel="noopener">Report a correction</a><span class="sub">Corrections open a GitHub issue (free account needed).</span></span></div>
         <div>${inlineTip("How it rates", RATING_TIP)}
           <div class="ratings">${rating.map(([l, n]) => `<div class="rt"><span>${esc(l)}</span>${bars(n)}</div>`).join("")}</div>
         </div>
@@ -1103,7 +1192,7 @@ table.factors tr:last-child td { border-bottom: 0; }
           ${sec("Fees and rates", feesBody)}
           ${(c.promos || []).length ? sec("Promos", promoBody, `${activePromos.length} active`) : ""}
           ${sec("Rewards, perks, pros and cons", earnBody)}
-          ${sec(`What applicants say about ${esc(c.bank)}`, `<p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not verified this release.</p><p><b>${esc(c.bank)} application notes:</b> ${esc(bank.lookFor || "")}</p>`)}
+          ${sec(`What cardholders say about ${esc(c.bank)}`, comBody, (com.notes || []).length ? `${com.notes.length} cited note${com.notes.length > 1 ? "s" : ""}` : "")}
           ${sec("Sources", `<div class="srcs">${sourceList(c)}</div>`, `checked ${esc(fmtDate(c.checked))} via ${c.via === "official" ? "bank site" : "compare sites"}`)}
         </div>
       </div>
@@ -1148,6 +1237,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     }[k];
     return arr.slice().sort(by);
   }
+  const tpToggle = () => `<label class="tp"><input type="checkbox" class="switch" data-tp="1"${view.thirdParty ? " checked" : ""}> Show MoneyMax offers ${infoTip("thirdParty")}</label>`;
   const filterCount = () => view.banks.size + view.nets.size + view.rewards.size + view.perks.size + (view.fee !== "any" ? 1 : 0);
 
   function filterPanel() {
@@ -1206,6 +1296,7 @@ table.factors tr:last-child td { border-bottom: 0; }
           <label class="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Search banks and cards" value="${esc(view.q)}" aria-label="Search banks and cards"></label>
           <select id="sort" aria-label="Sort cards">${SORTS.map(([v, l]) => `<option value="${v}"${view.sort === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>
           <button type="button" class="filters-btn" id="fBtn" aria-expanded="${view.filtersOpen}" aria-controls="fpanel">Filters${fc ? `<span class="count">${fc}</span>` : ""}</button>
+          ${tpToggle()}
         </div>
         ${view.filtersOpen ? filterPanel() : ""}
       </div>
@@ -1269,7 +1360,13 @@ table.factors tr:last-child td { border-bottom: 0; }
     rows.push({ label: "Caps", text: r => [r.card.earn.capMonth ? `${peso(r.card.earn.capMonth)}/month` : "", r.card.earn.capYear ? `${peso(r.card.earn.capYear)}/year` : ""].filter(Boolean).join(", ") || "None listed" });
     rows.push({ group: "Perks" });
     rows.push({ label: "Airport lounges", get: r => (r.card.tags || []).includes("lounge") ? 1 : 0, fmt: v => v ? "Yes" : "No", best: "max", note: r => (r.card.perks || []).find(p => /lounge|Priority Pass|DragonPass/i.test(p)) || "" });
-    rows.push({ label: "Active promo", text: r => { const p = (r.card.promos || []).find(x => x.until && isActive(x.until)) || (r.card.promos || []).find(x => !x.until); return p ? `${p.title}${p.until ? ` (to ${fmtDate(p.until)})` : ""}` : "None"; } });
+    rows.push({ label: "Active promo", text: r => { const ps = visiblePromos(r.card); const p = ps.find(x => x.until && isActive(x.until)) || ps.find(x => !x.until); return p ? `${p.title}${p.until ? ` (to ${fmtDate(p.until)})` : ""}` : "None"; } });
+    rows.push({ group: "Bank app (Apr 2025 table)" });
+    const appGet = k => r => { const a = ((D.community || {})[r.card.bank] || {}).app || {}; return k in a ? (a[k] ? 1 : 0) : null; };
+    const yn = v => v == null ? "Not listed" : v ? "Yes" : "No";
+    rows.push({ label: "Lock card in the app", get: appGet("lock"), fmt: yn, best: "max" });
+    rows.push({ label: "Payments post instantly", get: appGet("instant"), fmt: yn, best: "max" });
+    rows.push({ label: "Shows pending transactions", get: appGet("pending"), fmt: yn, best: "max" });
     rows.push({ group: "Ratings" });
     ["Groceries", "Dining", "Online shopping", "Fuel", "Bills", "Travel", "Use abroad", "Everything else", "Low cost to keep", "Easy to get"].forEach((l, i) => rows.push({ label: l, get: r => ratings(r.card)[i][1], fmt: v => bars(v), best: "max", html: true }));
     rows.push({ group: "Data" });
@@ -1324,6 +1421,75 @@ table.factors tr:last-child td { border-bottom: 0; }
     renderDock(picks(lastRun.live));
   }
 
+  /* ---------- Promos view ---------- */
+  function renderPromos() {
+    const groups = new Map();
+    for (const c of D.cards) for (const p of c.promos || []) {
+      if (!view.thirdParty && isThirdParty(p)) continue;
+      if (view.promoBank && c.bank !== view.promoBank) continue;
+      const key = `${c.bank}|${p.title}|${p.until || ""}`;
+      if (!groups.has(key)) groups.set(key, { bank: c.bank, p, cards: [] });
+      groups.get(key).cards.push(c);
+    }
+    const items = [...groups.values()].map(g => ({ ...g, days: g.p.until ? Math.round((new Date(g.p.until + "T23:59:59") - TODAY) / 864e5) : null }));
+    const by = (a, b) => a.days - b.days;
+    const sections = [
+      ["Ending within 2 weeks", items.filter(i => i.days != null && i.days >= 0 && i.days <= 14).sort(by)],
+      ["Active", items.filter(i => i.days != null && i.days > 14).sort(by)],
+      ["No end date shown", items.filter(i => i.days == null)],
+      ["Ended in the last 60 days", items.filter(i => i.days != null && i.days < 0 && i.days >= -60).sort((a, b) => b.days - a.days)]
+    ];
+    const live = items.filter(i => i.days == null || i.days >= 0);
+    const banks = [...new Set(D.cards.filter(c => (c.promos || []).length).map(c => c.bank))].sort();
+    const item = i => {
+      const s = src(i.p.src);
+      const when = i.days == null ? "No end date shown" : i.days < 0 ? `Ended ${fmtDate(i.p.until)}` : i.days === 0 ? "Ends today" : `Ends in ${i.days} day${i.days === 1 ? "" : "s"} · ${fmtDate(i.p.until)}`;
+      return `<div class="promo-item">
+        <div class="ph"><h4>${esc(i.bank)}: ${esc(i.p.title)}</h4><span class="b ${i.days != null && i.days >= 0 && i.days <= 14 ? "warn" : i.days != null && i.days < 0 ? "" : "good"}">${esc(when)}</span></div>
+        <p style="margin:0">${esc(i.p.detail || "")}${isThirdParty(i.p) ? ` <span class="b">via MoneyMax</span>` : ""}</p>
+        <div class="mini">${i.cards.map(c => `<button type="button" data-go="${c.id}">${esc(c.bank)} ${esc(c.name)}</button>`).join("")}</div>
+        ${s ? `<span class="sub"><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></span>` : ""}
+      </div>`;
+    };
+    $("#view-promos").innerHTML = `
+      <div class="cmp-head" style="padding-block:0"><div><h2>Promos.</h2><p>${live.length} running offers across ${new Set(live.map(i => i.bank)).size} banks. End dates are checked against today.</p></div>
+        <div class="cmp-ctrl"><select id="promoBank" aria-label="Filter promos by bank" style="width:auto"><option value="">All banks</option>${banks.map(b => `<option${view.promoBank === b ? " selected" : ""}>${esc(b)}</option>`).join("")}</select>${tpToggle()}</div></div>
+      ${sections.filter(([, list]) => list.length).map(([h, list]) => `<div class="pgroup"><h3>${esc(h)}</h3><div class="promo-list">${list.map(item).join("")}</div></div>`).join("") || `<div class="empty">No promos match.</div>`}
+      <p class="sub">Bank promos often need registration or a minimum spend; always read the bank's terms. MoneyMax offers only apply when you apply through MoneyMax.</p>`;
+  }
+
+  /* ---------- What changed view ---------- */
+  function renderChanges() {
+    const H = window.PHCC_HISTORY || [];
+    const cardName = x => `${x.bank} ${x.name}`;
+    const block = h => {
+      const added = h.changes.filter(x => x.kind === "added"), removed = h.changes.filter(x => x.kind === "removed"), changed = h.changes.filter(x => x.kind === "changed");
+      const rows = changed.flatMap(x => x.fields.map((f, i) => `<tr><td>${i ? "" : `<button type="button" class="btn ghost sm" data-go="${x.id}" style="padding:0">${esc(cardName(x))}</button>`}</td><td>${esc(f.f)}</td><td>${esc(f.from || "")}</td><td>${esc(f.to || "")}</td></tr>`)).join("");
+      return `<div class="chg">
+        <div class="ph"><h3>${esc(fmtDate(h.date))}</h3><span class="sub">Version ${esc(h.version)}</span></div>
+        ${h.note ? `<p style="margin:0">${esc(h.note)}</p>` : ""}
+        ${added.length ? `<div><h5>${added.length} card${added.length > 1 ? "s" : ""} added</h5><div class="mini">${added.slice(0, 40).map(x => `<button type="button" data-go="${x.id}">${esc(cardName(x))}</button>`).join("")}${added.length > 40 ? `<span class="sub">and ${added.length - 40} more</span>` : ""}</div></div>` : ""}
+        ${removed.length ? `<div><h5>Removed</h5><p style="margin:0">${removed.map(x => esc(cardName(x))).join(", ")}</p></div>` : ""}
+        ${changed.length ? `<details class="sec"${changed.length <= 8 ? " open" : ""}><summary><span>${changed.length} card${changed.length > 1 ? "s" : ""} changed</span></summary><div class="tbl"><table><thead><tr><th>Card</th><th>What</th><th>Before</th><th>Now</th></tr></thead><tbody>${rows}</tbody></table></div></details>` : (added.length || removed.length ? "" : `<p class="sub" style="margin:0">No card-level changes; see the note above.</p>`)}
+      </div>`;
+    };
+    $("#view-changes").innerHTML = `
+      <div><h2>What changed.</h2><p style="color:var(--muted)">Every data refresh is recorded here, newest first. Fees, income floors, rewards, apply links and promos are compared card by card.</p></div>
+      ${H.length ? H.map(block).join("") : `<div class="empty">No history yet.</div>`}`;
+  }
+
+  function toast(html, ms) {
+    let el = $("#toast");
+    if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+    el.innerHTML = html; el.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, ms || 2200);
+  }
+  function copyLink(id) {
+    const url = cardUrl(id);
+    const fallback = () => { toast(`Copy this link: <input readonly value="${esc(url)}" id="toastUrl">`, 8000); const i = $("#toastUrl"); if (i) { i.focus(); i.select(); } };
+    try { navigator.clipboard.writeText(url).then(() => toast("Link copied"), fallback); } catch (e) { fallback(); }
+  }
+
   /* ---------- Static views ---------- */
   function renderFresh() {
     const asOf = new Date(D.meta.dataAsOf + "T00:00:00");
@@ -1341,8 +1507,8 @@ table.factors tr:last-child td { border-bottom: 0; }
       ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: how long and the limit range"],
       ["Relationship with the bank", "Depositors get pre-approved offers, depositor-only cards (BPI Free+, EastWest Priority) and secured cards.", "Asked: which banks, no balances"],
       ["Where you live", "EastWest only serves listed cities. Most banks need a deliverable Philippine address.", "Asked, as a region"],
-      ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Not asked"],
-      ["Citizenship or residency", "Filipino citizens and resident foreigners with an ACR/ICR qualify at most banks.", "Not asked"],
+      ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Asked, optional (skipped = assumed clean)"],
+      ["Citizenship or residency", "Filipino citizens qualify everywhere. BDO, EastWest, Metrobank, PNB and RCBC take resident foreigners with an ACR/ICR or visa; Security Bank takes citizens only.", "Asked, optional"],
       ["Existing debt", "Loans and other card balances affect the limit you get, sometimes approval.", "Not asked"],
       ["Contact numbers", "Metrobank and Security Bank ask for a landline; EastWest for a business landline.", "Shown in each card's requirements"],
       ["Documents", "Government ID, TIN/SSS/PhilID number, and proof of income: BIR 2316 or ITR, recent payslips, or a COE. Self-employed add audited financials and DTI/SEC papers.", "Listed per bank in each card"]
@@ -1359,6 +1525,8 @@ table.factors tr:last-child td { border-bottom: 0; }
         <li><b>Already have a card:</b> many banks (BPI, BDO, EastWest, PNB, UnionBank) accept your latest statement from another bank as proof of income.</li>
         <li><b>No income documents:</b> secured cards from BDO (₱10,000 deposit), UnionBank (₱20,000), Security Bank (₱25,000) or Maya Black Express (₱12,500, by offer).</li>
       </ul>
+      <h3>Tips from r/PHCreditCards</h3>
+      <ul>${(D.communityTips || []).map(t => { const s = src(t.src); return `<li>${esc(t.text)}${s ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</li>`; }).join("")}</ul>
       <h3>Interest rules</h3>
       <p>${esc(D.meta.interestCapNote)}</p>`;
   }
@@ -1395,6 +1563,10 @@ table.factors tr:last-child td { border-bottom: 0; }
         <li>AUB isn't listed: no current source shows its cards.</li>
         <li>Banks change promos often. Always confirm on the bank's site before you apply.</li>
       </ul>
+      <h3>Found a mistake?</h3>
+      <p>Every card has a “Report a correction” link. It opens a pre-filled issue on <a href="${REPO_URL}/issues" target="_blank" rel="noopener">the project's GitHub page</a> (you need a free GitHub account). Corrections are checked against the bank's own site before they go in.</p>
+      <h3>Use it like an app</h3>
+      <p>On the website, Chrome and Edge show an “Install app” button in the top bar. On iPhone, open the site in Safari, tap Share, then “Add to Home Screen”. The installed app opens full screen and still works offline with the last data it loaded.</p>
       <h3>Shared sources</h3>
       <div class="srcs">${Object.values(D.sources).map(s => `<div><span class="k ${s.kind}">${s.kind === "aggregator" ? "Compare site" : s.kind === "official" ? "Bank" : esc(s.kind)}</span><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></div>`).join("")}</div>
       <h3>Changelog</h3>
@@ -1403,16 +1575,20 @@ table.factors tr:last-child td { border-bottom: 0; }
   }
 
   /* ---------- Views ---------- */
-  const VIEWS = ["find", "compare", "factors", "data"];
+  const VIEWS = ["find", "compare", "promos", "changes", "factors", "data"];
   const currentView = () => VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "find";
   let lastView = null;
   function showView() {
     const v = currentView();
-    if (lastView && lastView !== v && location.hash !== "#results") window.scrollTo(0, 0);
+    const cardLink = location.hash.startsWith("#card-") ? location.hash.slice(6) : null;
+    if (lastView && lastView !== v && location.hash !== "#results" && !cardLink) window.scrollTo(0, 0);
     lastView = v;
     for (const id of VIEWS) $("#view-" + id).hidden = id !== v;
     document.querySelectorAll(".links a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false"));
     if (v === "compare") renderCompare();
+    if (v === "promos") renderPromos();
+    if (v === "changes") renderChanges();
+    if (cardLink && D.cards.some(c => c.id === cardLink)) setTimeout(() => goTo(cardLink, true), 50);
     renderDock(lastRun ? picks(lastRun.live) : null);
     if (location.hash === "#results") { const r = $("#results"); if (r) r.scrollIntoView(); }
   }
@@ -1436,12 +1612,12 @@ table.factors tr:last-child td { border-bottom: 0; }
     document.querySelectorAll("#spend input").forEach(i => { i.value = 0; });
     $("#sampleNote").parentElement.hidden = true; update();
   });
-  function goTo(id) {
-    if (currentView() !== "find") location.hash = "#find";
+  function goTo(id, instant) {
+    if (currentView() !== "find") { history.replaceState(null, "", "#find"); showView(); }
     const find = () => document.getElementById("card-" + id);
     let el = find();
     if (!el) { view.tab = "all"; view.q = ""; view.banks.clear(); view.nets.clear(); view.rewards.clear(); view.perks.clear(); view.fee = "any"; renderResults(); el = find(); }
-    if (el) { el.open = true; setTimeout(() => el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 30); }
+    if (el) { el.open = true; setTimeout(() => el.scrollIntoView({ behavior: instant || matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 30); }
   }
   let qTimer;
   document.addEventListener("click", e => {
@@ -1455,6 +1631,9 @@ table.factors tr:last-child td { border-bottom: 0; }
     if (e.target.closest("#fReset") || e.target.closest("#fReset2")) { view.banks.clear(); view.nets.clear(); view.rewards.clear(); view.perks.clear(); view.fee = "any"; renderResults(); return; }
     if (e.target.closest("#dockClear") || e.target.closest("#cmpClear")) { compare.length = 0; renderResults(); renderCompare(); renderDock(picks(lastRun.live)); return; }
     if (e.target.closest("#cmpSeed")) { picks(lastRun.live).slice(0, 3).forEach(p => { if (!inCompare(p.r.card.id)) compare.push(p.r.card.id); }); renderResults(); renderCompare(); return; }
+    const cp = e.target.closest("[data-copy]");
+    if (cp) { e.preventDefault(); copyLink(cp.dataset.copy); return; }
+    if (e.target.closest("#installBtn") && installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; $("#installBtn").hidden = true; }); return; }
     const jump = e.target.closest("[data-jump]");
     if (jump) { e.preventDefault(); $("#results").scrollIntoView({ behavior: "smooth" }); return; }
     if (e.target.closest("#heroGo")) { e.preventDefault(); $("#results").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
@@ -1464,7 +1643,13 @@ table.factors tr:last-child td { border-bottom: 0; }
     if (fk) { const set = view[fk.dataset.fk]; fk.checked ? set.add(fk.value) : set.delete(fk.value); renderResults(); return; }
     if (e.target.name === "ffee") { view.fee = e.target.value; renderResults(); return; }
     if (e.target.id === "sort") { view.sort = e.target.value; renderResults(); return; }
-    if (e.target.id === "hl") { view.highlight = e.target.checked; renderCompare(); }
+    if (e.target.id === "hl") { view.highlight = e.target.checked; renderCompare(); return; }
+    if (e.target.dataset && e.target.dataset.tp) {
+      view.thirdParty = e.target.checked; store.set("phcf-3p", view.thirdParty ? "1" : "0");
+      renderResults(); if (currentView() === "promos") renderPromos(); if (currentView() === "compare") renderCompare();
+      return;
+    }
+    if (e.target.id === "promoBank") { view.promoBank = e.target.value; renderPromos(); }
   });
   document.addEventListener("input", e => {
     if (e.target.id === "q") {
@@ -1474,6 +1659,13 @@ table.factors tr:last-child td { border-bottom: 0; }
   });
   window.addEventListener("hashchange", showView);
   addEventListener("resize", () => renderDock(lastRun ? picks(lastRun.live) : null));
+
+  // Installable app: only on the GitHub Pages site (the Claude artifact can't run service workers).
+  let installEvt = null;
+  if (/github\.io$/.test(location.hostname) && "serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+    addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("#installBtn").hidden = false; });
+  }
 })();
 </script>
 

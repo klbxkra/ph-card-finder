@@ -46,6 +46,12 @@ for (const [id, p] of Object.entries(D.programs || {})) {
   if (!/^https:\/\//.test(p.url || "")) errors.push(`programs.${id}: needs an https source url`);
 }
 
+for (const [b, c] of Object.entries(D.community || {})) {
+  if (!banks.has(b)) errors.push(`community: unknown bank "${b}"`);
+  for (const n of c.notes || []) checkSrc(`community.${b}`, n.src);
+}
+for (const t of D.communityTips || []) checkSrc("communityTips", t.src);
+
 const ids = new Set();
 for (const c of D.cards || []) {
   const w = c.id || "(card without id)";

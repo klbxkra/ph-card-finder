@@ -43,8 +43,8 @@ const PNB_CARDS = { url: "https://www.pnb.com.ph/card/", how: "Pick the card on 
 
 window.PHCC_DATA = {
   meta: {
-    version: "2026.10.24-4",
-    dataAsOf: "2026-10-24",
+    version: "2026.10.25-1",
+    dataAsOf: "2026-10-25",
     interestCapNote: "BSP Circular No. 1165 (2023) caps credit card interest at 3% a month (36% a year), installment add-on at 1% a month and the cash advance fee at ₱200.",
     mileValue: { travel: 0.5, cash: 0.3 },
     assumptions: [
@@ -55,6 +55,7 @@ window.PHCC_DATA = {
       "Rebate rules we could not confirm are flagged on the card and not guessed."
     ],
     changelog: [
+      { date: "2026-10-25", note: "Added community notes cited to r/PHCreditCards threads (the recommendations megathread and the bank app features table), each bank's app features, and which banks accept foreign residents. MoneyMax-only welcome gifts are now marked as third-party offers." },
       { date: "2026-10-24", note: "v4: Added what each rewards program's points, miles and cashback can be used for, with conversion rates from the banks' own pages. Point values now use those official rates for BPI, Metrobank, HSBC, Maybank and Security Bank instead of assumptions; BPI and Metrobank points are worth less than assumed before. Corrected Security Bank's airline table: 6,667 points buys 1,000 AirAsia points, and Mabuhay Miles cost 11,667 points per 1,000. Added BPI's Rewards Accelerator promo (to Dec 15, 2026)." },
       { date: "2026-10-24", note: "v3: Full lineups. Added 86 cards you can apply for or be offered, plus 2 closed or invite-only listings: every BDO card from BDO's own pages (including Visa Platinum, Visa Signature, Amex Platinum, Diners, JCB and UnionPay), EastWest's KrisFlyer, JCB, Gold and Privilege cards, Metrobank's PSBank, Toyota Platinum, Platinum and Hype, the rest of RCBC (fees from RCBC's fee table), and the remaining UnionBank, PNB, China Bank, Maybank and relationship cards from the fee-table compilation. AUB isn't listed: no current source shows its cards." },
       { date: "2026-10-24", note: "v2: Renamed to PH Card Finder. Added official apply links, document checklists and credit limit tips per bank. Added 6 store co-brand cards (EastWest Puregold, UnionBank S&R and Mercury Drug, RCBC ZALORA and Landmark Anson's) and Caltex rebates on HSBC cards. Confirmed BDO income floors and RCBC fees on the banks' sites. PNB Cashback Titanium now models its rotating 8% quarters and ₱15,000 yearly cap." },
@@ -67,8 +68,62 @@ window.PHCC_DATA = {
     tcb: { label: "taxcalculator.com.ph beginner and secured card guide, Oct 16, 2026", url: "https://taxcalculator.com.ph/credit-cards/for-beginners", kind: "aggregator" },
     mm:  { label: "MoneyMax best credit cards, updated Oct 22, 2026", url: "https://www.moneymax.ph/credit-card/best", kind: "aggregator" },
     mmub:{ label: "MoneyMax UnionBank cards, updated Oct 16, 2026", url: "https://www.moneymax.ph/credit-card/partners/unionbank", kind: "aggregator" },
-    rcbcfees: { label: "RCBC card fees and charges", url: "https://rcbccredit.com/card-fees-and-charges", kind: "official" }
+    rcbcfees: { label: "RCBC card fees and charges", url: "https://rcbccredit.com/card-fees-and-charges", kind: "official" },
+    redditMega: { label: "r/PHCreditCards recommendations megathread (replies archived Mar 2025)", url: "https://www.reddit.com/r/PHCreditCards/comments/18dcaz4/ph_credit_cards_recommendations_whats_a_good/", kind: "community" },
+    redditApp: { label: "r/PHCreditCards bank app features table (updated Apr 2, 2025)", url: "https://www.reddit.com/r/PHCreditCards/comments/170feu1/philippines_credit_cards_bank_app_features/", kind: "community" }
   },
+
+  /* Community notes with citations, and the subreddit's bank-app feature table.
+     app: instant = payments post instantly via the bank's own channels; nextDay = post next banking day;
+     pending = app shows pending transactions; lock = lock/unlock the card in the app; pin = view/change PIN in the app;
+     multiFee = fee for many payments in one cycle (null = none). Missing keys weren't listed. */
+  community: {
+    BPI: { app: { instant: false, nextDay: true, pending: false, lock: true, pin: false, multiFee: null },
+      notes: [
+        { text: "Cardholders suggest calling BPI to ask for an annual fee waiver, and asking for an upgrade to Platinum Rewards or Signature instead of filing a new application.", src: "redditMega" },
+        { text: "One user found BPI's PAL miles conversion better than UnionBank Miles+.", src: "redditMega" }
+      ] },
+    BDO: { app: { instant: false, nextDay: true, pending: true, lock: true, pin: false, multiFee: null },
+      notes: [
+        { text: "Known for installment and buy-now-pay-later partners and many dining deals; it rarely runs lifetime-fee promos.", src: "redditMega" },
+        { text: "Users report BDO is generous with limit increases and fee waivers, and that moving from a Classic card to Gold or Platinum is easy once your limit grows.", src: "redditMega" }
+      ] },
+    Metrobank: { app: { instant: false, nextDay: true, pending: true, lock: true, pin: false, multiFee: null },
+      notes: [
+        { text: "The Cashback Visa is often suggested as a first card, partly because the app shows transactions in real time.", src: "redditMega" },
+        { text: "A suggested path is Cashback Visa first, then an upgrade to Travel Signature for miles and a lower forex fee.", src: "redditMega" }
+      ] },
+    "Security Bank": { app: { instant: true, pending: true, lock: true, multiFee: null },
+      notes: [{ text: "Described as strict about employment and income documents even for applicants who already have cards; having an ITR ready helps.", src: "redditMega" }] },
+    RCBC: { app: { instant: false, nextDay: true, pending: false, lock: true, pin: false, multiFee: null },
+      notes: [{ text: "JCB Gold holders mention asking RCBC to upgrade them to JCB Platinum for LoungeKey lounge visits.", src: "redditMega" }] },
+    UnionBank: { app: { instant: true, nextDay: false, pending: true, lock: true, pin: false, multiFee: null },
+      notes: [
+        { text: "UB Rewards is often called relatively easy to get approved for, with frequent no-annual-fee-for-life promos (₱20,000 spend in 60 days at the time).", src: "redditMega" },
+        { text: "PayDirect lets you pay rent or send money to bank accounts with the card and still earn points.", src: "redditMega" },
+        { text: "Customer service is a common complaint, and users see fewer installment and dining offers than at BDO.", src: "redditMega" }
+      ] },
+    EastWest: { app: { instant: false, nextDay: true, pending: true, lock: true, multiFee: "₱50 for each payment after the 3rd in a cycle" },
+      notes: [
+        { text: "Visa Platinum's 8.88% tops out at ₱1,250 a month, so users max it out and put the rest of their spending on other cards.", src: "redditMega" },
+        { text: "Users say the Platinum Mastercard's lifetime-free status is rumored to need a large EastWest deposit.", src: "redditMega" }
+      ] },
+    HSBC: { app: { pending: true, multiFee: null },
+      notes: [{ text: "Red often runs a lifetime-fee promo at the start of the year; HSBC is strict about how long you've held another bank's card.", src: "redditMega" }] },
+    Maya: { app: { pending: true, lock: true, multiFee: null }, notes: [] },
+    PNB: { app: { instant: true, nextDay: false, pending: true, lock: true, pin: true, multiFee: "₱40 for each payment after the 2nd in a cycle" }, notes: [] },
+    "China Bank": { app: { instant: false, nextDay: true, pending: true, multiFee: "₱50 for each payment after the 3rd in a cycle" }, notes: [] },
+    Maybank: { app: { multiFee: "₱40 for each payment after the 4th in a cycle" },
+      notes: [{ text: "Platinum's 1% foreign cashback offsets most of its 1.8% forex fee, the annual fee is easy to waive, and customer service is easy to reach.", src: "redditMega" }] }
+  },
+  communityTips: [
+    { text: "Rule of thumb: get your first card from a bank you already have an account with.", src: "redditMega" },
+    { text: "Each application is checked against your credit record, so space them out.", src: "redditMega" }
+  ],
+
+  // Whether a bank takes foreign nationals living in the Philippines: true, false, or null (not stated).
+  foreigners: { BDO: true, EastWest: true, Metrobank: true, PNB: true, RCBC: true, "Security Bank": false,
+    BPI: null, HSBC: null, UnionBank: null, Maya: null, "China Bank": null, Maybank: null },
 
   categories: [
     { id: "groceries", label: "Groceries & supermarkets", hint: "SM, Puregold, Robinsons Supermarket, S&R" },
