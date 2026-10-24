@@ -1,0 +1,15 @@
+{
+  "checked": "2026-10-25",
+  "pages": {
+    "privacy": {
+      "url": "https://www.goatcounter.com/help/privacy",
+      "date": "8 June 2025",
+      "sha256": "19d767855411f499e990106eb569c5be7cd7941242f6d2debf65d6d937db2f38"
+    },
+    "terms": {
+      "url": "https://www.goatcounter.com/help/terms",
+      "date": "16 January 2020",
+      "sha256": "9a71b4b3349496778f82203468c790d4c3d45769ebc2600bf98e4dc203a246d1"
+    }
+  }
+}

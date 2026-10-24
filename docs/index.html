@@ -1557,12 +1557,16 @@ table.factors tr:last-child td { border-bottom: 0; }
       <ul>${D.meta.assumptions.map(a => `<li>${esc(a)}</li>`).join("")}</ul>
       <h3>Known gaps</h3>
       <ul>
-        <li>Reddit and some forums block automated reading, so community notes summarize recurring themes rather than linking specific threads.</li>
+        <li>Reddit blocks automated reading. Cardholder notes come from archived copies of two r/PHCreditCards threads (the megathread, saved Mar 2025, and the bank app table, dated Apr 2025), so some may be out of date.</li>
         <li>UnionBank's website was in maintenance during this check; its cards rely on MoneyMax (Oct 16, 2026) and a fee-table compilation, and its Apply buttons go to UnionBank's card page.</li>
         <li>China Bank and Maybank fee tables on file date from Feb 2023. RCBC doesn't publish income floors, so RCBC floors are estimates.</li>
         <li>AUB isn't listed: no current source shows its cards.</li>
         <li>Banks change promos often. Always confirm on the bank's site before you apply.</li>
       </ul>
+      <h3>Privacy</h3>
+      <p>Your answers never leave this page. There's no account and no form that sends them, and closing the page clears them. The only things kept, in your own browser, are your light/dark choice and the MoneyMax switch.</p>
+      <p>${window.PHCF_ANALYTICS ? `Visits are counted with <a href="https://www.goatcounter.com/help/privacy" target="_blank" rel="noopener">GoatCounter</a>, which sets no cookies and doesn't store IP addresses. It only gets the page address (without your view or answers), the website you came from (not the full link), and your screen width.` : "This copy of the app doesn't count visits."}</p>
+      <p>Like any website, the host (GitHub Pages) and the font service (Google Fonts) receive your browser's ordinary requests for files, which include your IP address.</p>
       <h3>Found a mistake?</h3>
       <p>Every card has a “Report a correction” link. It opens a pre-filled issue on <a href="${REPO_URL}/issues" target="_blank" rel="noopener">the project's GitHub page</a> (you need a free GitHub account). Corrections are checked against the bank's own site before they go in.</p>
       <h3>Use it like an app</h3>

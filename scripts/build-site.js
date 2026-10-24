@@ -9,12 +9,32 @@ const root = path.join(__dirname, "..");
 const out = path.join(root, "docs");
 const SITE = "https://klbxkra.github.io/ph-card-finder/";
 const DESC = "Find, rank and compare Philippine credit cards for the way you spend, with requirements, rewards and apply links.";
+// GoatCounter site code (the part before .goatcounter.com). Leave empty to turn visit counting off.
+// Only fill in a code you have registered yourself: anyone who owns a code receives its counts.
+const GOATCOUNTER = "";
 const page = fs.readFileSync(path.join(root, "index.html"), "utf8");
 
 // Everything before the first <style> (title, meta, font links) belongs in <head>.
 const cut = page.indexOf("<style>");
 const headExtra = cut > 0 ? page.slice(0, cut) : "";
 const body = cut > 0 ? page.slice(cut) : page;
+
+// Visit counting, only when a code is set. It counts page loads and nothing else: the page path
+// without its #view or query string, the referring site's address without its path, the title,
+// and screen width. It sets no cookies and reads none of the answers. vendor/goatcounter-count.js
+// is GoatCounter's own script, checked in so it can't change without a commit here. It goes in <head>
+// so the About page can see PHCF_ANALYTICS when it renders.
+const analytics = GOATCOUNTER ? `
+<script>
+window.PHCF_ANALYTICS = "GoatCounter";
+if (location.search) history.replaceState(null, "", location.pathname + location.hash);
+window.goatcounter = {
+  no_events: true,
+  path: function () { return location.pathname; },
+  referrer: function (r) { try { return r ? new URL(r).origin : ""; } catch (e) { return ""; } }
+};
+</script>
+<script data-goatcounter="https://${GOATCOUNTER}.goatcounter.com/count" async src="goatcounter.js"></script>` : "";
 
 const html = `<!doctype html>
 <html lang="en">
@@ -39,7 +59,7 @@ ${headExtra.trim()}
 <meta property="og:image" content="${SITE}assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary_large_image">${analytics}
 </head>
 <body>
 ${body}
@@ -53,5 +73,7 @@ fs.writeFileSync(path.join(out, "index.html"), html);
 const copy = (from, to) => fs.writeFileSync(path.join(out, to || from), fs.readFileSync(path.join(root, from)));
 for (const f of ["data.js", "history.js", "manifest.webmanifest", "sw.js"]) if (fs.existsSync(path.join(root, f))) copy(f);
 for (const f of fs.readdirSync(path.join(root, "assets"))) copy(path.join("assets", f));
+if (GOATCOUNTER) copy(path.join("vendor", "goatcounter-count.js"), "goatcounter.js");
+else if (fs.existsSync(path.join(out, "goatcounter.js"))) fs.unlinkSync(path.join(out, "goatcounter.js"));
 fs.writeFileSync(path.join(out, ".nojekyll"), "");
-console.log("Built docs/ (index.html, data, history, manifest, service worker, assets)");
+console.log("Built docs/ (index.html, data, history, manifest, service worker, assets)" + (GOATCOUNTER ? ", GoatCounter on: " + GOATCOUNTER : ", visit counting off"));

@@ -1,6 +1,6 @@
 # PH Card Finder
 
-A single-page app that recommends Philippine credit cards from a few bracketed answers. All the math runs in the browser and nothing a user enters is saved or sent.
+A single-page app that recommends Philippine credit cards from a few bracketed answers. All the math runs in the browser and nothing a user enters is saved or sent. It's a personal project; see [ROADMAP.md](ROADMAP.md) for what's next.
 
 - Live site: https://klbxkra.github.io/ph-card-finder/
 - Private Claude artifact (preview): https://claude.ai/artifact/YFnrdmpdbMQhpGMVajabAU
@@ -19,6 +19,9 @@ A single-page app that recommends Philippine credit cards from a few bracketed a
 | `manifest.webmanifest`, `sw.js` | Let people install the site as an app. The service worker loads everything from the network first and only falls back to its cache when offline, so refreshes show up on the next visit. It only registers on github.io. |
 | `assets/` | App icons and `og.png`, the image shown when a link is shared. |
 | `docs/` | Built site that GitHub Pages serves. Don't edit by hand; run the build script. |
+| `vendor/goatcounter-count.js` | GoatCounter's visit-counting script (ISC license), checked in so it can only change through a commit here. Only used when visit counting is on. |
+| `scripts/check-analytics-terms.js`, `analytics-terms.json` | Fingerprints GoatCounter's privacy policy and terms so the monthly refresh notices any change. |
+| `ROADMAP.md` | Planned features, nice-to-haves and their privacy notes. |
 | `.github/workflows/pages.yml` | Checks the data, rebuilds `docs/` and deploys to GitHub Pages on every push to `main`. |
 
 ## Refreshing the data
@@ -30,14 +33,41 @@ A scheduled task, **PH card data refresh**, runs on the 1st of each month at 9:0
 3. Bumps `meta.version` and `meta.dataAsOf` and adds a changelog line.
 4. Runs `node scripts/check-data.js` and stops if it fails.
 5. Runs `node scripts/record-changes.js` so the What changed page lists the card-level changes.
-6. Republishes the artifact to the same link.
-7. Runs `node scripts/build-site.js`, commits and pushes to `main`. The Pages workflow redeploys from that push.
+6. Runs `node scripts/check-analytics-terms.js` and handles a GoatCounter policy change as described under Privacy.
+7. Republishes the artifact to the same link.
+8. Runs `node scripts/build-site.js`, commits and pushes to `main`. The Pages workflow redeploys from that push.
 
 To refresh by hand, ask Claude in this folder to "refresh the card data", or use **Run now** on the task.
 
 ## GitHub Pages
 
 Settings → Pages → Build and deployment → Source: **GitHub Actions**. The workflow in `.github/workflows/pages.yml` runs on every push to `main`: it runs `scripts/check-data.js` (a failing check stops the deploy), rebuilds `docs/`, and publishes it. You can also start it by hand from the Actions tab.
+
+## Privacy
+
+The app must never collect personal information. Before adding any feature, library, embed, font, widget or service, check what it sends and to whom. If it could send anything about a visitor beyond the list below, stop and tell the owner first, with alternatives.
+
+What leaves a visitor's browser today:
+
+- Requests to GitHub Pages (the host) and Google Fonts (the Inter font). Like any website, they see the visitor's IP address.
+- With visit counting on: one GoatCounter count per page load, with the page path (no `#view`, no query string), the referring site's address without its path, the page title and the screen width. The build also strips query strings such as `?fbclid=` from the address bar before counting.
+
+Answers never leave the page. `localStorage` holds only the theme and the MoneyMax switch.
+
+### Visit counting (GoatCounter)
+
+Off until `GOATCOUNTER` in `scripts/build-site.js` is set to a site code the owner registered at goatcounter.com. Never fill in a code nobody has registered: whoever registers it later would receive the counts. The script is served from this site (`goatcounter.js`, copied from `vendor/`), not from GoatCounter's servers.
+
+It stays on only while GoatCounter's [privacy policy](https://www.goatcounter.com/help/privacy) (dated 8 June 2025) and [terms](https://www.goatcounter.com/help/terms) (dated 16 January 2020) keep these commitments:
+
+1. No cookies, localStorage or other storage in visitors' browsers.
+2. IP addresses, full User-Agent strings and tracker IDs are not stored.
+3. Unique visitors are counted with a temporary in-memory ID (up to 8 hours) that isn't saved.
+4. No information is shared with third parties.
+5. The free hosted service covers personal sites.
+6. Changes to the terms are announced by email at least two weeks ahead.
+
+`node scripts/check-analytics-terms.js` compares both pages with the fingerprints in `analytics-terms.json`, and the monthly refresh runs it. If a page changed, read it. If every commitment above still holds, run it again with `--accept` and mention the change in the report. If any commitment is gone or weakened, set `GOATCOUNTER` back to `""`, rebuild and push in the same run, and report why.
 
 ## Corrections
 
