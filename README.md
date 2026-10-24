@@ -77,6 +77,7 @@ Each card has a **Report a correction** link that opens a pre-filled GitHub issu
 
 - Change only what you verified. Set `checked` to the date you looked and `via` to `official` or `aggregator`.
 - Never guess a number. If sources disagree or a figure isn't published, say so in `fee.note`, `incomeNote` or `flags`.
+- Program `noEarn` (`text`, `url`, `via`, optional `asOf`) lists what earns no rewards, from the bank's own terms. A card's `earn.none` lists categories that earn nothing and changes the estimate; only set it when the terms name those categories. Bank `feeHelp` holds the bank's own route to an annual-fee waiver; `feeWaiverGeneric` is the fallback tip.
 - Bank limit fields: `cli` (how to ask for a higher limit), `sharedLimit` (extra cards share one limit), `subLimit` (ways to cap spending without lowering the limit), each with `text`, `url` and `via`. `cardForIncome: true` means the bank's document list accepts another bank's card in place of income proof; only set it from the bank's own list.
 - Promos need an `until` date (or `null` if the bank shows none). The app marks promos as ended on its own.
 - Apply links must go to the bank's own domain. `check-data.js` warns about any other host.

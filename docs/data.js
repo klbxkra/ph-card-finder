@@ -43,7 +43,7 @@ const PNB_CARDS = { url: "https://www.pnb.com.ph/card/", how: "Pick the card on 
 
 window.PHCC_DATA = {
   meta: {
-    version: "2026.10.25-2",
+    version: "2026.10.25-3",
     dataAsOf: "2026-10-25",
     interestCapNote: "BSP Circular No. 1165 (2023) caps credit card interest at 3% a month (36% a year), installment add-on at 1% a month and the cash advance fee at ₱200.",
     mileValue: { travel: 0.5, cash: 0.3 },
@@ -57,6 +57,7 @@ window.PHCC_DATA = {
       "Combining cards: each spending category goes to the card that pays the most on it. Once a card hits its monthly cap, the rest goes to the next card, and bonuses that need a minimum spend are dropped when that card wouldn't reach it. Quarterly bonus categories aren't counted in combinations."
     ],
     changelog: [
+      { date: "2026-10-25", note: "v6: Added what earns no rewards for BDO Peso Points, BPI, Metrobank, Security Bank, UnionBank, EastWest Visa Platinum and HSBC, from each bank's own terms. HSBC Live+ now earns nothing on utilities, phone and internet, fuel (outside Caltex) and drugstores, and HSBC Premier only the base point there. BDO Visa Signature's fee is waived at ₱1,000,000 a year and Amex Platinum's at ₱600,000, per BDO's own pages. Added Metrobank's points-for-annual-fee steps." },
       { date: "2026-10-25", note: "v5: Added how to ask each bank for a higher limit (BDO, Security Bank, RCBC and EastWest from their own pages; Metrobank and UnionBank from MoneyMax), BDO's shared limit across cards and its adjustable Virtual Card sub-limit, and sources for the new credit guide (CIC, accredited credit bureaus, RCBC's credit score explainer)." },
       { date: "2026-10-25", note: "Added community notes cited to r/PHCreditCards threads (the recommendations megathread and the bank app features table), each bank's app features, and which banks accept foreign residents. MoneyMax-only welcome gifts are now marked as third-party offers." },
       { date: "2026-10-24", note: "v4: Added what each rewards program's points, miles and cashback can be used for, with conversion rates from the banks' own pages. Point values now use those official rates for BPI, Metrobank, HSBC, Maybank and Security Bank instead of assumptions; BPI and Metrobank points are worth less than assumed before. Corrected Security Bank's airline table: 6,667 points buys 1,000 AirAsia points, and Mabuhay Miles cost 11,667 points per 1,000. Added BPI's Rewards Accelerator promo (to Dec 15, 2026)." },
@@ -86,6 +87,7 @@ window.PHCC_DATA = {
     cicD2C: { label: "CIC Direct-to-Consumer program: get your own credit report", url: "https://www.creditinfo.gov.ph/d2cprogram", kind: "government" },
     cicSAE: { label: "CIC-accredited credit bureaus (CIBI, CRIF, TransUnion and others)", url: "https://www.creditinfo.gov.ph/SAElist", kind: "government" },
     cicDispute: { label: "CIC dispute resolution: correct your credit report", url: "https://www.creditinfo.gov.ph/dispute/", kind: "government" },
+    mmFees: { label: "MoneyMax: credit card fees and how to avoid them", url: "https://www.moneymax.ph/credit-card/articles/credit-card-fees-charge", kind: "aggregator" },
     rcbcScore: { label: "RCBC: credit scores in the Philippines (Mar 27, 2024)", url: "https://rcbccredit.com/blogs/credit-score-philippines-everything-you-need-to-know-50", kind: "official" }
   },
 
@@ -176,7 +178,8 @@ window.PHCC_DATA = {
      Banks set defaults in banks[x].programs ({ points, cash, miles }); a card overrides with earn.program.
      `short` is the one-line summary; `airlines` drives the "converts to airline miles" filter. */
   programs: {
-    bpiPoints: { name: "BPI Rewards Points", via: "official", url: "https://www.bpi.com.ph/personal/rewards-and-promotions/credit-card-rewards-exclusives",
+    bpiPoints: { noEarn: {"text":"No points on purchases under ₱20–₱50 (it depends on the card), gaming, instalment loans (balance transfer, balance conversion, Credit to Cash), bills paid through BPI Online or the BPI app, or fees and interest. Cash advances do earn points.","url":"https://www.bpi.com.ph/personal/rewards-and-promotions/purchase-with-your-bpi-credit-card","via":"official"},
+      name: "BPI Rewards Points", via: "official", url: "https://www.bpi.com.ph/personal/rewards-and-promotions/credit-card-rewards-exclusives",
       short: "Shopping credit, airline miles, Go Rewards, vouchers or your annual fee",
       airlines: ["PAL Mabuhay Miles", "KrisFlyer", "Asia Miles", "AirAsia"],
       options: ["Shopping credit on your card: 20,000 points = ₱1,000", "Airline miles: 16,000 points = 1,000 PAL Mabuhay Miles; 25,000 = 1,000 KrisFlyer or Asia Miles; 8,000 = 1,000 AirAsia points", "Go Rewards: 25,000 points = 1,000 Go Rewards points (₱1,000 at Robinsons stores and Cebu Pacific)", "Vouchers: Ayala Malls (20,000 = ₱1,000), Starbucks (22,000 = ₱1,000), Abenson, iStore, restaurants and more", "Your own annual fee (for example 31,000 points for the Rewards Card's full fee)", "BPI mutual fund and UITF top-ups"],
@@ -189,7 +192,8 @@ window.PHCC_DATA = {
     bpiPetron: { name: "Petron fuel rebate", via: "official", url: "https://www.bpi.com.ph/personal/cards/credit-cards/petron-bpi-mastercard",
       short: "Rebate credited to your statement automatically",
       options: ["Fuel rebates appear on your statement; nothing to redeem"], how: "Automatic." },
-    bdoPeso: { name: "BDO Peso Points", via: "official", url: "https://www.bdo.com.ph/personal/cards/credit-cards/peso-rewards",
+    bdoPeso: { noEarn: {"text":"No points on bills paid by Auto Charge or Charge on Demand, insurance instalments, e-wallet top-ups, remittances, crypto, gambling, cash advances, or fees and interest. Points are counted per purchase at 1 per ₱1,000, so a purchase under ₱1,000 earns nothing; real earnings run below the estimate if you make many small purchases.","url":"https://www.aem.bdo.com.ph/content/dam/cbg/marketing-services/channels/cards/pdf-files/BDO-Peso-Rewards-TCs-2025.pdf","via":"official","asOf":"Oct 2025"},
+      name: "BDO Peso Points", via: "official", url: "https://www.bdo.com.ph/personal/cards/credit-cards/peso-rewards",
       short: "Cash credit (₱1 a point), SM/BDO Rewards points, or donations",
       options: ["Cash credit to pay your bill or as extra funds: 1 Peso Point = ₱1", "Transfer to BDO Rewards or SMAC points for SM stores", "Donate to HOPE to build public school classrooms"],
       how: "Fill out BDO's redemption form; credited in 7–10 banking days." },
@@ -205,7 +209,8 @@ window.PHCC_DATA = {
       short: "Airline miles, annual fee waivers or cash credit",
       airlines: ["Airline partners"],
       options: ["Convert to airline miles", "Pay your annual membership fee", "Cash credit to your card"], how: "Redeem through BDO." },
-    mbPoints: { name: "Metrobank Rewards Points", via: "official", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/rewards-offers/cash-credit",
+    mbPoints: { noEarn: {"text":"No points on cash advances, Cash2Go, balance transfers, instalment conversions, PayBills or PayNow in Metrobank Online or the app, gambling, crypto, remittances, e-wallet top-ups (GCash, Maya, GrabPay), or fees and interest.","url":"https://www.metrobank.com.ph/articles/credit-cards-rewards-terms-and-conditions","via":"official"},
+      name: "Metrobank Rewards Points", via: "official", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/rewards-offers/cash-credit",
       short: "Cash credit, airline miles, eVouchers, fee waivers or donations",
       airlines: ["PAL Mabuhay Miles", "Asia Miles", "KrisFlyer"],
       options: ["Cash credit: ₱500 for 17,500 points (Titanium, Rewards Plus, Toyota, Hype) or 10,100 points (Platinum and Travel Platinum)", "Airline miles: PAL Mabuhay Miles (10,000 points per redemption), Asia Miles and KrisFlyer", "eVouchers, for example a ₱1,000 dining eVoucher for about 23,340 points", "Annual fee waivers (for example the Rewards Plus fee for about 9,000 points)", "Donations"],
@@ -214,7 +219,8 @@ window.PHCC_DATA = {
     mbCashback: { name: "Metrobank Cashback rebates", via: "official", url: "https://www.metrobank.com.ph/articles/metrobank-cashback-visa-rebate-program",
       short: "Cash rebate in ₱1,000 steps", options: ["Redeem rebates from ₱1,000, in ₱1,000 increments, as credit to the same card"],
       notes: "Rebates can't be moved to another Metrobank card. The card earns no points or miles.", how: "Request through Metrobank's channels." },
-    sbPoints: { name: "Security Bank BetterBanking Rewards", via: "official", url: "https://www.securitybank.com/personal/credit-cards/",
+    sbPoints: { noEarn: {"text":"No points on cash advances, fees, interest, credit adjustments, or Meralco and PLDT bills enrolled in Security Bank's Bills Assist.","url":"https://www.securitybank.com/personal/credit-cards/rewards-terms-and-conditions/","via":"official"},
+      name: "Security Bank BetterBanking Rewards", via: "official", url: "https://www.securitybank.com/personal/credit-cards/",
       short: "Airline miles, Go Rewards, shopping and dining rewards",
       airlines: ["AirAsia", "Asia Miles", "PAL Mabuhay Miles", "Cebu Pacific (Go Rewards)", "Qatar", "Turkish", "Ethiopian"],
       options: ["AirAsia points: 6,667 points = 1,000", "Asia Miles: 11,250 points = 1,000", "PAL Mabuhay Miles: 11,667 points = 1,000", "Go Rewards for Cebu Pacific flights: 2,227 points = 100 Go Rewards points", "Qatar, Turkish and Ethiopian miles through Points Exchange: 13,621–24,272 points per 1,000", "Shopping, dining, travel and charity rewards from 100+ partners"],
@@ -238,7 +244,8 @@ window.PHCC_DATA = {
     rcbcLandmark: { name: "Landmark rebate", via: "official", url: "https://rcbccredit.com/credit-cards/co-branded-cards/landmark-ansons-mastercard",
       short: "3% rebate on your statement, plus RCBC points",
       options: ["Landmark and Anson's rebates show up on your monthly statement", "RCBC points from other spending convert to Landmark gift certificates or card credit"], how: "Automatic for rebates." },
-    ubPoints: { name: "UnionBank Rewards points", via: "aggregator", url: "https://www.moneymax.ph/credit-card/partners/unionbank",
+    ubPoints: { noEarn: {"text":"No points on balance transfers, EasyCash, balance conversions, refunded or disputed purchases, or fees and interest.","url":"https://www.unionbankph.com/sites/default/files/2023-12/UBLegal_FINAL_UnionBank_Rewards_Terms_and_Conditions_Revised_12.19.23.pdf","via":"official","asOf":"Dec 2023"},
+      name: "UnionBank Rewards points", via: "aggregator", url: "https://www.moneymax.ph/credit-card/partners/unionbank",
       short: "Cash credit, gadgets and merchandise, or airline transfers",
       airlines: ["Airline partners"],
       options: ["Cash credit to your card", "Gadgets and merchandise", "Transfers to airline partners"],
@@ -261,7 +268,8 @@ window.PHCC_DATA = {
       options: ["eGift rewards and Limitless Rewards vouchers for merchandise and gift certificates", "Convert to PAL Mabuhay Miles or AirAsia points", "Cash rebates", "Annual fee waiver", "Donations"],
       notes: "EastWest's 2026 catalog lists these options; its point prices aren't machine-readable, so values here are assumed.",
       how: "Cash rebates through the ESTA chat or the 24-hour hotline; other rewards through the hotline." },
-    ewCash: { name: "EastWest Cash Rewards", via: "official", url: "https://www.eastwestbanker.com/pages/cash-rewards-program-terms-and-conditions",
+    ewCash: { noEarn: {"text":"No cash rewards on cash advances, Insta-Cash, balance transfers, instalment or balance conversions, or fees and interest. The 8.58% bonus (8.88% in total) covers department stores, dining, select online stores (Lazada, Shopee, Zalora and similar), travel, fuel and utilities.","url":"https://www.eastwestbanker.com/pages/cash-rewards-program-terms-and-conditions","via":"official"},
+      name: "EastWest Cash Rewards", via: "official", url: "https://www.eastwestbanker.com/pages/cash-rewards-program-terms-and-conditions",
       short: "Cash credit from ₱500, through the ESTA chat",
       options: ["Redeem Cash Rewards from ₱500 as credit to your card"],
       notes: "Cash Rewards expire, are forfeited if the card closes, and can't move to another EastWest card.", how: "Chat with ESTA, EastWest's assistant." },
@@ -279,13 +287,15 @@ window.PHCC_DATA = {
       short: "₱1 a point in Puregold P-Wallet", options: ["Convert points to your Puregold P-Wallet at 1 point = ₱1"], how: "Sign up for a Puregold P-Wallet account." },
     ewFoodpanda: { name: "pandapay cashback", via: "official", url: "https://www.eastwestbanker.com/cards/creditcards/foodpanda-visa",
       short: "Credited weekly to your foodpanda pandapay wallet", options: ["Cashback lands in your pandapay wallet every week"], how: "Automatic." },
-    hsbcPoints: { name: "HSBC Rewards bonus points", via: "official", url: "https://www.hsbc.com.ph/content/dam/hsbc/ph/docs/rewards-program-terms-and-conditions.pdf",
+    hsbcPoints: { noEarn: {"text":"Since Aug 1, 2024, Red and Premier earn no bonus points at drugstores, gas stations, schools, government offices, insurance, charities, legal services and utilities. No bonus points on cash advances, instalments, balance transfers or fees.","url":"https://www.hsbc.com.ph/content/dam/hsbc/ph/docs/rewards-general-terms.pdf","via":"official","asOf":"Aug 2024"},
+      name: "HSBC Rewards bonus points", via: "official", url: "https://www.hsbc.com.ph/content/dam/hsbc/ph/docs/rewards-program-terms-and-conditions.pdf",
       short: "Cash credit, Asia Miles or KrisFlyer, or catalog rewards",
       airlines: ["Asia Miles", "KrisFlyer"],
       options: ["Cash credit: ₱500 for 10,000 points (Red, Gold) or 5,000 points (Platinum, Premier), in ₱500 to ₱10,000 blocks", "Asia Miles and KrisFlyer in 1,000-mile blocks (HSBC's catalog lists 5,000 points per 1,000 Asia Miles)", "Shopping and dining rewards; pay part in points and part in cash with Fast Track"],
       notes: "Points expire, so transfer before they do. Airline transfers are one-way. Rates come from HSBC's catalog and may have changed.",
       how: "Enroll in HSBC's mileage program by calling the hotline, then request redemptions." },
-    hsbcCash: { name: "HSBC Live+ cashback", via: "official", url: "https://www.hsbc.com.ph/credit-cards/products/liveplus/",
+    hsbcCash: { noEarn: {"text":"No cashback on utilities, phone and internet, fuel (the Caltex rebate is separate), drugstores, insurance, gambling, schools, government, real estate, tolls, charities, legal services, e-wallets and money transfers, bills paid through HSBC online, auto-charge, instalments or fees. The bonus rates need ₱10,000 of spend in the statement month.","url":"https://hsbc.com.ph/content/dam/hsbc/ph/docs/help/hsbc-liveplus-credit-card-terms-and-conditions.pdf","via":"official"},
+      name: "HSBC Live+ cashback", via: "official", url: "https://www.hsbc.com.ph/credit-cards/products/liveplus/",
       short: "Credited to your card monthly", options: ["Cashback is credited to your card account each month"], how: "Automatic." },
     mayaMiles: { name: "Maya Miles", via: "official", url: "https://www.mayabank.ph/creditcard/",
       short: "Vouchers in the Maya app, or pay at Maya terminals",
@@ -332,6 +342,7 @@ window.PHCC_DATA = {
   },
 
   // How to raise a limit when a bank doesn't publish its own steps.
+  feeWaiverGeneric: "Call the bank when the fee posts and ask for it to be waived. It isn't guaranteed, but it's a standard request.",
   cliGeneric: "Ask through the bank's app or hotline after 6+ months of on-time payments. Many banks also raise limits on their own for cardholders who pay in full. Have an updated payslip, ITR or COE ready.",
 
   banks: {
@@ -374,6 +385,7 @@ window.PHCC_DATA = {
         income: ["Employed: BIR-stamped ITR and/or BIR 2316, plus your last 3 months of payslips. Employees of top-1,000 corporations add an original COE", "Self-employed: latest audited financial statements and ITR, both stamped"],
         foreign: ["Proof of income or employment, plus ACR, ICR or visa"]
       },
+      feeHelp: { text: "Pay the annual fee with Rewards Points after it's charged: in the Metrobank app, with MIA on Messenger, or at (02) 88700700. It takes 3–5 banking days. The World Mastercard's fee costs 63,200 points (31,600 for half).", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/rewards-offers/world-mastercard", via: "official" },
       cli: { text: "Message Metrobank Card on Facebook Messenger, or call (+632) 88-700-700, for a temporary or permanent increase.", url: "https://www.moneymax.ph/credit-card/blog/increase-credit-card-limit", via: "aggregator" },
       subLimit: { text: "Supplementary cards share your limit, and you can set a spending cap for each one.", url: "https://www.metrobank.com.ph/personal/cards/credit-cards/supplementary", via: "official" }
     },
@@ -1283,8 +1295,8 @@ window.PHCC_DATA = {
       fee: { annual: 5000, firstYear: 0 },
       naffl: { spend: 60000, days: 60, until: "2026-12-31" },
       fx: 3.5, apr: 3,
-      earn: { unit: "cash", base: 0.2, cats: { dining: 8, shopping: 5, online: 5, travel: 5 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3 }], minSpend: 10000, capMonth: 1250,
-              note: "Up to 8% dining (2% fast food), 5% shopping, entertainment and travel, once you spend ₱10,000 in the month. ₱1,250 monthly cap across all in-card cashback. 3% at Caltex (6% on your first Caltex fill-up), with its own ₱600 monthly cap." },
+      earn: { none: ["utilities", "telco", "fuel", "drugstore"], unit: "cash", base: 0.2, cats: { dining: 8, shopping: 5, online: 5, travel: 5 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3 }], minSpend: 10000, capMonth: 1250,
+              note: "Up to 8% dining (2% fast food), 5% shopping, entertainment and travel, once you spend ₱10,000 in the month. ₱1,250 monthly cap across all in-card cashback. 3% at Caltex (6% on your first Caltex fill-up), with its own ₱600 monthly cap. No cashback at all on utilities, phone and internet, fuel outside the Caltex rebate, or drugstores." },
       perks: ["3% Caltex fuel rebate", "E-commerce purchase protection up to US$200"],
       promos: [
         { title: "No annual fees for life", detail: "Apply online, spend ₱60,000 within 60 days of approval, register in the HSBC app.", until: "2026-12-31", src: { label: "HSBC Live+ NAFFL promo", url: "https://offers.hsbc.com.ph/banners/20", kind: "official" } },
@@ -1293,7 +1305,7 @@ window.PHCC_DATA = {
       pros: ["8% dining is the market high", "Lifetime fee waiver available now"],
       cons: ["Needs a 6-month-old card from another bank", "3.5% forex fee", "Cap is reached quickly"],
       apply: { url: "https://www.hsbc.com.ph/credit-cards/apply-for-a-credit-card-online/" },
-      src: [
+      src: [{ label: "HSBC Live+ cashback terms (what earns and what doesn't)", url: "https://hsbc.com.ph/content/dam/hsbc/ph/docs/help/hsbc-liveplus-credit-card-terms-and-conditions.pdf", kind: "official" }, 
         { label: "HSBC Live+ page", url: "https://www.hsbc.com.ph/credit-cards/products/liveplus/", kind: "official" },
         { label: "HSBC Live+ NAFFL promo", url: "https://offers.hsbc.com.ph/banners/20", kind: "official" },
         { label: "HSBC luggage promo (caps and eligibility)", url: "https://offers.hsbc.com.ph/getfreeluggage26", kind: "official" }
@@ -1620,7 +1632,7 @@ window.PHCC_DATA = {
       apply: BDO_APPLY("V0016"), src: [{ label: "BDO Visa Platinum page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/visa/platinum", kind: "official" }, "tc"], checked: "2026-10-24", via: "official" },
     { id: "bdo-visasig", bank: "BDO", name: "Visa Signature", network: "Visa", tier: "Signature", status: "open",
       minIncome: 1980000, incomeVia: "official", incomeNote: "₱165,000 gross fixed monthly income.", age: [21, 60],
-      fee: { annual: 5500, firstYear: 5500, note: "Fee from the fee-table compilation. Up to 6 supplementary cards free for life." }, fx: 1.7, apr: 3,
+      fee: { annual: 5500, firstYear: 5500, waiver: { spend: 1000000 }, note: "Fee from the fee-table compilation. Waived each year you spend ₱1,000,000. Up to 6 supplementary cards free for life." }, fx: 1.7, apr: 3,
       earn: { unit: "cash", base: 0.3, cats: { foreign: 3, travel: 3 }, capMonth: 2500, note: "3% rebate on overseas and airline spend, 0.3% on everything else, up to ₱2,500 a month." },
       perks: ["2 Priority Pass lounge visits a year"], tags: ["lounge"], promos: [], pros: ["3% back on overseas and airline spend"], cons: ["₱1.98M income floor"],
       apply: BDO_APPLY("V0100"), src: [{ label: "BDO Visa Signature page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/visa/signature", kind: "official" }, "tc"], checked: "2026-10-24", via: "official" },
@@ -1632,7 +1644,7 @@ window.PHCC_DATA = {
       apply: BDO_APPLY("A0056"), src: [{ label: "BDO Amex Blue page", url: "https://www.bdo.com.ph/personal/cards/credit-cards/american-express/blue", kind: "official" }, "tc"], checked: "2026-10-24", via: "official" },
     { id: "bdo-amexplat", bank: "BDO", name: "American Express Platinum", network: "Amex", tier: "Platinum", status: "open",
       minIncome: 1116000, incomeVia: "official", incomeNote: "₱93,000 gross fixed monthly income.", age: [21, 60],
-      fee: { annual: 5000, firstYear: 0, waiver: { spend: 600000 }, note: "Waived each year you spend ₱600,000 (fee-table compilation)." }, fx: 1.85, apr: 3,
+      fee: { annual: 5000, firstYear: 0, waiver: { spend: 600000 }, note: "Waived each year you spend ₱600,000 (BDO's card page)." }, fx: 1.85, apr: 3,
       earn: { unit: "points", program: "amexMR", toMiles: 1, base: 2.222, valueAssumed: true, note: "1 Membership Rewards point per ₱45 or US$1. Valued here like the Explorer's 1 point = 1 airline mile; confirm the transfer ratio with BDO." },
       perks: ["Unlimited complimentary access to partner airport lounges", "1.85% forex fee"], tags: ["lounge"], promos: [],
       pros: ["Unlimited lounge access", "Low forex fee"], cons: ["Amex acceptance gaps", "Points value assumed"],
@@ -2106,7 +2118,7 @@ window.PHCC_DATA = {
     { id: "hsbc-premier", bank: "HSBC", name: "Premier Mastercard", network: "Mastercard", tier: "World", status: "depositor", depositorBank: "HSBC",
       minIncome: null, incomeNote: "For HSBC Premier clients.", age: [21, 65],
       fee: { annual: 0, firstYear: 0, note: "Free while you keep an HSBC Premier balance; otherwise ₱6,000 (supplementary ₱3,000)." }, fx: 3.5, apr: 3,
-      earn: { unit: "points", pv: 0.1, toMiles: 0.2, base: 15, cats: { foreign: 20 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3, cash: true }], note: "3 bonus points per ₱20 local, 4 per ₱20 overseas. 3% at Caltex." },
+      earn: { unit: "points", pv: 0.1, toMiles: 0.2, base: 15, cats: { foreign: 20, utilities: 5, fuel: 5, drugstore: 5 }, eco: [{ eco: "caltex", cat: "fuel", rate: 3, cash: true }], note: "3 bonus points per ₱20 local, 4 per ₱20 overseas. 3% at Caltex. Since Aug 2024 there are no bonus points at utilities, gas stations or drugstores; the app counts 1 point per ₱20 there, which is an assumption." },
       perks: ["3% Caltex fuel rebate"], promos: [], pros: ["Free for Premier clients"], cons: ["Premier clients only", "3.5% forex fee"],
       apply: { url: "https://www.hsbc.com.ph/credit-cards/products/premier/", how: "Offered to HSBC Premier clients" },
       src: [{ label: "HSBC Premier card page", url: "https://www.hsbc.com.ph/credit-cards/products/premier/", kind: "official" }, "tc"], checked: "2026-10-24", via: "aggregator" },

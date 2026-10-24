@@ -18,6 +18,7 @@ PH Card Finder is a personal project. The order below puts the most useful featu
 | Oct 2026 | Requirements and documents, Apply buttons on banks' own sites, points and miles redemption with official values |
 | Oct 25, 2026 | Phase 1:<br>• optional credit-record and citizenship questions<br>• MoneyMax offers behind a switch<br>• promo tracker<br>• What changed page<br>• card links<br>• Report a correction<br>• install as an app<br>• cited Reddit notes |
 | Oct 25, 2026 | GoatCounter visit counting built but tabled (off; see Phase 4); monthly check on GoatCounter's terms |
+| Oct 25, 2026 | Phase 2, second part:<br>• **What earns nothing**, from each bank's own terms: BDO Peso Points, BPI, Metrobank, Security Bank, UnionBank, EastWest Visa Platinum and HSBC, shown on cards, in Your cards and in the credit guide<br>• HSBC Live+ and Premier estimates now leave out the categories HSBC excludes<br>• **Annual-fee waiver helper:** each card's spend waiver and whether your spending meets it, paying the fee with points, Metrobank's steps, and asking the bank<br>• BDO Visa Signature and Amex Platinum waivers confirmed on BDO's pages |
 | Oct 25, 2026 | Phase 2, first part:<br>• **Cards you have:** pick your cards, how long you've had each, and an optional limit bracket<br>• which card to use where<br>• best card to add, after its fee<br>• limit advice: usage meter, keep or lower, how to ask each bank for more, spending caps<br>• promos at your banks<br>• limit-aware eligibility: card-to-card banks and BDO's shared limit<br>• two-card combo for people without a card yet<br>• mile-value slider<br>• **Credit guide:** limit staircase, usage meter, when to lower a limit, each bank's increase steps, credit score factors and how to get your CIC report |
 
 ## Waiting on you
@@ -30,16 +31,15 @@ PH Card Finder is a personal project. The order below puts the most useful featu
 
 ## Phase 2: smarter recommendations
 
-Done so far: cards you have (with limits), best card to add, two-card combo, mile-value slider and the credit guide. Still to do:
+Done so far: cards you have (with limits), best card to add, two-card combo, mile-value slider, the credit guide, what earns nothing and the annual-fee waiver helper. Decided against: remembering your cards between visits (entries clear when the page closes). Still to do:
 
 | Feature | What it does | Effort | Privacy |
 | --- | --- | --- | --- |
-| Remember my cards | Keep your cards and limit brackets between visits. | S | Decision. On-device only, off unless you turn it on, with a Forget button. Anyone using the same browser could see the brackets. |
 | Limit rules for more banks | Whether BPI, Metrobank, RCBC, UnionBank and others share one limit across your cards, and their official increase steps (Metrobank and UnionBank's come from MoneyMax for now). | S | Local (data only) |
 | Points value slider | Like the mile slider, for points programs that only redeem for vouchers or goods. | S | Local |
-| Reward exclusions | What doesn't earn on each card: bills payment, government, insurance, e-wallet top-ups, cash advances. Shown on cards and used in estimates. | M | Local (data only) |
+| Earn-nothing rules for the rest | RCBC (no single published list; only promo terms), Maya, PNB, China Bank, Maybank, and the remaining EastWest, UnionBank cashback and BDO Amex programs. | S | Local (data only) |
 | Merchant lookup | Type a store and see its merchant category (MCC) and which cards pay a bonus there. Built from bank exclusion lists, plus the community MCC sheet if its maintainers agree. | M | Local. The search runs in the page. |
-| Annual-fee waiver helper | Each card's waiver rule (spend X within Y days) and community tips on asking for a waiver, by bank. | S | Local (data only) |
+| Spend waivers for more cards | Only 14 cards have a published spend waiver on file. Check the rest of each bank's card pages, and add points-for-fee rates per card. | S | Local (data only) |
 | Statement import | Drop in a statement; your spending is sorted into categories in the browser and fills in the form. | L | Decision. Statements hold your name and card numbers. The file would never be uploaded or saved, with a test proving the page makes no network requests while reading it. Lower-risk alternative: paste category totals by hand (what the form does today). |
 
 ## Phase 3: data quality
@@ -80,7 +80,7 @@ Done so far: cards you have (with limits), best card to add, two-card combo, mil
 
 | Idea | Why not | Alternative |
 | --- | --- | --- |
-| Accounts or saved profiles on a server | Would store personal information | Optional on-device saving |
+| Accounts or saved profiles on a server | Would store personal information | None: entries clear when the page closes (remembering cards on the device was also declined) |
 | Email or SMS promo alerts | Needs contact details | Promo feed or calendar file |
 | A form for approval stories | Would collect personal stories and details | Link to r/PHCreditCards threads |
 | Social share buttons, comment widgets, embedded videos, ads or tracked affiliate links | They load third-party trackers | Plain links and the browser's own Share button |

@@ -447,6 +447,7 @@ table.factors tr:last-child td { border-bottom: 0; }
 table.factors.narrow { min-width: 0; }
 .prose [id^="guide-"] { scroll-margin-top: 80px; }
 table.factors.narrow td:first-child { white-space: nowrap; }
+@media (max-width: 560px) { table.factors.narrow td:first-child { white-space: normal; min-width: 90px; } table.factors th, table.factors td { padding: 10px 12px; } }
 .prose .sub { font-size: 13px; color: var(--muted); margin: 0; }
 .prose h4 { font-size: 17px; margin: 6px 0 0; }
 
@@ -957,6 +958,8 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     let tag = "";
     if (o.bonusOff && e.cats && cat in e.cats && e.cats[cat] > e.base) { pctv = e.base * v * 100; tag = "bonus needs more spend"; }
     if (e.cashCats && cat in e.cashCats) pctv = e.cashCats[cat];
+    // Categories the bank's terms exclude earn nothing; a separate store rebate (like Caltex) still applies below.
+    if (e.none && e.none.includes(cat)) { pctv = 0; tag = "earns nothing here"; }
     for (const rule of e.eco || []) if (rule.cat === cat && o.eco(rule.eco)) { pctv = rule.cash ? rule.rate : rule.rate * v * 100; tag = ecoLabel(rule.eco) + " only"; }
     if (o.flex && o.flex.has(cat)) { pctv *= e.flexPick.mult; tag = o.flexTag || "2x pick"; }
     for (const t of e.tiers || []) if (t.cat === cat && o.eco(t.eco)) { pctv = t.steps[0].rate; tag = ecoLabel(t.eco) + " tiers"; }
@@ -1337,13 +1340,15 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       ${appList.length ? `<div><h5>${esc(c.bank)} app</h5>${ul(appList)}<p class="sub">From the subreddit's bank app table, updated Apr 2, 2025; apps may have changed since. <a href="${esc(D.sources.redditApp.url)}" target="_blank" rel="noopener">source</a></p></div>` : ""}
       <div><h5>General impressions</h5><p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not tied to one thread.</p></div>
       <p><b>${esc(c.bank)} application notes:</b> ${esc(bank.lookFor || "")}</p>`;
-    const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean));
+    const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean))
+      + (hasFee(c) ? `<div><h5>Getting the annual fee waived</h5>${ul(waiverWays(c, { owned: !!r.ev.owned }))}</div>` : "");
     const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
     const earnBody = `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}${c.perks && c.perks.length ? `<div><h5>Perks</h5>${ul(c.perks.map(esc))}</div>` : ""}<div><h5>Good</h5>${ul((c.pros || []).map(esc))}</div><div><h5>Watch out</h5>${ul((c.cons || []).map(esc))}</div>`;
     const prog = programFor(c);
     const progBody = prog ? `
       <p><b>${esc(prog.name)}</b></p>
       <div><h5>What you can use them for</h5>${ul(prog.options.map(esc))}</div>
+      ${prog.noEarn ? `<div><h5>What earns nothing</h5><p>${esc(prog.noEarn.text)} <a class="cite" href="${esc(prog.noEarn.url)}" target="_blank" rel="noopener">bank's terms${prog.noEarn.asOf ? ", " + esc(prog.noEarn.asOf) : ""}</a></p></div>` : ""}
       ${prog.airlines && prog.airlines.length ? `<p><b>Airline partners:</b> ${esc(prog.airlines.join(", "))}</p>` : ""}
       ${prog.notes ? `<p>${esc(prog.notes)}</p>` : ""}
       ${prog.how ? `<p><b>How to redeem:</b> ${esc(prog.how)}</p>` : ""}
@@ -1456,6 +1461,47 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   const andList = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
   const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
 
+  // Annual fee help: the spend rule, a lifetime-free promo, paying with points, the bank's own route, then asking.
+  const hasFee = c => !!(c.fee && !c.fee.life && c.fee.annual > 0);
+  const lc1 = t => t.charAt(0).toLowerCase() + t.slice(1);
+  // For a card someone holds, `spendYear` is what the which-card-where split puts on it.
+  function waiverWays(c, { spendYear = null, owned = false, generic = true } = {}) {
+    const out = [], w = (c.fee || {}).waiver || {};
+    const total = monthlySpend() * 12;
+    if (w.spend) {
+      if (spendYear == null) out.push(`Spend ${peso(w.spend)} a year on it and the fee is waived automatically.`);
+      else if (spendYear >= w.spend) out.push(`Waived by spend: you'd put about ${peso(spendYear)} a year on it, more than the ${peso(w.spend)} it needs.`);
+      else out.push(`Waived at ${peso(w.spend)} a year of spend. ${spendYear > 0 ? `Your spending puts about ${peso(spendYear)} a year on it` : "Your other cards pay more, so none of your spending goes to it now"}${total >= w.spend ? `; moving all your card spending to it (about ${peso(total)}) would get there` : ""}.`);
+    }
+    if (w.monthly) out.push(`Any month you spend ${peso(w.monthly)} on it, that month's fee is waived.`);
+    if (!owned && c.naffl && isActive(c.naffl.until)) out.push(`A current promo makes it free for life if you spend ${peso(c.naffl.spend)} within ${c.naffl.days} days of approval (apply by ${esc(fmtDate(c.naffl.until))}).`);
+    const p = programFor(c), pts = p && (p.options || []).find(o => /annual fee|membership fee/i.test(o));
+    if (pts) out.push(`Your ${esc(unitWord(c))} can cover it: ${esc(lc1(pts))}.`);
+    const fh = bankInfo(c.bank).feeHelp;
+    if (fh) out.push(`${esc(fh.text)} <a class="cite" href="${esc(fh.url)}" target="_blank" rel="noopener">bank's page</a>`);
+    if (generic) out.push(`${esc(D.feeWaiverGeneric)}${cite("mmFees")}`);
+    return out;
+  }
+  function feesCard(plan) {
+    const mine = wal.rows.map(r => r.card).filter(c => c && hasFee(c)).filter((c, i, a) => a.indexOf(c) === i);
+    if (!mine.length) return "";
+    return `<div class="wcard"><h4>Annual fees on your cards</h4>${mine.map(c => {
+      const spendYear = plan && plan.base.spendOn[c.id] != null ? plan.base.spendOn[c.id] * 12 : null;
+      return `<div class="wtip"><b>${esc(cardName(c))}</b><span class="sub"> · ${peso(c.fee.annual)} a year</span>${ul((x => x.length ? x : ["No automatic waiver. Ask the bank (below)."])(waiverWays(c, { spendYear, owned: true, generic: false })))}</div>`;
+    }).join("")}<p class="sub">${esc(D.feeWaiverGeneric)}${cite("mmFees")}</p></div>`;
+  }
+  // What the cards someone holds don't earn on, in plain advice.
+  function noEarnTips(cards) {
+    const progs = cards.map(c => [c, programFor(c)]).filter(([, p]) => p && p.noEarn);
+    const banks = re => [...new Set(progs.filter(([, p]) => re.test(p.noEarn.text)).map(([c]) => c.bank))];
+    const tips = [];
+    const bills = banks(/bills/i), wallets = banks(/e-wallet/i);
+    if (bills.length) tips.push(`Pay bills straight to the biller with the card. Bills paid through ${esc(andList(bills))}'s own bills-pay or auto-charge earn nothing.`);
+    if (wallets.length) tips.push(`Loading GCash, Maya or GrabPay from your ${esc(andList(wallets))} card${wallets.length > 1 ? "s" : ""} earns nothing.`);
+    if (progs.some(([, p]) => p === D.programs.bdoPeso)) tips.push("BDO Peso Points only count each purchase in ₱1,000 steps, so a purchase under ₱1,000 earns nothing.");
+    return tips.length ? `<div class="wtip"><b>What earns nothing</b>${ul(tips)}</div>` : "";
+  }
+
   // Spending as a share of the limit, on a 0–100% scale with the usual 30% target marked.
   function utilMeter(u) {
     const at = Math.min(100, Math.round(u * 100));
@@ -1546,6 +1592,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       const unnamed = wal.rows.filter(r => !r.card).length;
       use = `<div class="wcard"><h4>Which card to use where</h4><p class="big">Your cards earn about <b>${peso(plan.base.year)}</b> a year on this spending.</p>
         <table class="wtable"><tbody>${rows}</tbody></table>
+        ${noEarnTips(plan.mine)}
         ${unnamed ? `<p class="sub">${unnamed === 1 ? "One card has" : unnamed + " cards have"} no name picked, so ${unnamed === 1 ? "it isn't" : "they aren't"} counted here.</p>` : ""}</div>`;
       const top = [];
       for (const x of plan.adds) { if (top.length === 3) break; if (!top.some(t => t.r.card.bank === x.r.card.bank && Math.round(t.gain) === Math.round(x.gain))) top.push(x); }
@@ -1564,7 +1611,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       use = `<div class="wcard"><h4>Which card to use where</h4><p class="sub">Pick which cards you have (top of the form) to see where to use each one and which card would add the most.</p></div>`;
     }
     return `<div class="wsec"><div class="res-head"><h2>Your cards</h2><p>${wal.rows.length} card${wal.rows.length === 1 ? "" : "s"} · nothing you pick here leaves this page</p></div>
-      <div class="wgrid">${use}${add}${limitCard()}${promosCard()}</div></div>`;
+      <div class="wgrid">${use}${add}${limitCard()}${feesCard(plan)}${promosCard()}</div></div>`;
   }
 
   function pairHtml() {
@@ -1868,6 +1915,13 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         <li><b>Keep every card active.</b> Limits on cards left unused for about a year often get lowered.${cite("mmcli")}</li>
         <li><b>Going abroad?</b> Ask for a temporary increase instead of a permanent one. RCBC's Bonus Travel Limit adds up to 100% for your trip.${cite("rcbcTravel")}</li>
       </ul>
+
+      <h3 id="guide-noearn">What earns no rewards</h3>
+      <p>Every bank leaves some charges out. Cash advances, instalment conversions, fees and interest almost never earn. These are the other gaps in each bank's own terms:</p>
+      <div class="card"><table class="factors narrow"><thead><tr><th>Program</th><th>Earns nothing on</th></tr></thead><tbody>
+        ${Object.values(D.programs).filter(p => p.noEarn).map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.noEarn.text)} <a class="cite" href="${esc(p.noEarn.url)}" target="_blank" rel="noopener">bank's terms${p.noEarn.asOf ? ", " + esc(p.noEarn.asOf) : ""}</a></td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="sub">The estimates already count HSBC's category exclusions. Other banks' gaps are mostly ways of paying (bills-pay, auto-charge, e-wallet loading), which the estimates assume you avoid.</p>
 
       <h3 id="guide-lower">Should you lower your limit?</h3>
       <div class="lower">
