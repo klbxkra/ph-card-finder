@@ -20,6 +20,7 @@
   --surface-2: #f5f5f7;
   --fill: rgba(120, 120, 128, .12);
   --fill-2: rgba(120, 120, 128, .08);
+  --field: #f0f0f2;
   --ink: #1d1d1f;
   --muted: #6e6e73;
   --faint: #86868b;
@@ -60,7 +61,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .16);
+    --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .16); --field: #2c2c2e;
     --ink: #f5f5f7; --muted: #a1a1a6; --faint: #86868b; --line: #38383a; --hair: rgba(255, 255, 255, .1);
     --accent: #0a84ff; --accent-hover: #409cff; --link: #2997ff; --accent-ink: #ffffff; --accent-soft: rgba(10, 132, 255, .18);
     --good: #30d158; --good-soft: rgba(48, 209, 88, .18); --warn: #ff9f0a; --warn-soft: rgba(255, 159, 10, .18); --bad: #ff453a; --bad-soft: rgba(255, 69, 58, .18);
@@ -71,7 +72,7 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .16);
+  --bg: #000000; --surface: #1c1c1e; --surface-2: #2c2c2e; --fill: rgba(118, 118, 128, .24); --fill-2: rgba(118, 118, 128, .16); --field: #2c2c2e;
   --ink: #f5f5f7; --muted: #a1a1a6; --faint: #86868b; --line: #38383a; --hair: rgba(255, 255, 255, .1);
   --accent: #0a84ff; --accent-hover: #409cff; --link: #2997ff; --accent-ink: #ffffff; --accent-soft: rgba(10, 132, 255, .18);
   --good: #30d158; --good-soft: rgba(48, 209, 88, .18); --warn: #ff9f0a; --warn-soft: rgba(255, 159, 10, .18); --bad: #ff453a; --bad-soft: rgba(255, 69, 58, .18);
@@ -186,7 +187,10 @@ button { cursor: pointer; }
 .q + .q { border-top: 1px solid var(--hair); }
 .qh { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; position: relative; }
 .qh label, .qh .ql { font-size: 14px; font-weight: 600; }
-select { width: 100%; padding: 9px 34px 9px 12px; border: 0; border-radius: var(--r-sm); background: var(--fill-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2386868b' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; font-size: 14px; }
+/* Solid field color: Windows paints a select's open list from its background, so a see-through fill turned the list light while the text stayed light in dark mode. */
+select option, select optgroup { background-color: var(--field); color: var(--ink); }
+::placeholder { color: var(--faint); opacity: 1; }
+select { width: 100%; padding: 9px 34px 9px 12px; border: 0; border-radius: var(--r-sm); color: var(--ink); background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2386868b' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; font-size: 14px; }
 .segc { display: flex; background: var(--fill); border-radius: 9px; padding: 2px; gap: 2px; }
 .segc input { position: absolute; opacity: 0; pointer-events: none; }
 .segc label { flex: 1; text-align: center; padding: 6px 8px; font-size: 13px; border-radius: 7px; user-select: none; cursor: pointer; line-height: 1.25; }
@@ -259,6 +263,7 @@ select { width: 100%; padding: 9px 34px 9px 12px; border: 0; border-radius: var(
 .search input:focus { outline: none; }
 .search:focus-within { box-shadow: 0 0 0 2px var(--accent); }
 .tools select { width: auto; background-color: var(--surface); box-shadow: var(--shadow); }
+.tools select option { background-color: var(--surface); }
 .filters-btn { border: 0; background: var(--surface); box-shadow: var(--shadow); border-radius: 10px; padding: 9px 14px; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
 .filters-btn[aria-expanded="true"] { background: var(--accent); color: var(--accent-ink); }
 .filters-btn .count { background: var(--accent); color: var(--accent-ink); border-radius: 999px; font-size: 11px; padding: 1px 7px; font-weight: 700; }
@@ -299,6 +304,8 @@ details.cc > summary::-webkit-details-marker { display: none; }
 .fact span { font-size: 12px; color: var(--muted); display: block; }
 .fact b { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.redeem-line { margin: -4px 0 0; font-size: 14px; }
+.redeem-line span { color: var(--muted); margin-right: 4px; }
 .actions .sub { flex-basis: 100%; }
 .block-h { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; position: relative; }
 .block-h h4 { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
@@ -751,9 +758,16 @@ table.factors tr:last-child td { border-bottom: 0; }
     const mv = prefMiles ? D.meta.mileValue.travel : D.meta.mileValue.cash;
     if (earn.unit === "cash") return 0.01;
     if (earn.unit === "miles") return mv / 100;
-    if (earn.toMiles) return earn.toMiles * mv / 100;
-    return (earn.pv || 0) / 100;
+    // Points: take whichever redemption is worth more, cash-like credit or airline miles.
+    return Math.max(earn.pv || 0, earn.toMiles ? earn.toMiles * mv : 0) / 100;
   }
+  function programFor(c) {
+    if (!c.earn || rewardKind(c) === "None") return null;
+    const unit = c.earn.unit === "cash" ? "cash" : c.earn.unit === "miles" ? "miles" : "points";
+    const id = c.earn.program || ((D.bankPrograms || {})[c.bank] || {})[unit];
+    return id ? D.programs[id] : null;
+  }
+  const unitWord = c => c.earn.unit === "cash" ? "cashback" : c.earn.unit === "miles" ? "miles" : "points";
 
   // % of spend returned in pesos for one category. `o.eco(id)` says whether a store counts.
   function rateFor(card, cat, o) {
@@ -1046,6 +1060,14 @@ table.factors tr:last-child td { border-bottom: 0; }
     const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean));
     const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
     const earnBody = `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}${c.perks && c.perks.length ? `<div><h5>Perks</h5>${ul(c.perks.map(esc))}</div>` : ""}<div><h5>Good</h5>${ul((c.pros || []).map(esc))}</div><div><h5>Watch out</h5>${ul((c.cons || []).map(esc))}</div>`;
+    const prog = programFor(c);
+    const progBody = prog ? `
+      <p><b>${esc(prog.name)}</b></p>
+      <div><h5>What you can use them for</h5>${ul(prog.options.map(esc))}</div>
+      ${prog.airlines && prog.airlines.length ? `<p><b>Airline partners:</b> ${esc(prog.airlines.join(", "))}</p>` : ""}
+      ${prog.notes ? `<p>${esc(prog.notes)}</p>` : ""}
+      ${prog.how ? `<p><b>How to redeem:</b> ${esc(prog.how)}</p>` : ""}
+      <p class="sub">${prog.via === "official" ? "From the bank's own pages" : "From comparison sites; the bank's own terms weren't available"} · <a href="${esc(prog.url)}" target="_blank" rel="noopener">source</a>${c.earn.valueAssumed ? " · Point value in the estimate is an assumption." : ""}</p>` : "";
     const rating = ratings(c);
     const goodList = [...(r.ft.why || []).filter(x => !/avoid|didn't pick/.test(x)), ...(c.pros || [])].slice(0, 3);
     const badList = [...(r.ft.why || []).filter(x => /avoid|didn't pick/.test(x)), ...r.ev.reasons, ...(c.cons || [])].slice(0, 3);
@@ -1063,6 +1085,7 @@ table.factors tr:last-child td { border-bottom: 0; }
           <div class="fact"><span>Rewards</span><b>${esc(rewardKind(c))}</b></div>
           <div class="fact"><span>Foreign purchase fee</span><b>${pct(c.fx)}</b></div>
         </div>
+        ${prog ? `<p class="redeem-line"><span>Use your ${esc(unitWord(c))} for</span> ${esc(prog.short)}</p>` : ""}
         <div class="actions">${applyLink(c)}${officialPage ? `<a href="${esc(officialPage.url)}" target="_blank" rel="noopener">Card details on ${esc(c.bank)}'s site ›</a>` : ""}
           <span class="sub">Opens the bank's own page in a new tab. Check the address bar before you type any details.</span></div>
         <div>${inlineTip("How it rates", RATING_TIP)}
@@ -1074,6 +1097,7 @@ table.factors tr:last-child td { border-bottom: 0; }
         </div>
         <div class="secs">
           ${sec("Requirements and documents", reqBody)}
+          ${prog ? sec(`Using your ${esc(unitWord(c))}`, progBody, prog.airlines && prog.airlines.length ? "converts to airline miles" : "") : ""}
           ${sec("Upgrade path and credit limit", pathBody)}
           ${sec(`How we estimated ${peso(r.net)} a year`, valueBody)}
           ${sec("Fees and rates", feesBody)}
@@ -1089,7 +1113,7 @@ table.factors tr:last-child td { border-bottom: 0; }
   /* ---------- Sorting and filters ---------- */
   const SORTS = [["match", "Best match"], ["value", "Highest value"], ["fee", "Lowest annual fee"], ["income", "Lowest income floor"], ["odds", "Best approval odds"], ["fx", "Lowest foreign fee"], ["bank", "Bank A–Z"]];
   const FEE_FILTERS = [["any", "Any"], ["none", "No ongoing fee"], ["waivable", "Free or waivable"]];
-  const PERK_FILTERS = [["lounge", "Airport lounges"], ["lowfx", "Foreign fee 2% or less"], ["promo", "Active promo"]];
+  const PERK_FILTERS = [["lounge", "Airport lounges"], ["lowfx", "Foreign fee 2% or less"], ["airlines", "Converts to airline miles"], ["promo", "Active promo"]];
   const REWARD_FILTERS = ["Cashback", "Points", "Points → miles", "Airline miles", "None"];
   const netMatch = (c, n) => (c.network || "").split(/\s*\/\s*/).includes(n);
   // Search, bank and network apply to every card, including closed ones.
@@ -1108,6 +1132,7 @@ table.factors tr:last-child td { border-bottom: 0; }
     if (view.perks.has("lounge") && !(c.tags || []).includes("lounge")) return false;
     if (view.perks.has("lowfx") && c.fx > 2) return false;
     if (view.perks.has("promo") && !(c.promos || []).some(p => p.until && isActive(p.until))) return false;
+    if (view.perks.has("airlines")) { const p = programFor(c); if (!(p && p.airlines && p.airlines.length)) return false; }
     return true;
   }
   function sortRows(arr) {
@@ -1233,6 +1258,8 @@ table.factors tr:last-child td { border-bottom: 0; }
       { label: "Age range", text: r => r.card.age ? `${r.card.age[0]}${r.card.age[1] >= 99 ? "+" : "–" + r.card.age[1]}` : "—" },
       { group: "Rewards on your spending" },
       { label: "Reward type", text: r => rewardKind(r.card) },
+      { label: "Use rewards for", text: r => { const p = programFor(r.card); return p ? p.short : "No rewards"; } },
+      { label: "Airline transfers", text: r => { const p = programFor(r.card); return p && p.airlines && p.airlines.length ? p.airlines.join(", ") : "None"; } },
       { label: "Rewards a year", get: r => r.rw.year, fmt: v => peso(v), best: "max" }
     ];
     for (const c of D.categories) {

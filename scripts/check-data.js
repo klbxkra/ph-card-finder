@@ -37,6 +37,15 @@ function checkSrc(where, s) {
   if (!s || !s.label) errors.push(`${where}: source needs a label`);
 }
 
+for (const [b, map] of Object.entries(D.bankPrograms || {})) {
+  if (!banks.has(b)) errors.push(`bankPrograms: unknown bank "${b}"`);
+  for (const id of Object.values(map)) if (!(D.programs || {})[id]) errors.push(`bankPrograms.${b}: unknown program "${id}"`);
+}
+for (const [id, p] of Object.entries(D.programs || {})) {
+  if (!p.name || !p.short || !Array.isArray(p.options) || !p.options.length) errors.push(`programs.${id}: needs name, short and options`);
+  if (!/^https:\/\//.test(p.url || "")) errors.push(`programs.${id}: needs an https source url`);
+}
+
 const ids = new Set();
 for (const c of D.cards || []) {
   const w = c.id || "(card without id)";
@@ -61,6 +70,7 @@ for (const c of D.cards || []) {
     if (!isNum(e.cats[k])) errors.push(`${w}: earn.cats.${k} must be a number`);
   }
   for (const r of e.eco || []) if (!ecos.has(r.eco) || !cats.has(r.cat) || !isNum(r.rate)) errors.push(`${w}: bad eco rule ${JSON.stringify(r)}`);
+  if (e.program && !(D.programs || {})[e.program]) errors.push(`${w}: earn.program "${e.program}" is not in programs`);
   for (const k of Object.keys(e.cashCats || {})) if (!cats.has(k) || !isNum(e.cashCats[k])) errors.push(`${w}: bad cashCats entry "${k}"`);
   if (c.secured && c.secured.minDeposit != null && !isNum(c.secured.minDeposit)) errors.push(`${w}: secured.minDeposit must be a number or null`);
   for (const r of e.rotating || []) if (!cats.has(r.cat) || !isNum(r.rate) || !Array.isArray(r.months) || !r.label) errors.push(`${w}: bad rotating rule ${JSON.stringify(r)}`);
