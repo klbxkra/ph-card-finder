@@ -1,9 +1,12 @@
 <title>PH Card Finder</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap">
 <style>
+/* Inter is served from this site (SIL Open Font License, assets/inter-OFL.txt), so no font request goes to a third party.
+   Apple devices use their own SF font first and never download it. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("assets/inter-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("assets/inter-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 /* Layout: Apple-store style. Frosted nav, compact hero with a fan of card art, then a two-pane finder
    (grouped question panels left, results right). Single column under 1024px. Compare is its own view. */
 :root {
@@ -350,7 +353,7 @@ details.cc > summary::-webkit-details-marker { display: none; }
 .promo-item h4 { font-size: 17px; }
 .pgroup { display: grid; gap: 10px; }
 .pgroup > h3 { font-size: 21px; font-weight: 600; margin-top: 8px; }
-.chg { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: grid; gap: 10px; }
+.chg { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .chg h3 { font-size: 21px; font-weight: 600; }
 .chg table { border-collapse: collapse; width: 100%; font-size: 14px; }
 .chg td, .chg th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--hair); vertical-align: top; }
@@ -435,7 +438,7 @@ table.cmp tr:last-child th, table.cmp tr:last-child td { border-bottom: 0; }
 @media (max-width: 1024px) { .dock .only-phone { display: inline-flex; } .dock .thumbs { display: none; } }
 
 /* Prose views */
-.prose { max-width: 860px; display: grid; gap: 18px; padding-block: 36px; }
+.prose { max-width: 860px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding-block: 36px; }
 .prose h2 { font-size: clamp(32px, 4.5vw, 48px); font-weight: 700; letter-spacing: -.035em; }
 .prose h3 { font-size: 21px; font-weight: 600; margin-top: 10px; }
 .prose p, .prose li { font-size: 16px; max-width: 68ch; }
@@ -490,6 +493,138 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   @keyframes rise { from { opacity: .5; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 }
 @media (prefers-reduced-motion: reduce) { .fan .art { transition: none; } }
+
+/* ---------- Layout v2: tab bar on phones, step-by-step answers, rows that open a sheet ---------- */
+.icon-btn { display: none; width: 32px; height: 32px; border-radius: 50%; background: var(--fill); color: var(--ink); place-items: center; flex: none; }
+.icon-btn svg { width: 17px; height: 17px; }
+.icon-btn:hover { text-decoration: none; }
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  .links { display: none; }
+  .logo span { display: inline; }
+  .icon-btn { display: inline-grid; margin-left: auto; }
+  .tabbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
+    background: var(--nav-bg); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-top: 1px solid var(--hair);
+    padding: 0 max(4px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(4px, env(safe-area-inset-left, 0px)); }
+  .tabbar a { display: grid; justify-items: center; gap: 2px; padding: 7px 0 6px; font-size: 10.5px; font-weight: 500; color: var(--muted); position: relative; }
+  .tabbar a:hover { text-decoration: none; }
+  .tabbar a[aria-current="page"] { color: var(--accent); }
+  .tabbar svg { width: 24px; height: 24px; }
+  .tabbar .count { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+  .tabbar .count[hidden] { display: none; }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .dock { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Hero, tighter */
+.hero { padding-block: 36px 24px; }
+@media (max-width: 760px) { .hero { padding-block: 20px 6px; } .fan { display: none; } .hero h1 { font-size: 34px; } .hero p.lede { font-size: 16px; } .hero-cta { margin-top: 16px; } }
+
+/* Steps: one open at a time, the rest show a one-line summary */
+.steps { display: grid; gap: 10px; }
+.steps-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 4px; }
+.steps-top h2 { font-size: 21px; letter-spacing: -.02em; }
+.step { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); }
+.step-h { width: 100%; border: 0; background: none; text-align: left; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: var(--r); }
+.step-h .sn { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--fill); color: var(--ink); }
+.step[data-open="true"] .step-h .sn { background: var(--accent); color: var(--accent-ink); }
+.step-h .st { display: grid; min-width: 0; }
+.step-h .st b { font-size: 15.5px; }
+.step-h .st span { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step-h::after { content: ""; width: 8px; height: 8px; border-right: 1.8px solid var(--faint); border-bottom: 1.8px solid var(--faint); transform: rotate(45deg); margin: -4px 4px 0; transition: transform .2s; }
+.step[data-open="true"] .step-h::after { transform: rotate(-135deg); margin-top: 4px; }
+.step-b { border-top: 1px solid var(--hair); }
+.step[data-open="false"] .step-b { display: none; }
+.step-next { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--hair); }
+
+/* Result rows: tap anywhere to open the card */
+.rows { display: grid; gap: 8px; }
+.row { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.row-main { border: 0; background: none; text-align: left; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px 8px 14px 16px; border-radius: var(--r) 0 0 var(--r); min-width: 0; }
+.row-main:hover .cc-title { color: var(--link); }
+.row-side { display: grid; justify-items: end; gap: 6px; padding: 12px 16px 12px 4px; }
+@media (max-width: 560px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .row-main { grid-template-columns: 52px minmax(0, 1fr); padding: 12px 12px 4px; border-radius: var(--r) var(--r) 0 0; }
+  .row-main .art.sm { width: 52px; }
+  .row-side { grid-auto-flow: column; justify-content: space-between; align-items: center; padding: 0 12px 12px 78px; }
+  .row-side .cc-val .v, .row-side .cc-val .s { text-align: left; }
+}
+.why { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); display: grid; gap: 2px; }
+.banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; background: var(--accent-soft); border-radius: var(--r); padding: 14px 16px; font-size: 14.5px; }
+
+/* Card sheet: bottom sheet on phones, centred panel on larger screens */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; justify-items: center; }
+.sheet-wrap[hidden] { display: none; }
+.sheet-back { position: absolute; inset: 0; background: rgba(0, 0, 0, .38); }
+.sheet { position: relative; width: min(820px, 100%); max-height: min(92vh, 980px); background: var(--bg); border-radius: 22px 22px 0 0; box-shadow: var(--shadow-lg); display: grid; grid-template-rows: auto auto minmax(0, 1fr); overflow: hidden; }
+@media (min-width: 761px) { .sheet-wrap { align-items: center; padding: 24px; } .sheet { border-radius: 24px; max-height: calc(100vh - 48px); } }
+.sheet-top { background: var(--surface); padding: 10px 20px 12px; display: grid; gap: 12px; }
+.stabs-wrap { background: var(--surface); padding: 0 20px; border-bottom: 1px solid var(--hair); }
+.sheet-grab { width: 38px; height: 5px; border-radius: 3px; background: var(--fill); justify-self: center; }
+@media (min-width: 761px) { .sheet-grab { display: none; } .sheet-top { padding-top: 20px; } }
+.sheet-h { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.sheet-h .art { width: 96px; font-size: 8px; }
+.sheet-h h2 { font-size: 22px; line-height: 1.2; letter-spacing: -.02em; }
+.sheet-close { border: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--fill); color: var(--ink); font-size: 18px; line-height: 1; align-self: start; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.kpi { background: var(--fill-2); border-radius: 12px; padding: 8px 10px; min-width: 0; }
+.kpi span { display: block; font-size: 11.5px; color: var(--muted); }
+.kpi b { font-size: 16px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+@media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sheet-h { grid-template-columns: 72px minmax(0, 1fr) auto; } .sheet-h .art { width: 72px; } .sheet-h h2 { font-size: 19px; } }
+.sheet-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sheet-actions .btn { white-space: normal; }
+.stabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.stabs::-webkit-scrollbar { display: none; }
+.stabs button { border: 0; background: none; padding: 10px 12px 11px; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.stabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.sheet-body { overflow-y: auto; overscroll-behavior: contain; padding: 18px 20px calc(24px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; font-size: 14.5px; }
+.sheet-body h4 { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+.sheet-body .blk { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.sheet-body .quick { gap: 12px; }
+.sheet-body .blk p { margin: 0; }
+.sheet-body ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+body.locked { overflow: hidden; }
+/* On phones the whole sheet scrolls, with the tabs pinned to its top edge. */
+@media (max-width: 760px) {
+  .sheet { display: block; overflow-y: auto; overscroll-behavior: contain; }
+  .sheet-body { overflow: visible; }
+  .stabs-wrap { position: sticky; top: 0; z-index: 2; }
+  .kpi { padding: 6px 10px; } .kpi b { font-size: 15px; }
+}
+
+/* Learn and About: a segmented switch between topics */
+.topics { display: flex; gap: 6px; flex-wrap: wrap; }
+.topics a { padding: 7px 14px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); font-size: 14px; font-weight: 500; }
+.topics a:hover { text-decoration: none; }
+.topics a[aria-current="page"] { background: var(--ink); color: var(--bg); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.tile { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.tile .ic { font-size: 22px; line-height: 1; }
+.tile b { font-size: 16px; }
+.prose .tile p, .prose .tile li { font-size: 14px; margin: 0; }
+.flow { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: f; }
+.flow li { position: relative; padding: 0 14px 0 0; display: grid; gap: 6px; align-content: start; max-width: none; }
+.flow li::before { counter-increment: f; content: counter(f); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--art-classic); color: #fff; font-weight: 700; }
+.flow li:not(:last-child)::after { content: ""; position: absolute; top: 17px; left: 40px; right: 8px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); opacity: .5; }
+.flow b { font-size: 15px; }
+.prose .flow p { font-size: 13.5px; color: var(--muted); margin: 0; }
+@media (max-width: 760px) {
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .flow li { grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; padding: 0; }
+  .flow li::before { grid-row: span 2; }
+  .flow li:not(:last-child)::after { top: 40px; bottom: -12px; left: 16px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, var(--accent), transparent); }
+}
+.note-box { background: var(--accent-soft); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 6px; }
+.prose .note-box p { margin: 0; font-size: 15px; }
+/* Picks on phones: small card art beside the details, so four picks fit in a couple of screens */
+@media (max-width: 640px) {
+  .pick, .pick.lead { grid-template-columns: 92px minmax(0, 1fr); gap: 14px; padding: 16px; align-items: start; }
+  .pick .art, .pick.lead .art { max-width: 92px; font-size: 6px; box-shadow: var(--shadow); }
+  .pk-name { font-size: 17px; } .pick.lead .pk-name { font-size: 21px; }
+  .pk-val { font-size: 19px; } .pick.lead .pk-val { font-size: 25px; }
+}
+footer.foot { max-width: 1240px; margin: 40px auto 0; padding-top: 18px; border-top: 1px solid var(--hair); display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
 </style>
 
 <header class="nav">
@@ -497,13 +632,14 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     <a class="logo" href="#find" aria-label="PH Card Finder home"><i aria-hidden="true"></i><span>PH Card Finder</span></a>
     <nav class="links" aria-label="Sections">
       <a href="#find" data-view="find">Find</a>
+      <a href="#wallet" data-view="wallet">My cards</a>
       <a href="#compare" data-view="compare">Compare<span class="count" id="navCount" hidden></span></a>
       <a href="#promos" data-view="promos">Promos</a>
-      <a href="#changes" data-view="changes">What changed</a>
-      <a href="#guide" data-view="factors">Credit guide</a>
-      <a href="#data" data-view="data">About the data</a>
+      <a href="#learn" data-view="learn">Learn</a>
+      <a href="#about" data-view="about">About</a>
     </nav>
     <button type="button" class="btn sm" id="installBtn" hidden>Install app</button>
+    <a class="icon-btn" href="#about" aria-label="About the data and privacy"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="6.2" r="1.1" fill="currentColor"/></svg></a>
     <div class="theme" role="group" aria-label="Appearance">
       <button type="button" data-theme-set="auto" aria-label="Match system appearance" title="Auto"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg></button>
       <button type="button" data-theme-set="light" aria-label="Light appearance" title="Light"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M3 13l1.1-1.1M11.9 4.1L13 3"/></g></svg></button>
@@ -512,6 +648,14 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   </div>
 </header>
 
+<nav class="tabbar" aria-label="Sections">
+  <a href="#find" data-view="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Find</a>
+  <a href="#wallet" data-view="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>My cards</a>
+  <a href="#compare" data-view="compare"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="7" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="4" width="7" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Compare<span class="count" id="tabCount" hidden></span></a>
+  <a href="#promos" data-view="promos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.2 6.2a1.4 1.4 0 0 1-2 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>Promos</a>
+  <a href="#learn" data-view="learn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Learn</a>
+</nav>
+
 <div class="wrap">
   <main>
     <section id="view-find">
@@ -519,42 +663,52 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         <div>
           <span class="eyebrow" id="fresh"></span>
           <h1>The right card.<br><span>For the way you spend.</span></h1>
-          <p class="lede" id="lede">Answer a few questions. We check every Philippine credit card against what banks actually require, then rank them by what they'd earn you.</p>
-          <div class="hero-cta"><a class="btn" href="#results" id="heroGo">See your matches</a><a class="btn ghost" href="#compare">Compare cards ›</a></div>
+          <p class="lede" id="lede">Answer four short steps. We check every Philippine credit card against what banks actually require, then rank them by what they'd earn you.</p>
+          <div class="hero-cta"><a class="btn" href="#form" id="heroGo">Start</a><a class="btn ghost" href="#results" id="heroResults">See matches ›</a></div>
         </div>
         <div class="fan" id="fan" aria-hidden="true"></div>
       </div>
 
       <div class="find">
-        <form class="form" id="form" autocomplete="off">
-          <div class="panel"><div class="sample-note" id="sampleNote"><span>These are sample answers. Change them to yours.</span><button type="button" class="btn ghost sm" id="resetBtn">Clear spend</button></div></div>
+        <form class="form steps" id="form" autocomplete="off">
+          <div class="steps-top"><h2>Your answers</h2><button type="button" class="btn ghost sm" id="resetBtn">Clear spend</button></div>
+          <p class="privacy" id="sampleNote">These are sample answers. Change them to yours; nothing leaves this page.</p>
 
-          <div>
-            <div class="group-h">About you</div>
-            <div class="panel">
+          <section class="step" data-step="1" data-open="true">
+            <button type="button" class="step-h" data-stepbtn="1" aria-expanded="true" aria-controls="step1"><span class="sn">1</span><span class="st"><b>About you</b><span id="sum1"></span></span></button>
+            <div class="step-b" id="step1">
               <div class="q"><div class="qh"><label for="age">Age</label><span data-info="age"></span></div><select id="age"></select></div>
               <div class="q"><div class="qh"><label for="income">Gross income</label><span class="sub">before tax, that you can document</span><span data-info="income"></span></div><select id="income"></select></div>
               <div class="q"><div class="qh"><label for="emp">Work</label><span data-info="emp"></span></div><select id="emp"></select></div>
-              <div class="q"><div class="qh"><span class="ql" id="cardLbl">Credit cards you have now</span><span data-info="card"></span></div><div class="segc" role="radiogroup" aria-labelledby="cardLbl" id="card"></div><div class="wallet" id="wallet"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="banksLbl">Banks where you have an account</span><span data-info="banks"></span></div><div class="chips" id="banks" aria-labelledby="banksLbl"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="regionLbl">Where you live or work</span><span data-info="region"></span></div><div class="segc" role="radiogroup" aria-labelledby="regionLbl" id="region"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="creditLbl">Credit record</span><span class="sub">optional</span><span data-info="credit"></span></div><div class="segc" role="radiogroup" aria-labelledby="creditLbl" id="credit"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="resLbl">Citizenship and residence</span><span class="sub">optional</span><span data-info="residency"></span></div><div class="segc" role="radiogroup" aria-labelledby="resLbl" id="residency"></div></div>
+              <div class="step-next"><button type="button" class="btn sm" data-next="2">Next: your cards</button></div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div class="group-h">Monthly spend on the card <span data-info="spend"></span></div>
-            <div class="panel">
-              <div class="presets"><button type="button" class="btn soft sm" data-preset="light">Light</button><button type="button" class="btn soft sm" data-preset="typical">Typical</button><button type="button" class="btn soft sm" data-preset="heavy">Heavy</button></div>
+          <section class="step" data-step="2" data-open="false">
+            <button type="button" class="step-h" data-stepbtn="2" aria-expanded="false" aria-controls="step2"><span class="sn">2</span><span class="st"><b>Cards you have</b><span id="sum2"></span></span></button>
+            <div class="step-b" id="step2">
+              <div class="q"><div class="qh"><span class="ql" id="cardLbl">Credit cards you have now</span><span data-info="card"></span></div><div class="segc" role="radiogroup" aria-labelledby="cardLbl" id="card"></div><div class="wallet wallet-ed" id="wallet"></div></div>
+              <div class="step-next"><a class="btn ghost sm" href="#wallet">Open My cards ›</a><button type="button" class="btn sm" data-next="3">Next: spending</button></div>
+            </div>
+          </section>
+
+          <section class="step" data-step="3" data-open="false">
+            <button type="button" class="step-h" data-stepbtn="3" aria-expanded="false" aria-controls="step3"><span class="sn">3</span><span class="st"><b>Monthly spending</b><span id="sum3"></span></span></button>
+            <div class="step-b" id="step3">
+              <div class="presets"><button type="button" class="btn soft sm" data-preset="light">Light</button><button type="button" class="btn soft sm" data-preset="typical">Typical</button><button type="button" class="btn soft sm" data-preset="heavy">Heavy</button><span data-info="spend"></span></div>
               <div id="spend"></div>
               <div class="spend-foot"><span>Total a month</span><b class="num" id="spendTotal"></b></div>
+              <div class="step-next"><button type="button" class="btn sm" data-next="4">Next: what you want</button></div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div class="group-h">What you want</div>
-            <div class="panel">
+          <section class="step" data-step="4" data-open="false">
+            <button type="button" class="step-h" data-stepbtn="4" aria-expanded="false" aria-controls="step4"><span class="sn">4</span><span class="st"><b>What you want</b><span id="sum4"></span></span></button>
+            <div class="step-b" id="step4">
               <div class="q"><div class="qh"><span class="ql" id="prefLbl">Reward type</span><span data-info="pref"></span></div><div class="segc" role="radiogroup" aria-labelledby="prefLbl" id="pref"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="feeLbl">Annual fee</span><span data-info="feeTol"></span></div><div class="segc" role="radiogroup" aria-labelledby="feeLbl" id="feeTol"></div></div>
               <div class="q"><div class="qh"><span class="ql" id="perksLbl">Nice to have</span><span data-info="perks"></span></div><div class="chips" id="perks" aria-labelledby="perksLbl"></div></div>
@@ -562,25 +716,30 @@ table.factors.narrow td:first-child { white-space: nowrap; }
               <div class="q"><div class="qh"><label for="mv">What an airline mile is worth to you</label><span data-info="mv"></span></div><div class="range"><input type="range" id="mv" min="0.2" max="1" step="0.05"><output for="mv" id="mvOut"></output><button type="button" class="btn ghost sm" id="mvReset" hidden>Reset</button></div></div>
               <div class="q"><div class="qh"><span class="ql" id="balLbl">How you pay your bill</span><span data-info="balance"></span></div><div class="segc" role="radiogroup" aria-labelledby="balLbl" id="balance"></div></div>
               <label class="toggle"><input type="checkbox" class="switch" id="promos" checked> <span>Count lifetime fee-waiver promos when I'd meet the spend</span></label>
+              <div class="step-next"><button type="button" class="btn sm" data-done="1">See my matches</button></div>
             </div>
-          </div>
-
-          <p class="privacy">Nothing you enter is saved or sent anywhere. The math runs in this page, and closing it clears everything.</p>
+          </section>
         </form>
 
         <section class="results" id="results" aria-live="polite"></section>
       </div>
     </section>
 
+    <section id="view-wallet" hidden></section>
     <section id="view-compare" hidden></section>
     <section id="view-promos" class="prose" style="max-width:none" hidden></section>
-    <section id="view-changes" class="prose" style="max-width:none" hidden></section>
-    <section id="view-factors" class="prose" hidden></section>
-    <section id="view-data" class="prose" hidden></section>
+    <section id="view-learn" class="prose" hidden></section>
+    <section id="view-about" class="prose" hidden></section>
   </main>
+  <footer class="foot"><span>PH Card Finder · general information, not financial advice</span><a href="#about">About the data and privacy</a><a href="#about-changes">What changed</a><a href="https://github.com/klbxkra/ph-card-finder" target="_blank" rel="noopener">Source on GitHub</a></footer>
 </div>
 
 <div class="dock" id="dock" hidden></div>
+
+<div class="sheet-wrap" id="sheet" hidden>
+  <div class="sheet-back" data-close="1"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" id="sheetPanel"></div>
+</div>
 
 <script src="data.js"></script>
 <script src="history.js"></script>
@@ -751,16 +910,21 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   // Card picker: every card by bank, plus "another card" per bank for ones not listed.
   const WALLET_OPTS = `<option value="">Which card? (optional)</option>` + BANK_KEYS.map(b => `<optgroup label="${esc(b)}">${D.cards.filter(c => c.bank === b).map(c => `<option value="${c.id}">${esc(b)} ${esc(c.name)}${c.status === "closed" ? " (no longer offered)" : ""}</option>`).join("")}<option value="other:${esc(b)}">Another ${esc(b)} card</option></optgroup>`).join("") + `<optgroup label="Other banks"><option value="other:">A card from another bank</option></optgroup>`;
   const newWalletRow = () => ({ id: "", held: "1to2", limit: "skip" });
-  function renderWallet() {
+  // The card list can be edited in Find (step 2) and in My cards. Both editors draw from st.wallet;
+  // an edit in one redraws the other.
+  function walletEditor() {
     const opt = (items, v) => items.map(([k, l]) => `<option value="${esc(k)}"${k === v ? " selected" : ""}>${esc(l)}</option>`).join("");
-    $("#wallet").innerHTML = st.wallet.map((w, i) => `
+    return st.wallet.map((w, i) => `
       <div class="wrow">
         <div class="wrow-top"><select class="w-card" aria-label="Card ${i + 1}: which card">${WALLET_OPTS.replace(`value="${esc(w.id)}"`, `value="${esc(w.id)}" selected`)}</select><button type="button" class="w-del" data-wdel="${i}" aria-label="Remove card ${i + 1}">×</button></div>
         <div class="wrow-sub"><select class="w-held" aria-label="Card ${i + 1}: how long you've had it">${opt(HELD, w.held)}</select><select class="w-limit" aria-label="Card ${i + 1}: credit limit">${opt(LIMITS, w.limit)}</select></div>
-      </div>`).join("") + `<button type="button" class="btn ghost sm" id="addCard">+ Add another card</button>`;
+      </div>`).join("") + `<button type="button" class="btn ghost sm" data-addcard="1">+ Add ${st.wallet.length ? "another" : "a"} card</button>`;
+  }
+  function renderWallet(except) {
+    document.querySelectorAll(".wallet-ed").forEach(el => { if (el !== except) el.innerHTML = walletEditor(); });
     $("#wallet").hidden = st.card !== "yes";
   }
-  const readWallet = () => [...document.querySelectorAll("#wallet .wrow")].map(r => ({ id: r.querySelector(".w-card").value, held: r.querySelector(".w-held").value, limit: r.querySelector(".w-limit").value }));
+  const readWallet = (box = document.querySelector(".wallet-ed:not([hidden])") || $("#wallet")) => [...box.querySelectorAll(".wrow")].map(r => ({ id: r.querySelector(".w-card").value, held: r.querySelector(".w-held").value, limit: r.querySelector(".w-limit").value }));
   // The mile slider follows the reward preference until someone moves it.
   function syncMv() {
     const el = $("#mv"), auto = st.mv == null, v = auto ? (st.pref === "miles" ? D.meta.mileValue.travel : D.meta.mileValue.cash) : st.mv;
@@ -770,7 +934,8 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     st.age = $("#age").value; st.income = +$("#income").value; st.emp = $("#emp").value;
     const radio = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
     const checks = n => new Set([...document.querySelectorAll(`input[name="${n}"]:checked`)].map(i => i.value));
-    st.card = radio("card"); st.wallet = readWallet(); st.region = radio("region");
+    // st.wallet is kept current by the editors themselves (see the change listener below).
+    st.card = radio("card"); st.region = radio("region");
     if (st.card === "yes" && !st.wallet.length) { st.wallet = [newWalletRow()]; renderWallet(); }
     $("#wallet").hidden = st.card !== "yes";
     st.mv = $("#mv").dataset.set ? +$("#mv").value : null;
@@ -779,7 +944,26 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     st.banks = checks("banks"); st.perks = checks("perks"); st.eco = checks("eco");
     st.promos = $("#promos").checked;
     document.querySelectorAll("#spend input").forEach(i => { st.spend[i.dataset.cat] = Math.max(0, +i.value || 0); });
-    syncMv();
+    syncMv(); renderSummaries();
+  }
+
+  /* ---------- Steps: one open at a time; closed steps show what you picked ---------- */
+  const label = (items, v) => (items.find(([k]) => k === v) || [, ""])[1];
+  function renderSummaries() {
+    const inc = INCOMES[st.income], emp = label(EMPS, st.emp);
+    $("#sum1").textContent = [AGES.find(a => a.id === st.age).label, inc.label.replace(/\s+\(.*\)$/, ""), emp].join(" · ");
+    const named = st.wallet.filter(w => w.id).length;
+    $("#sum2").textContent = st.card !== "yes" ? "None yet" : `${st.wallet.length} card${st.wallet.length === 1 ? "" : "s"}${named < st.wallet.length ? ` (${named} named)` : ""}`;
+    $("#sum3").textContent = `${peso(monthlySpend())} a month`;
+    $("#sum4").textContent = [label(PREFS, st.pref), label(FEES, st.feeTol), st.balance === "full" ? "Pays in full" : "Sometimes carries a balance"].join(" · ");
+  }
+  function openStep(n, scroll) {
+    document.querySelectorAll(".step").forEach(s => {
+      const on = +s.dataset.step === n;
+      s.dataset.open = on ? "true" : "false";
+      s.querySelector(".step-h").setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    if (scroll && n) { const s = document.querySelector(`.step[data-step="${n}"]`); if (s) s.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
   }
 
   /* ---------- Info tips: hover on desktop, tap anywhere ---------- */
@@ -1247,7 +1431,8 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     return out.slice(0, 4);
   }
 
-  function badgeRow(r) {
+  // Most important first; lists show the first few, the sheet shows more.
+  function badgeRow(r, max = 9) {
     const b = [];
     if (r.ev.owned) b.push(`<span class="b good">You have this</span>`);
     else if (r.ap) b.push(`<span class="b ${apClass(r.ap.label)}">${esc(r.ap.label)} odds</span>`);
@@ -1261,7 +1446,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     const live = visiblePromos(r.card).filter(p => p.until && isActive(p.until));
     if (live.length) b.push(`<span class="b promo">Promo to ${esc(fmtDate(live[0].until))}</span>`);
     if (r.card.flags && r.card.flags.length) b.push(`<span class="b warn">${r.card.flags.length === 1 ? esc(r.card.flags[0]) : r.card.flags.length + " data caveats"}</span>`);
-    return b.join("");
+    return b.slice(0, max).join("");
   }
 
   function sourceList(card) {
@@ -1278,122 +1463,132 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     return a.url ? `<a class="btn ${cls || ""}${a.how ? " soft" : ""}" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.how || `Apply on ${c.bank}'s site`)} ↗</a>` : "";
   };
 
-  function cardItem(r) {
+  // One line per card in the list. Tapping it opens the card sheet.
+  function cardRow(r) {
+    const c = r.card;
+    return `<div class="row" id="card-${c.id}">
+      <button type="button" class="row-main" data-go="${c.id}">${art(c, "sm")}
+        <span class="cc-main"><span class="cc-title">${esc(c.bank)} ${esc(c.name)} <small>${esc(c.network || "")}</small></span><span class="badges">${badgeRow(r, 4)}</span></span></button>
+      <div class="row-side"><div class="cc-val"><div class="v${r.net < 0 ? " neg" : ""}">${peso(r.net)}</div><div class="s">est. a year</div></div>${cmpBtn(c.id)}</div>
+    </div>`;
+  }
+
+  // Why a card shows up for this person, in two or three short reasons.
+  function whyFor(r) {
+    const out = [];
+    const top = r.rw.lines[0];
+    if (top && top.eff > 0) out.push(`${pct(top.eff)} back on ${shortCat(top.id)}, where it earns you the most`);
+    (r.ap && !r.ev.owned ? r.ap.why : []).filter(w => !/under the floor|No credit|strict|late|Unpaid/i.test(w)).slice(0, 1).forEach(w => out.push(w));
+    (r.ft.why || []).filter(w => !/avoid|didn't pick/.test(w)).slice(0, 1).forEach(w => out.push(w));
+    if (r.fe.ongoing === 0 && out.length < 3) out.push(r.fe.promoUsed ? "Free for life through a current promo" : "No ongoing annual fee");
+    return out.slice(0, 3);
+  }
+
+  // How a card's rewards reach you: the program's own rule when we have it, otherwise the general shape.
+  function payoutHtml(c) {
+    const p = programFor(c);
+    if (!p) return "";
+    if (p.payout) return `<p><b>${p.payout.auto ? "Credited automatically." : "You redeem it yourself."}</b> ${esc(p.payout.how)}</p><p><b>Limits:</b> ${esc(p.payout.limits)} <a class="cite" href="${esc(p.payout.url)}" target="_blank" rel="noopener">bank's terms</a></p>`;
+    const kind = c.earn.unit === "cash" ? "Cashback usually shows up as a credit on a later statement, either automatically or once you redeem it." : "Points sit in your rewards account until you redeem them for credit, items or miles.";
+    return `<p>${kind} We don't have this program's exact payout rules yet; check the bank's terms.</p>`;
+  }
+
+  const SHEET_TABS = [["overview", "Overview"], ["rewards", "Rewards"], ["fees", "Fees"], ["apply", "Requirements"], ["more", "Reviews and sources"]];
+  function sheetBody(r, tab) {
     const c = r.card, bank = D.banks[c.bank] || {};
-    const officialPage = (c.src || []).map(src).find(x => x && x.kind === "official");
-
-    const lines = r.rw.lines.slice(0, 8).map(l => `<tr><td>${esc(l.label)}${l.tag ? ` <span class="sub" style="display:inline">(${esc(l.tag)})</span>` : ""}</td><td>${peso(l.amt)}</td><td>${pct(l.eff)}</td><td>${peso(l.year)}</td></tr>`).join("");
-    const rotLine = r.rw.rot.length ? `<tr><td>8% quarterly categories <span class="sub" style="display:inline">(${r.rw.rot.map(q => esc(q.label)).join(", ")})</span></td><td></td><td></td><td>${peso(r.rw.rotExtra)}</td></tr>` : "";
-    const valueBody = `
-      <table class="math"><tbody>
-        ${lines || `<tr><td colspan="4">No rewards on your spend</td></tr>`}
-        ${rotLine}
-        <tr class="tot"><td>Rewards</td><td></td><td></td><td>${peso(r.rw.year)}</td></tr>
-        <tr><td>Annual fee, ongoing</td><td></td><td></td><td>−${peso(r.fe.ongoing)}</td></tr>
-        ${r.fx ? `<tr><td>Fee on foreign purchases (${pct(c.fx)})</td><td></td><td></td><td>−${peso(r.fx)}</td></tr>` : ""}
-        <tr class="tot"><td>Net a year</td><td></td><td></td><td>${peso(r.net)}</td></tr>
-      </tbody></table>
-      <p class="sub">Columns: your monthly spend, the effective rate, and the yearly reward. ${esc(r.rw.capped)}${r.rw.capped ? ". " : ""}${!r.rw.bonusOn ? "Bonus rates need more monthly spend than you entered. " : ""}Year 1: ${peso(r.net1)}.${c.earn.valueAssumed ? " Point value is an assumption; see About the data." : ""}</p>`;
-
-    const elig = [];
-    if (c.age) elig.push(`Age ${c.age[0]}${c.age[1] >= 99 ? "+" : "–" + c.age[1]} for the main cardholder`);
-    if (c.secured) elig.push(esc(c.secured.note));
-    else if (c.status === "depositor") elig.push(esc(c.incomeNote || `${c.depositorBank} clients only`));
-    else elig.push(`Income: ${c.minIncome ? `${peso(c.minIncome)} a year (${c.incomeVia === "official" ? "bank site" : "comparison site"})` : c.estIncome ? `not published, about ${peso(c.estIncome)} a year estimated` : "not published"}`);
-    if (c.incomeNote && c.status !== "depositor") elig.push(esc(c.incomeNote));
-    if (c.needsCard) elig.push(`Another bank's credit card held ${c.needsCard.months}+ months${c.needsCard.minLimit ? ` with a ${peso(c.needsCard.minLimit)}+ limit` : ""}`);
-    if (c.altCard) elig.push(`Alternative route: another bank's card held ${c.altCard.months}+ months with a ${peso(c.altCard.minLimit)}+ limit`);
-    if (c.tenureMonths) elig.push(`${c.tenureMonths >= 12 ? "1 year" : c.tenureMonths + " months"}+ as a regular employee`);
-    if (c.areas === "eastwest") elig.push("Home or office inside EastWest's serviceable cities");
-    if (c.needsMembership) elig.push(`Paid ${esc(c.needsMembership.label)} membership`);
-    const d = bank.docs || {};
-    const reqBody = `
-      ${r.ev.owned ? `<div class="you"><b>You have this card.</b> The requirements below are for reference.</div>` : `<div class="you"><b>Your odds: ${esc(r.ap ? r.ap.label : "Not eligible yet")}.</b> ${esc([...(r.ap ? r.ap.why : []), ...r.ev.reasons].join(". "))}${r.ev.reasons.length || (r.ap && r.ap.why.length) ? "." : ""}</div>`}
-      ${r.ev.notes.length ? `<div><h5>For your situation</h5>${ul(r.ev.notes.map(esc))}</div>` : ""}
-      <div><h5>Eligibility</h5>${ul(elig)}</div>
-      <div><h5>IDs</h5>${ul((d.ids || []).map(esc))}</div>
-      <div><h5>Proof of income</h5>${ul((d.income || []).map(esc))}</div>
-      ${d.foreign ? `<div><h5>Foreign nationals</h5>${ul(d.foreign.map(esc))}</div>` : ""}
-      <p class="sub">${d.via === "official" ? `From ${esc(c.bank)}'s own pages.` : "Common requirements; the bank doesn't list them in one place."} ${esc(d.note || "")}</p>`;
-
-    const steps = pathFor(r);
-    const pathBody = `<ol class="path">${steps.map((s, i) => `<li data-n="${i + 1}"><div>
-      <div class="when">${esc(s.when)}</div><div class="what">${esc(s.what)}</div>
-      <div>${esc(s.text)}${s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">Bank's steps</a>` : ""}</div>
-      ${s.cards && s.cards.length ? `<div class="mini">${s.cards.map(x => `<button type="button" data-go="${x.card.id}">${esc(x.card.bank)} ${esc(x.card.name)} · ${s.showIncome ? (reqOf(x.card) ? peso(reqOf(x.card)) + "/yr income" : "income n/a") : peso(x.net) + "/yr"}</button>`).join("")}</div>` : ""}
-    </div></li>`).join("")}</ol>`;
-
-    const shownPromos = visiblePromos(c);
-    const hiddenPromos = (c.promos || []).length - shownPromos.length;
-    const activePromos = shownPromos.filter(p => isActive(p.until));
-    const promoBody = ul(shownPromos.map(p => {
-      const on = isActive(p.until); const s = src(p.src);
-      return `${on ? "" : "<s>"}<b>${esc(p.title)}</b>${on ? "" : "</s>"}${isThirdParty(p) ? ` <span class="b">via MoneyMax</span>` : ""} ${esc(p.detail)} <span class="sub" style="display:inline">${p.until ? (on ? `Until ${esc(fmtDate(p.until))}` : `Ended ${esc(fmtDate(p.until))}`) : "No end date shown"}${s ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</span>`;
-    })) + (hiddenPromos ? `<p class="sub">${hiddenPromos} MoneyMax offer${hiddenPromos > 1 ? "s" : ""} hidden. Turn on “Show MoneyMax offers” above the list to see ${hiddenPromos > 1 ? "them" : "it"}.</p>` : "");
+    const blk = (title, body) => body ? `<div class="blk">${title ? `<h4>${title}</h4>` : ""}${body}</div>` : "";
+    if (tab === "overview") {
+      const rating = ratings(c);
+      const goodList = [...(r.ft.why || []).filter(x => !/avoid|didn't pick/.test(x)), ...(c.pros || [])].slice(0, 4);
+      const badList = [...(r.ft.why || []).filter(x => /avoid|didn't pick/.test(x)), ...r.ev.reasons, ...(c.cons || [])].slice(0, 4);
+      const you = r.ev.owned ? `<div class="you"><b>You have this card.</b> Its details are here for reference.</div>`
+        : `<div class="you"><b>Your odds: ${esc(r.ap ? r.ap.label : "Not eligible yet")}.</b> ${esc([...(r.ap ? r.ap.why : []), ...r.ev.reasons].join(". "))}${r.ev.reasons.length || (r.ap && r.ap.why.length) ? "." : ""}</div>`;
+      const live = visiblePromos(c).filter(p => isActive(p.until));
+      return `${you}
+        ${r.ev.notes.length ? blk("For your situation", ul(r.ev.notes.map(esc))) : ""}
+        <div class="quick"><div class="blk"><h4>Good</h4>${ul(goodList.map(esc))}</div><div class="blk"><h4>Watch out</h4>${ul(badList.map(esc))}</div></div>
+        <div class="blk">${inlineTip("How it rates", RATING_TIP)}<div class="ratings">${rating.map(([l, n]) => `<div class="rt"><span>${esc(l)}</span>${bars(n)}</div>`).join("")}</div></div>
+        ${live.length ? blk("Running promos", ul(live.map(p => `<b>${esc(p.title)}</b>${isThirdParty(p) ? ` <span class="b">via MoneyMax</span>` : ""} ${esc(p.detail || "")} <span class="sub">${p.until ? "until " + esc(fmtDate(p.until)) : "no end date shown"}</span>`))) : ""}
+        ${c.perks && c.perks.length ? blk("Perks", ul(c.perks.map(esc))) : ""}`;
+    }
+    if (tab === "rewards") {
+      const lines = r.rw.lines.slice(0, 11).map(l => `<tr><td>${esc(l.label)}${l.tag ? ` <span class="sub" style="display:inline">(${esc(l.tag)})</span>` : ""}</td><td>${peso(l.amt)}</td><td>${pct(l.eff)}</td><td>${peso(l.year)}</td></tr>`).join("");
+      const rotLine = r.rw.rot.length ? `<tr><td>8% quarterly categories <span class="sub" style="display:inline">(${r.rw.rot.map(q => esc(q.label)).join(", ")})</span></td><td></td><td></td><td>${peso(r.rw.rotExtra)}</td></tr>` : "";
+      const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
+      const prog = programFor(c);
+      return `${blk("How it earns", `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}`)}
+        ${blk(`Your estimate: ${peso(r.net)} a year`, `<table class="math"><tbody>
+          <tr><td class="sub">Category</td><td class="sub">Monthly</td><td class="sub">Rate</td><td class="sub">A year</td></tr>
+          ${lines || `<tr><td colspan="4">No rewards on your spend</td></tr>`}${rotLine}
+          <tr class="tot"><td>Rewards</td><td></td><td></td><td>${peso(r.rw.year)}</td></tr>
+          <tr><td>Annual fee, ongoing</td><td></td><td></td><td>−${peso(r.fe.ongoing)}</td></tr>
+          ${r.fx ? `<tr><td>Fee on foreign purchases (${pct(c.fx)})</td><td></td><td></td><td>−${peso(r.fx)}</td></tr>` : ""}
+          <tr class="tot"><td>Net a year</td><td></td><td></td><td>${peso(r.net)}</td></tr></tbody></table>
+          <p class="sub">${esc(r.rw.capped)}${r.rw.capped ? ". " : ""}${!r.rw.bonusOn ? "Bonus rates need more monthly spend than you entered. " : ""}Year 1: ${peso(r.net1)}.${c.earn.valueAssumed ? " The point value is an assumption." : ""}</p>`)}
+        ${prog ? blk(`How you get your ${esc(unitWord(c))}`, payoutHtml(c) + `<p class="sub"><a href="#learn-rewards">How cashback, points and miles work ›</a></p>`) : ""}
+        ${prog ? blk(`Using your ${esc(unitWord(c))}`, `<p><b>${esc(prog.name)}</b></p>${ul(prog.options.map(esc))}${prog.airlines && prog.airlines.length ? `<p><b>Airline partners:</b> ${esc(prog.airlines.join(", "))}</p>` : ""}${prog.notes ? `<p>${esc(prog.notes)}</p>` : ""}${prog.how ? `<p><b>How to redeem:</b> ${esc(prog.how)}</p>` : ""}<p class="sub">${prog.via === "official" ? "From the bank's own pages" : "From comparison sites"} · <a href="${esc(prog.url)}" target="_blank" rel="noopener">source</a></p>`) : ""}
+        ${prog && prog.noEarn ? blk("What earns nothing", `<p>${esc(prog.noEarn.text)} <a class="cite" href="${esc(prog.noEarn.url)}" target="_blank" rel="noopener">bank's terms${prog.noEarn.asOf ? ", " + esc(prog.noEarn.asOf) : ""}</a></p>`) : ""}`;
+    }
+    if (tab === "fees") {
+      const promos = visiblePromos(c);
+      return `${blk("Fees and rates", ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month on unpaid balances`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean)))}
+        ${hasFee(c) ? blk("Getting the annual fee waived", ul(waiverWays(c, { owned: !!r.ev.owned }))) : ""}
+        ${promos.length ? blk("All promos on this card", ul(promos.map(p => { const on = isActive(p.until), s = src(p.src); return `${on ? "" : "<s>"}<b>${esc(p.title)}</b>${on ? "" : "</s>"} ${esc(p.detail || "")} <span class="sub">${p.until ? (on ? "until " : "ended ") + esc(fmtDate(p.until)) : "no end date shown"}${s ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener">source</a>` : ""}</span>`; }))) : ""}`;
+    }
+    if (tab === "apply") {
+      const elig = [];
+      if (c.age) elig.push(`Age ${c.age[0]}${c.age[1] >= 99 ? "+" : "–" + c.age[1]} for the main cardholder`);
+      if (c.secured) elig.push(esc(c.secured.note));
+      else if (c.status === "depositor") elig.push(esc(c.incomeNote || `${c.depositorBank} clients only`));
+      else elig.push(`Income: ${c.minIncome ? `${peso(c.minIncome)} a year (${c.incomeVia === "official" ? "bank site" : "comparison site"})` : c.estIncome ? `not published, about ${peso(c.estIncome)} a year estimated` : "not published"}`);
+      if (c.incomeNote && c.status !== "depositor") elig.push(esc(c.incomeNote));
+      if (c.needsCard) elig.push(`Another bank's credit card held ${c.needsCard.months}+ months${c.needsCard.minLimit ? ` with a ${peso(c.needsCard.minLimit)}+ limit` : ""}`);
+      if (c.altCard) elig.push(`Alternative route: another bank's card held ${c.altCard.months}+ months with a ${peso(c.altCard.minLimit)}+ limit`);
+      if (c.tenureMonths) elig.push(`${c.tenureMonths >= 12 ? "1 year" : c.tenureMonths + " months"}+ as a regular employee`);
+      if (c.areas === "eastwest") elig.push("Home or office inside EastWest's serviceable cities");
+      if (c.needsMembership) elig.push(`Paid ${esc(c.needsMembership.label)} membership`);
+      const d = bank.docs || {};
+      const steps = pathFor(r);
+      return `${blk("Eligibility", ul(elig))}
+        ${blk("Documents", `<div><b>IDs</b>${ul((d.ids || []).map(esc))}</div><div><b>Proof of income</b>${ul((d.income || []).map(esc))}</div>${d.foreign ? `<div><b>Foreign nationals</b>${ul(d.foreign.map(esc))}</div>` : ""}<p class="sub">${d.via === "official" ? `From ${esc(c.bank)}'s own pages.` : "Common requirements; the bank doesn't list them in one place."} ${esc(d.note || "")}</p>`)}
+        ${blk(`${esc(c.bank)} application notes`, `<p>${esc(bank.lookFor || "")}</p>`)}
+        ${blk("Upgrade path and credit limit", `<ol class="path">${steps.map((s, i) => `<li data-n="${i + 1}"><div>
+          <div class="when">${esc(s.when)}</div><div class="what">${esc(s.what)}</div>
+          <div>${esc(s.text)}${s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">Bank's steps</a>` : ""}</div>
+          ${s.cards && s.cards.length ? `<div class="mini">${s.cards.map(x => `<button type="button" data-go="${x.card.id}">${esc(x.card.bank)} ${esc(x.card.name)} · ${s.showIncome ? (reqOf(x.card) ? peso(reqOf(x.card)) + "/yr income" : "income n/a") : peso(x.net) + "/yr"}</button>`).join("")}</div>` : ""}
+        </div></li>`).join("")}</ol>`)}`;
+    }
     const com = (D.community || {})[c.bank] || {};
     const APP = [["instant", "Payments post instantly through the bank's own channels"], ["nextDay", "Payments post the next banking day"], ["pending", "App shows pending transactions"], ["lock", "Lock or unlock the card in the app"], ["pin", "View or change your PIN in the app"]];
     const app = com.app || {};
     const appList = APP.filter(([k]) => k in app).map(([k, l]) => `${app[k] ? "Yes" : "No"}: ${esc(l)}`);
     if ("multiFee" in app) appList.push(app.multiFee ? `Multiple-payment fee: ${esc(app.multiFee)}` : "No fee for making several payments in a cycle");
-    const comBody = `
-      ${(com.notes || []).length ? `<div><h5>From r/PHCreditCards</h5>${ul(com.notes.map(n => { const s = src(n.src); return `${esc(n.text)}${s ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener" class="sub" style="display:inline">source</a>` : ""}`; }))}</div>` : ""}
-      ${appList.length ? `<div><h5>${esc(c.bank)} app</h5>${ul(appList)}<p class="sub">From the subreddit's bank app table, updated Apr 2, 2025; apps may have changed since. <a href="${esc(D.sources.redditApp.url)}" target="_blank" rel="noopener">source</a></p></div>` : ""}
-      <div><h5>General impressions</h5><p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not tied to one thread.</p></div>
-      <p><b>${esc(c.bank)} application notes:</b> ${esc(bank.lookFor || "")}</p>`;
-    const feesBody = ul([esc(r.fe.how), c.fee && c.fee.note ? esc(c.fee.note) : "", `Interest ${pct(c.apr)} a month`, `Fee on foreign-currency purchases: ${pct(c.fx)}`].filter(Boolean))
-      + (hasFee(c) ? `<div><h5>Getting the annual fee waived</h5>${ul(waiverWays(c, { owned: !!r.ev.owned }))}</div>` : "");
-    const rotNow = (c.earn.rotating || []).find(q => q.months.includes(TODAY.getMonth() + 1));
-    const earnBody = `<p>${esc(c.earn.note || "")}</p>${rotNow ? `<p><b>This quarter:</b> 8% on ${esc(rotNow.label)}.</p>` : ""}${c.perks && c.perks.length ? `<div><h5>Perks</h5>${ul(c.perks.map(esc))}</div>` : ""}<div><h5>Good</h5>${ul((c.pros || []).map(esc))}</div><div><h5>Watch out</h5>${ul((c.cons || []).map(esc))}</div>`;
-    const prog = programFor(c);
-    const progBody = prog ? `
-      <p><b>${esc(prog.name)}</b></p>
-      <div><h5>What you can use them for</h5>${ul(prog.options.map(esc))}</div>
-      ${prog.noEarn ? `<div><h5>What earns nothing</h5><p>${esc(prog.noEarn.text)} <a class="cite" href="${esc(prog.noEarn.url)}" target="_blank" rel="noopener">bank's terms${prog.noEarn.asOf ? ", " + esc(prog.noEarn.asOf) : ""}</a></p></div>` : ""}
-      ${prog.airlines && prog.airlines.length ? `<p><b>Airline partners:</b> ${esc(prog.airlines.join(", "))}</p>` : ""}
-      ${prog.notes ? `<p>${esc(prog.notes)}</p>` : ""}
-      ${prog.how ? `<p><b>How to redeem:</b> ${esc(prog.how)}</p>` : ""}
-      <p class="sub">${prog.via === "official" ? "From the bank's own pages" : "From comparison sites; the bank's own terms weren't available"} · <a href="${esc(prog.url)}" target="_blank" rel="noopener">source</a>${c.earn.valueAssumed ? " · Point value in the estimate is an assumption." : ""}</p>` : "";
-    const rating = ratings(c);
-    const goodList = [...(r.ft.why || []).filter(x => !/avoid|didn't pick/.test(x)), ...(c.pros || [])].slice(0, 3);
-    const badList = [...(r.ft.why || []).filter(x => /avoid|didn't pick/.test(x)), ...r.ev.reasons, ...(c.cons || [])].slice(0, 3);
+    return `${(com.notes || []).length ? blk("From r/PHCreditCards", ul(com.notes.map(n => { const s = src(n.src); return `${esc(n.text)}${s ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener" class="cite">source</a>` : ""}`; }))) : ""}
+      ${appList.length ? blk(`${esc(c.bank)} app`, `${ul(appList)}<p class="sub">From the subreddit's bank app table, updated Apr 2, 2025; apps may have changed since. <a href="${esc(D.sources.redditApp.url)}" target="_blank" rel="noopener">source</a></p>`) : ""}
+      ${blk("General impressions", `<p>${esc(bank.community || "")}</p><p class="sub">Summarized from recurring forum themes, not tied to one thread.</p>`)}
+      ${blk("Sources", `<div class="srcs">${sourceList(c)}</div><p class="sub">Checked ${esc(fmtDate(c.checked))} via ${c.via === "official" ? "the bank's site" : "comparison sites"}.</p>`)}
+      ${blk("", `<div class="sheet-actions"><a class="btn soft sm" href="${esc(reportUrl(c))}" target="_blank" rel="noopener">Report a correction</a><span class="sub">Opens a GitHub issue (free account needed). Corrections are checked against the bank's site.</span></div>`)}`;
+  }
 
-    return `<details class="cc" id="card-${c.id}">
-      <summary>
-        ${art(c, "sm")}
-        <div class="cc-main"><div class="cc-title">${esc(c.bank)} ${esc(c.name)} <small>${esc(c.network || "")}</small></div><div class="badges">${badgeRow(r)}</div></div>
-        <div class="cc-side"><div class="cc-val"><div class="v${r.net < 0 ? " neg" : ""}">${peso(r.net)}</div><div class="s">est. net a year</div></div>${cmpBtn(c.id)}</div>
-      </summary>
-      <div class="cc-body">
-        <div class="facts">
-          <div class="fact"><span>Annual fee, ongoing</span><b>${r.fe.ongoing ? peso(r.fe.ongoing) : "₱0"}</b></div>
-          <div class="fact"><span>${c.secured ? "Deposit" : "Income floor"}</span><b>${c.secured ? (depositOf(c) != null ? peso(depositOf(c)) : "Ask bank") : c.status === "depositor" ? "Clients only" : reqOf(c) ? (c.minIncome ? "" : "~") + peso(reqOf(c)) + "/yr" : "n/a"}</b></div>
-          <div class="fact"><span>Rewards</span><b>${esc(rewardKind(c))}</b></div>
-          <div class="fact"><span>Foreign purchase fee</span><b>${pct(c.fx)}</b></div>
-        </div>
-        ${prog ? `<p class="redeem-line"><span>Use your ${esc(unitWord(c))} for</span> ${esc(prog.short)}</p>` : ""}
-        <div class="actions">${applyLink(c)}${officialPage ? `<a href="${esc(officialPage.url)}" target="_blank" rel="noopener">Card details on ${esc(c.bank)}'s site ›</a>` : ""}
-          <span class="sub">Opens the bank's own page in a new tab. Check the address bar before you type any details.</span>
-          <span class="minor"><button type="button" class="btn ghost sm" data-copy="${c.id}">Copy link to this card</button><a class="btn ghost sm" href="${esc(reportUrl(c))}" target="_blank" rel="noopener">Report a correction</a><span class="sub">Corrections open a GitHub issue (free account needed).</span></span></div>
-        <div>${inlineTip("How it rates", RATING_TIP)}
-          <div class="ratings">${rating.map(([l, n]) => `<div class="rt"><span>${esc(l)}</span>${bars(n)}</div>`).join("")}</div>
-        </div>
-        <div class="quick">
-          <div><h5>Why it's here</h5>${ul(goodList.map(esc))}</div>
-          <div><h5>Watch out</h5>${ul(badList.map(esc))}</div>
-        </div>
-        <div class="secs">
-          ${sec("Requirements and documents", reqBody)}
-          ${prog ? sec(`Using your ${esc(unitWord(c))}`, progBody, prog.airlines && prog.airlines.length ? "converts to airline miles" : "") : ""}
-          ${sec("Upgrade path and credit limit", pathBody)}
-          ${sec(`How we estimated ${peso(r.net)} a year`, valueBody)}
-          ${sec("Fees and rates", feesBody)}
-          ${(c.promos || []).length ? sec("Promos", promoBody, `${activePromos.length} active`) : ""}
-          ${sec("Rewards, perks, pros and cons", earnBody)}
-          ${sec(`What cardholders say about ${esc(c.bank)}`, comBody, (com.notes || []).length ? `${com.notes.length} cited note${com.notes.length > 1 ? "s" : ""}` : "")}
-          ${sec("Sources", `<div class="srcs">${sourceList(c)}</div>`, `checked ${esc(fmtDate(c.checked))} via ${c.via === "official" ? "bank site" : "compare sites"}`)}
-        </div>
+  function sheetHtml(r, tab) {
+    const c = r.card;
+    const officialPage = (c.src || []).map(src).find(x => x && x.kind === "official");
+    const kpi = (l, v) => `<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
+    return `<div class="sheet-top">
+        <div class="sheet-grab" aria-hidden="true"></div>
+        <div class="sheet-h">${art(c, "md")}<div style="min-width:0;display:grid;gap:6px"><h2 id="sheetTitle">${esc(c.bank)} ${esc(c.name)}</h2><div class="badges">${badgeRow(r, 6)}</div></div><button type="button" class="sheet-close" data-close="1" aria-label="Close">×</button></div>
+        <div class="kpis">${kpi("Est. value a year", peso(r.net))}${kpi("Annual fee", r.fe.ongoing ? peso(r.fe.ongoing) : "₱0")}${kpi(c.secured ? "Deposit" : "Income floor", c.secured ? (depositOf(c) != null ? peso(depositOf(c)) : "Ask bank") : c.status === "depositor" ? "Clients only" : reqOf(c) ? (c.minIncome ? "" : "~") + peso(reqOf(c)) : "n/a")}${kpi("Rewards", esc(rewardKind(c)))}</div>
+        <div class="sheet-actions">${applyLink(c)}${cmpBtn(c.id)}<button type="button" class="btn ghost sm" data-copy="${c.id}">Copy link</button>${officialPage ? `<a class="btn ghost sm" href="${esc(officialPage.url)}" target="_blank" rel="noopener">${esc(c.bank)}'s page ↗</a>` : ""}</div>
       </div>
-    </details>`;
+      <div class="stabs-wrap"><div class="stabs" role="tablist" aria-label="Card details">${SHEET_TABS.map(([k, l]) => `<button type="button" role="tab" data-stab="${k}" aria-selected="${tab === k}">${l}</button>`).join("")}</div></div>
+      <div class="sheet-body" id="sheetBody" role="tabpanel">${sheetBody(r, tab)}</div>`;
+  }
+
+  // Closed and invite-only cards have no estimate; their sheet just explains why.
+  function closedSheetHtml(c) {
+    return `<div class="sheet-top"><div class="sheet-grab" aria-hidden="true"></div>
+        <div class="sheet-h">${art(c, "md")}<div style="min-width:0;display:grid;gap:6px"><h2 id="sheetTitle">${esc(c.bank)} ${esc(c.name)}</h2><div class="badges"><span class="b ${c.status === "closed" ? "bad" : ""}">${c.status === "closed" ? "Not taking applications" : "Invitation only"}</span></div></div><button type="button" class="sheet-close" data-close="1" aria-label="Close">×</button></div></div>
+      <div class="sheet-body"><div class="blk"><p>${esc(c.closedNote || "")}</p></div><div class="blk"><h4>Sources</h4><div class="srcs">${sourceList(c)}</div><p class="sub">Checked ${esc(fmtDate(c.checked))}.</p></div></div>`;
   }
 
   /* ---------- Sorting and filters ---------- */
@@ -1608,10 +1803,9 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         ${sameAdds.map(x => `<p class="sub">Another ${esc(x.r.card.bank)} card shares your current limit:</p>${addRow(x)}`).join("")}
         <p class="sub">Gains are on top of what your cards earn now, after the new card's annual fee.</p></div>`;
     } else {
-      use = `<div class="wcard"><h4>Which card to use where</h4><p class="sub">Pick which cards you have (top of the form) to see where to use each one and which card would add the most.</p></div>`;
+      use = `<div class="wcard"><h4>Which card to use where</h4><p class="sub">Pick which card each one is, above, to see where to use each one and which card would add the most.</p></div>`;
     }
-    return `<div class="wsec"><div class="res-head"><h2>Your cards</h2><p>${wal.rows.length} card${wal.rows.length === 1 ? "" : "s"} · nothing you pick here leaves this page</p></div>
-      <div class="wgrid">${use}${add}${limitCard()}${feesCard(plan)}${promosCard()}</div></div>`;
+    return `<div class="wgrid">${use}${add}${limitCard()}${feesCard(plan)}${promosCard()}</div>`;
   }
 
   function pairHtml() {
@@ -1637,35 +1831,41 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     const shown = {};
     for (const k in groups) shown[k] = groups[k].filter(passes);
     const listedShown = listed.filter(passesBasic);
-    const openIds = new Set([...document.querySelectorAll("details.cc[open]")].map(d => d.id));
     const fc = filterCount();
 
     const warn = [];
     if (st.balance === "sometimes") warn.push(`<div class="callout"><b>Interest outweighs rewards.</b> Most cards charge 3% a month (36% a year) on unpaid balances. That wipes out any 1–5% cashback. Cards marked “softens the cost” charge less or rebate part of the interest.</div>`);
     if (!groups.fit.some(r => !r.ev.secured)) warn.push(`<div class="callout"><b>Few regular cards fit right now.</b> A secured card backed by your own deposit builds a credit record. After 6–12 months of on-time payments, you'll qualify card-to-card for most of the list.</div>`);
+    const n = wal.rows.length;
+    const banner = wal.rows.some(r => r.card) ? `<div class="banner"><span><b>You added ${n} card${n === 1 ? "" : "s"}.</b> See which one to use where, the best card to add, your limit and your fees.</span><a class="btn sm" href="#wallet">Open My cards</a></div>` : "";
 
     const tabs = [["fit", "Good fit", shown.fit.length], ["stretch", "Stretch", shown.stretch.length], ["out", "Not eligible yet", shown.out.length], ["all", "All cards", shown.all.length], ["listed", "Closed", listedShown.length]];
     const list = view.tab === "listed" ? null : sortRows(shown[view.tab]);
+    const closedRow = c => `<div class="row"><button type="button" class="row-main" data-go="${c.id}">${art(c, "sm")}<span class="cc-main"><span class="cc-title">${esc(c.bank)} ${esc(c.name)}</span><span class="badges"><span class="b ${c.status === "closed" ? "bad" : ""}">${c.status === "closed" ? "Not taking applications" : "Invitation only"}</span></span></span></button><div class="row-side"></div></div>`;
+    const pick = (p, i) => {
+      const why = whyFor(p.r);
+      return `<div class="pick${i === 0 ? " lead" : ""}">
+        ${art(p.r.card, i === 0 ? "lg" : "md")}
+        <div style="display:grid;gap:8px;min-width:0">
+          <span class="pk-label">${esc(p.label)}</span>
+          <span class="pk-name">${esc(p.r.card.bank)} ${esc(p.r.card.name)}</span>
+          <span class="pk-val">${peso(p.r.net)}<span class="pk-sub"> a year, est.</span></span>
+          <span class="pk-sub">${esc(p.r.ap.label)} odds · ${esc(p.r.ev.secured ? (depositOf(p.r.card) != null ? peso(depositOf(p.r.card)) + " deposit" : "deposit-backed") : p.r.fe.ongoing ? peso(p.r.fe.ongoing) + " annual fee" : "no ongoing fee")}${p.label === "Lowest interest" ? ` · ${esc(pct(p.r.card.apr))} a month` : ""}</span>
+          ${why.length ? `<ul class="why">${why.slice(0, i === 0 ? 3 : 1).map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : ""}
+          <div class="pk-actions"><button type="button" class="btn sm" data-go="${p.r.card.id}">Details</button>${cmpBtn(p.r.card.id)}</div>
+        </div>
+      </div>`;
+    };
 
     $("#results").innerHTML = `
-      <div class="res-head"><h2>Your matches</h2><p>${D.cards.length} cards checked · ${groups.fit.length} fit · based on ${peso(total)} a month</p></div>
+      <div class="res-head"><h2>Your matches</h2><p>${D.cards.length} cards checked · ${groups.fit.length} fit · ${peso(total)} a month</p></div>
       ${warn.join("")}
-      ${walletHtml()}
-      ${wal.rows.length ? `<div class="res-head"><h2>New cards for you</h2></div>` : ""}
-      <div class="picks">${pk.map((p, i) => `
-        <div class="pick${i === 0 ? " lead" : ""}">
-          ${art(p.r.card, i === 0 ? "lg" : "md")}
-          <div style="display:grid;gap:8px;min-width:0">
-            <span class="pk-label">${esc(p.label)}</span>
-            <span class="pk-name">${esc(p.r.card.bank)} ${esc(p.r.card.name)}</span>
-            <span class="pk-val">${peso(p.r.net)}<span class="pk-sub"> a year, est.</span></span>
-            <span class="pk-sub">${esc(p.r.ap.label)} odds · ${esc(p.r.ev.secured ? (depositOf(p.r.card) != null ? peso(depositOf(p.r.card)) + " deposit" : "deposit-backed") : p.r.fe.ongoing ? peso(p.r.fe.ongoing) + " annual fee" : "no ongoing fee")}${p.label === "Lowest interest" ? ` · ${esc(pct(p.r.card.apr))} a month` : ""}</span>
-            <div class="pk-actions"><button type="button" class="btn sm" data-go="${p.r.card.id}">Learn more</button>${cmpBtn(p.r.card.id)}</div>
-          </div>
-        </div>`).join("")}</div>
+      ${banner}
+      <div class="picks">${pk.map(pick).join("")}</div>
       ${pairHtml()}
       <div class="toolbar">
-        <div class="tabs" role="group" aria-label="Which cards to show">${tabs.map(([k, l, n]) => `<button type="button" data-tab="${k}" aria-pressed="${view.tab === k}">${esc(l)}<span class="n">${n}</span></button>`).join("")}</div>
+        <div class="res-head"><h2 style="font-size:24px">Every card</h2><p>Tap a card for its rewards, fees and requirements.</p></div>
+        <div class="tabs" role="group" aria-label="Which cards to show">${tabs.map(([k, l, c]) => `<button type="button" data-tab="${k}" aria-pressed="${view.tab === k}">${esc(l)}<span class="n">${c}</span></button>`).join("")}</div>
         <div class="tools">
           <label class="search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Search banks and cards" value="${esc(view.q)}" aria-label="Search banks and cards"></label>
           <select id="sort" aria-label="Sort cards">${SORTS.map(([v, l]) => `<option value="${v}"${view.sort === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>
@@ -1674,14 +1874,15 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         </div>
         ${view.filtersOpen ? filterPanel() : ""}
       </div>
-      <div class="list">${list
-        ? (list.length ? list.map(cardItem).join("") : `<div class="empty">No cards match. Try another tab, or reset the filters.${fc ? `<button type="button" class="btn soft sm" id="fReset2">Reset filters</button>` : ""}</div>`)
-        : listedShown.map(c => `<details class="cc"><summary>${art(c, "sm")}<div class="cc-main"><div class="cc-title">${esc(c.bank)} ${esc(c.name)}</div><div class="badges"><span class="b ${c.status === "closed" ? "bad" : ""}">${c.status === "closed" ? "Not taking applications" : "Invitation only"}</span></div></div><div></div></summary><div class="cc-body"><p>${esc(c.closedNote)}</p><div><div class="sub">Checked ${esc(fmtDate(c.checked))}</div><div class="srcs">${sourceList(c)}</div></div></div></details>`).join("")
+      <div class="rows">${list
+        ? (list.length ? list.map(cardRow).join("") : `<div class="empty">No cards match. Try another tab, or reset the filters.${fc ? `<button type="button" class="btn soft sm" id="fReset2">Reset filters</button>` : ""}</div>`)
+        : listedShown.map(closedRow).join("")
       }</div>`;
-    openIds.forEach(id => { const el = document.getElementById(id); if (el) el.open = true; });
     renderFan(pk);
-    renderDock(pk);
-    if (location.hash.slice(1) === "compare") renderCompare();
+    renderDock();
+    if (currentView() === "compare") renderCompare();
+    if (currentView() === "wallet") renderWalletAnalysis();
+    if (sheet.id) showSheet(sheet.id, sheet.tab, true);
   }
 
   function renderFan(pk) {
@@ -1691,18 +1892,29 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     $("#fan").innerHTML = order.map(c => art(c, "lg")).join("") + (cards[0] ? `<div class="fan-cap">Your top match: ${esc(cards[0].bank)} ${esc(cards[0].name)}</div>` : "");
   }
 
-  function renderDock(pk) {
+  // Compare tray. Phones reach Compare from the tab bar, so the tray only shows what's queued.
+  function renderDock() {
     const v = currentView();
-    const top = pk && pk[0];
     const thumbs = compare.map(id => (D.cards.find(c => c.id === id))).filter(Boolean).map(c => art(c)).join("");
-    const parts = [];
-    if (v === "find" && top) parts.push(`<span class="lbl only-phone">Top: ${esc(top.r.card.bank)} ${esc(top.r.card.name)}</span><a class="btn soft sm only-phone" href="#results" data-jump="1">Results</a>`);
-    if (compare.length && v !== "compare") parts.push(`<span class="thumbs">${thumbs}</span><a class="btn sm" href="#compare">Compare ${compare.length}</a><button type="button" class="btn ghost sm" id="dockClear">Clear</button>`);
     const dock = $("#dock");
-    dock.innerHTML = parts.join("");
-    const phone = matchMedia("(max-width: 1024px)").matches;
-    dock.hidden = !(compare.length && v !== "compare") && !(phone && v === "find" && top);
-    const nc = $("#navCount"); nc.hidden = !compare.length; nc.textContent = compare.length;
+    dock.innerHTML = compare.length && v !== "compare" ? `<span class="thumbs">${thumbs}</span><a class="btn sm" href="#compare">Compare ${compare.length}</a><button type="button" class="btn ghost sm" id="dockClear">Clear</button>` : "";
+    dock.hidden = !(compare.length && v !== "compare") || !$("#sheet").hidden;
+    for (const nc of [$("#navCount"), $("#tabCount")]) { nc.hidden = !compare.length; nc.textContent = compare.length; }
+  }
+
+  /* ---------- My cards view ---------- */
+  function renderWalletView() {
+    $("#view-wallet").innerHTML = `
+      <div class="cmp-head"><div><h2>My cards.</h2><p>Add the cards you have. You'll see which one to use where, the best card to add, what to do with your limit, how to get fees waived, and your banks' promos. Nothing you pick leaves this page or is saved.</p></div></div>
+      <div class="wgrid" style="margin-bottom:14px"><div class="wcard"><h4>Your cards</h4><div class="wallet wallet-ed" id="walletMine">${walletEditor()}</div><p class="sub">Pick the card if you can; the limit is optional and only a bracket.</p></div></div>
+      <div id="walletAnalysis"></div>`;
+    renderWalletAnalysis();
+  }
+  function renderWalletAnalysis() {
+    const el = $("#walletAnalysis");
+    if (!el) return;
+    el.innerHTML = st.card === "yes" && wal.rows.length ? walletHtml()
+      : `<div class="empty"><b style="color:var(--ink);font-size:17px">No cards added yet.</b><span>Add one above. Even without a card name, how long you've had it and its limit help with eligibility and limit advice.</span></div>`;
   }
 
   /* ---------- Compare view ---------- */
@@ -1792,7 +2004,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     else if (compare.length < MAX_COMPARE) compare.push(id);
     renderResults();
     if (currentView() === "compare") renderCompare();
-    renderDock(picks(lastRun.live));
+    renderDock();
   }
 
   /* ---------- Promos view ---------- */
@@ -1833,7 +2045,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   }
 
   /* ---------- What changed view ---------- */
-  function renderChanges() {
+  function aboutChanges() {
     const H = window.PHCC_HISTORY || [];
     const cardName = x => `${x.bank} ${x.name}`;
     const block = h => {
@@ -1847,7 +2059,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         ${changed.length ? `<details class="sec"${changed.length <= 8 ? " open" : ""}><summary><span>${changed.length} card${changed.length > 1 ? "s" : ""} changed</span></summary><div class="tbl"><table><thead><tr><th>Card</th><th>What</th><th>Before</th><th>Now</th></tr></thead><tbody>${rows}</tbody></table></div></details>` : (added.length || removed.length ? "" : `<p class="sub" style="margin:0">No card-level changes; see the note above.</p>`)}
       </div>`;
     };
-    $("#view-changes").innerHTML = `
+    return `
       <div><h2>What changed.</h2><p style="color:var(--muted)">Every data refresh is recorded here, newest first. Fees, income floors, rewards, apply links and promos are compared card by card.</p></div>
       ${H.length ? H.map(block).join("") : `<div class="empty">No history yet.</div>`}`;
   }
@@ -1873,32 +2085,97 @@ table.factors.narrow td:first-child { white-space: nowrap; }
     $("#fresh").innerHTML = `<span class="dot ${cls}"></span><span>Data as of <b>${esc(fmtDate(D.meta.dataAsOf))}</b> · ${age} · ${D.cards.length} cards</span>`;
   }
 
-  function renderFactors() {
-    const rows = [
-      ["Gross annual income", "Every bank sets a floor per card, from ₱120,000 (PNB) to ₱3,000,000 (Security Bank World).", "Asked, as a bracket"],
-      ["Work type and tenure", "Security Bank wants 1+ year as a regular employee; Metrobank 6+ months. Self-employed need 2–3 years of filed returns.", "Asked"],
-      ["Age", "Most banks take principal applicants from 21. Upper limits vary: BDO 60, Security Bank 65, Metrobank 70.", "Asked, as a bracket"],
-      ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: which cards (optional), how long, and the limit as a bracket (optional)"],
-      ["Relationship with the bank", "Depositors get pre-approved offers, depositor-only cards (BPI Free+, EastWest Priority) and secured cards.", "Asked: which banks, no balances"],
-      ["Where you live", "EastWest only serves listed cities. Most banks need a deliverable Philippine address.", "Asked, as a region"],
-      ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Asked, optional (skipped = assumed clean)"],
-      ["Citizenship or residency", "Filipino citizens qualify everywhere. BDO, EastWest, Metrobank, PNB and RCBC take resident foreigners with an ACR/ICR or visa; Security Bank takes citizens only.", "Asked, optional"],
-      ["Existing debt", "Loans and other card balances affect the limit you get, sometimes approval.", "Not asked"],
-      ["Contact numbers", "Metrobank and Security Bank ask for a landline; EastWest for a business landline.", "Shown in each card's requirements"],
-      ["Documents", "Government ID, TIN/SSS/PhilID number, and proof of income: BIR 2316 or ITR, recent payslips, or a COE. Self-employed add audited financials and DTI/SEC papers.", "Listed per bank in each card"]
-    ];
+  /* ---------- Learn: rewards, credit and limits, applying ---------- */
+  const LEARN = [["rewards", "Rewards"], ["credit", "Credit and limits"], ["apply", "Applying"]];
+  const topicNav = (base, items, cur) => `<nav class="topics" aria-label="Topics">${items.map(([k, l], i) => `<a href="#${base}${i ? "-" + k : ""}" aria-current="${cur === k ? "page" : "false"}">${esc(l)}</a>`).join("")}</nav>`;
+
+  function learnRewards() {
+    const pay = Object.values(D.programs).filter(p => p.payout);
+    const ewCap = Math.round(1250 / 0.0888);
+    return `
+      <h2>Rewards, explained.</h2>
+      <p>What cashback, points and miles are actually worth, how they reach your money, and the fine print that trips people up.</p>
+
+      <h3 id="learn-kinds">Three kinds of rewards</h3>
+      <div class="tiles">
+        <div class="tile"><span class="ic" aria-hidden="true">₱</span><b>Cashback</b><p>A percentage of what you spend comes back as a peso credit on your card. Simplest to use and easiest to value: 1% back is ₱1 per ₱100.</p></div>
+        <div class="tile"><span class="ic" aria-hidden="true">★</span><b>Points</b><p>The bank's own currency. A point is worth whatever you redeem it for, so the same points can be worth very different amounts.</p></div>
+        <div class="tile"><span class="ic" aria-hidden="true">✈</span><b>Airline miles</b><p>Points you move to an airline's program, or miles the card earns directly. Worth the most on award flights, much less on anything else.</p></div>
+      </div>
+
+      <h3 id="learn-flow">How a reward reaches your money</h3>
+      <ol class="flow">
+        <li><b>You spend</b><p>Each purchase is sorted into a category by the store's own bank, not by what you bought. That category decides the rate.${cite2(D.programs.hsbcCash.noEarn.url, "HSBC Live+ terms")}</p></li>
+        <li><b>The bank counts it</b><p>At your statement cut-off it adds up what you earned, applies caps and minimum-spend rules, and drops what doesn't qualify.</p></li>
+        <li><b>It's credited, or you redeem it</b><p>Some cashback lands on its own a few days later. Most points, and some cashback, wait until you redeem them, often in fixed blocks.</p></li>
+        <li><b>Your bill goes down</b><p>Cashback and cash credit appear on your statement as a credit that lowers what you owe. It isn't money in your bank account.</p></li>
+      </ol>
+      <div class="note-box">
+        <p><b>A credit is not a payment.</b> HSBC and Metrobank both say cashback doesn't count toward your minimum amount due, so pay at least that by the due date as usual.${cite2(D.programs.hsbcCash.payout.url, "HSBC")}${cite2(D.programs.mbCashback.payout.url, "Metrobank")}</p>
+        <p><b>Interest wipes it out.</b> If you carry a balance, interest of up to 3% a month costs far more than 1–5% back. Rewards only pay if you pay in full.</p>
+      </div>
+
+      <h3 id="learn-cash">Cashback in practice</h3>
+      <ul>
+        <li><b>Automatic or on request.</b> HSBC Live+ credits cashback 2 working days after your statement closes. EastWest Visa Platinum, Metrobank Cashback and BPI's cashback cards keep a balance that you redeem in ₱500 or ₱1,000 blocks.</li>
+        <li><b>Caps.</b> Most high rates stop at a monthly cap. EastWest Visa Platinum's 8.88% tops out at ₱1,250 a month, which you reach at about ${peso(ewCap)} of spending in its categories. Spend beyond that earns the base rate, so it's worth moving to another card.</li>
+        <li><b>Minimum spend.</b> Some bonus rates only apply once you spend enough in the month. HSBC Live+ needs ₱10,000; below that, everything earns 0.2%.</li>
+        <li><b>Expiry.</b> Unredeemed EastWest Cash Rewards reset to zero every 2 years. Set a reminder to redeem.</li>
+      </ul>
+
+      <h3 id="learn-points">Points in practice</h3>
+      <ul>
+        <li><b>Value depends on how you redeem.</b> 20,000 BPI points buy ₱1,000 of shopping credit, ₱0.05 a point. 16,000 points buy 1,000 Mabuhay Miles, but as credit they'd be worth ₱800, so the miles only win if each mile saves you more than ₱0.80 on a flight. The app uses each bank's published conversions; points with no published value are marked as assumed.</li>
+        <li><b>Compare before you redeem.</b> Work out the peso value of each option: the credit you get, or the flight you'd otherwise pay for, divided by the points it costs.</li>
+        <li><b>Redeem in blocks.</b> Most catalogs sell credit in fixed steps, so small balances wait.</li>
+        <li><b>Expiry and forfeiture.</b> BPI, Metrobank, RCBC and Security Bank points don't expire, but several banks forfeit points if your account falls behind, and BDO may forfeit Peso Points when a card is upgraded or converted. Redeem before you upgrade or close a card.</li>
+        <li><b>Combining.</b> BDO combines Peso Points across all your BDO cards for one redemption.</li>
+      </ul>
+
+      <h3 id="learn-miles">Miles in practice</h3>
+      <ul>
+        <li><b>Transfers are one way.</b> Once points become airline miles they can't come back, and transfers can take days; Maybank allows up to 30.</li>
+        <li><b>Airline miles have their own clock.</b> KrisFlyer miles expire 3 years after they're earned.${cite("milelionKF")} Asia Miles stay alive as long as you earn or redeem some every 18 months.${cite("awAsiaMiles")} For Mabuhay Miles, check the expiry shown in your PAL account.</li>
+        <li><b>Award seats are limited</b> and you usually still pay taxes and fees in cash, so check availability before you transfer.</li>
+        <li><b>What the app assumes.</b> Miles count as ₱0.50 each if you prefer miles and ₱0.30 otherwise. Change it with “What an airline mile is worth to you” in step 4 of Find.</li>
+      </ul>
+
+      <h3 id="learn-watch">Fine print to watch</h3>
+      <div class="tiles">
+        <div class="tile"><b>Categories</b><p>The store's bank sets its category, which isn't always what you'd expect, so a bonus may not apply.</p></div>
+        <div class="tile"><b>Ways of paying</b><p>Bills paid through your bank's own bills-pay or auto-charge, and e-wallet loading, often earn nothing.</p></div>
+        <div class="tile"><b>Caps and minimums</b><p>High rates stop at a cap and may need a minimum spend in the month.</p></div>
+        <div class="tile"><b>Upgrades and closures</b><p>Rewards on a card can be lost when it's upgraded, converted or closed. Redeem first.</p></div>
+      </div>
+
+      <h3 id="learn-payout">How each program pays out</h3>
+      <div class="card"><table class="factors narrow"><thead><tr><th>Program</th><th>How you get it</th><th>Limits</th></tr></thead><tbody>
+        ${pay.map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.payout.how)}</td><td>${esc(p.payout.limits)} <a class="cite" href="${esc(p.payout.url)}" target="_blank" rel="noopener">bank's terms</a></td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="sub">Other programs are still being checked against the banks' terms. Each card's Rewards tab shows what we have.</p>
+
+      <h3 id="guide-noearn">What earns no rewards</h3>
+      <p>Cash advances, instalment conversions, fees and interest almost never earn. These are the other gaps in each bank's own terms:</p>
+      <div class="card"><table class="factors narrow"><thead><tr><th>Program</th><th>Earns nothing on</th></tr></thead><tbody>
+        ${Object.values(D.programs).filter(p => p.noEarn).map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.noEarn.text)} <a class="cite" href="${esc(p.noEarn.url)}" target="_blank" rel="noopener">bank's terms${p.noEarn.asOf ? ", " + esc(p.noEarn.asOf) : ""}</a></td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="sub">The estimates already leave out HSBC's excluded categories. Other banks' gaps are mostly ways of paying, which the estimates assume you avoid.</p>`;
+  }
+  const cite2 = (url, label) => ` <a class="cite" href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`;
+
+  function learnCredit() {
     const climb = [
       ["Start", "Month 0", "Your first card, or a secured card backed by a deposit if no bank will say yes yet. First limits are often small."],
       ["Build", "Months 1–6", "Pay the full statement balance by the due date every month. Keep what you owe under about 30% of your limit."],
-      ["Ask", "Month 6+", `Request a higher limit. Banks usually review accounts every 6–12 months; asking sooner can count against you. BDO takes requests from 6 months, Security Bank from 12.`],
+      ["Ask", "Month 6+", "Request a higher limit. Banks usually review accounts every 6–12 months; asking sooner can count against you. BDO takes requests from 6 months, Security Bank from 12."],
       ["Branch out", "Months 6–12+", "Apply card-to-card: BPI, EastWest, PNB and UnionBank accept your card in place of payslips, and banks often base the new limit on the one you have."],
       ["Upgrade", "Year 2+", "Ask your bank to move you to a higher card instead of applying fresh. Your history carries over; premium cards still check income."]
     ];
     const score = [["Payment history", 35, "Pay at least the minimum by the due date, ideally the full balance. Auto-debit helps."], ["Credit utilization", 30, "Keep balances under about 30% of your limits."], ["Length of history", 15, "Keep your oldest card open, even if you rarely use it."], ["Types of credit", 10, "A mix of cards and loans can help. Don't borrow just for this."], ["New applications", null, "Space applications out; each one shows on your record."]];
     const withCli = BANK_KEYS.filter(b => bankInfo(b).cli);
-    const guide = `
-      <h2>Credit guide.</h2>
-      <p>How limits grow, what goes into your credit score, and how to use what you have. A clean record and a healthy limit are what unlock the better cards in this app.</p>
+    return `
+      <h2>Credit and limits.</h2>
+      <p>How limits grow, what goes into your credit score, and how to use what you have. A clean record and a healthy limit are what unlock the better cards.</p>
 
       <h3 id="guide-grow">How a limit grows</h3>
       <ol class="climb">${climb.map(([t, w, x], i) => `<li style="--h:${i}"><div class="climb-bar"><span>${i + 1}</span></div><div class="climb-t"><b>${t}</b><span class="when">${w}</span><p>${esc(x)}</p></div></li>`).join("")}</ol>
@@ -1911,17 +2188,10 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       <ul>
         <li><b>Pay in full.</b> Interest of up to 3% a month (36% a year) wipes out any reward.</li>
         <li><b>Skip cash advances.</b> They charge a fee and interest from the day you take them.</li>
-        <li><b>Use each card where it pays most.</b> Add your cards under “Credit cards you have now” on the Find page for a which-card-where list.</li>
+        <li><b>Use each card where it pays most.</b> My cards shows which card to use for each kind of spending.</li>
         <li><b>Keep every card active.</b> Limits on cards left unused for about a year often get lowered.${cite("mmcli")}</li>
         <li><b>Going abroad?</b> Ask for a temporary increase instead of a permanent one. RCBC's Bonus Travel Limit adds up to 100% for your trip.${cite("rcbcTravel")}</li>
       </ul>
-
-      <h3 id="guide-noearn">What earns no rewards</h3>
-      <p>Every bank leaves some charges out. Cash advances, instalment conversions, fees and interest almost never earn. These are the other gaps in each bank's own terms:</p>
-      <div class="card"><table class="factors narrow"><thead><tr><th>Program</th><th>Earns nothing on</th></tr></thead><tbody>
-        ${Object.values(D.programs).filter(p => p.noEarn).map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.noEarn.text)} <a class="cite" href="${esc(p.noEarn.url)}" target="_blank" rel="noopener">bank's terms${p.noEarn.asOf ? ", " + esc(p.noEarn.asOf) : ""}</a></td></tr>`).join("")}
-      </tbody></table></div>
-      <p class="sub">The estimates already count HSBC's category exclusions. Other banks' gaps are mostly ways of paying (bills-pay, auto-charge, e-wallet loading), which the estimates assume you avoid.</p>
 
       <h3 id="guide-lower">Should you lower your limit?</h3>
       <div class="lower">
@@ -1958,11 +2228,27 @@ table.factors.narrow td:first-child { white-space: nowrap; }
         <li><b>From a bank or lender:</b> under the CIC's Direct-to-Consumer program, any accessing entity (most banks and lenders) can give you your CIC credit report.${cite("cicD2C")}</li>
         <li><b>From a credit bureau:</b> CIC-accredited bureaus include CIBI, CRIF and TransUnion.${cite("cicSAE")} Some apps charge per check; RCBC's 2024 article cites ₱199 on CIBI's app.${cite("rcbcScore")}</li>
         <li><b>Something wrong?</b> File a dispute with the CIC to have it corrected.${cite("cicDispute")}</li>
-      </ul>
-    `;
-    $("#view-factors").innerHTML = guide + `
-      <h2 id="guide-check" style="margin-top:48px">What banks check.</h2>
-      <p>Banks weigh these when they decide on a credit card application. The app only asks for broad brackets, never names, numbers or IDs, and nothing leaves this page.</p>
+      </ul>`;
+  }
+
+  function learnApply() {
+    const rows = [
+      ["Gross annual income", "Every bank sets a floor per card, from ₱120,000 (PNB) to ₱3,000,000 (Security Bank World).", "Asked, as a bracket"],
+      ["Work type and tenure", "Security Bank wants 1+ year as a regular employee; Metrobank 6+ months. Self-employed need 2–3 years of filed returns.", "Asked"],
+      ["Age", "Most banks take principal applicants from 21. Upper limits vary: BDO 60, Security Bank 65, Metrobank 70.", "Asked, as a bracket"],
+      ["Existing credit cards", "Holding another bank's card 6–12 months is the most common shortcut (card-to-card). HSBC, China Bank and Maybank require it.", "Asked: which cards (optional), how long, and the limit as a bracket (optional)"],
+      ["Relationship with the bank", "Depositors get pre-approved offers, depositor-only cards (BPI Free+, EastWest Priority) and secured cards.", "Asked: which banks, no balances"],
+      ["Where you live", "EastWest only serves listed cities. Most banks need a deliverable Philippine address.", "Asked, as a region"],
+      ["Credit record (CIC, past dues)", "Banks pull your Credit Information Corporation record and internal blacklists. Missed payments in the last few years are the most common reason for denial.", "Asked, optional (skipped = assumed clean)"],
+      ["Citizenship or residency", "Filipino citizens qualify everywhere. BDO, EastWest, Metrobank, PNB and RCBC take resident foreigners with an ACR/ICR or visa; Security Bank takes citizens only.", "Asked, optional"],
+      ["Existing debt", "Loans and other card balances affect the limit you get, sometimes approval.", "Not asked"],
+      ["Contact numbers", "Metrobank and Security Bank ask for a landline; EastWest for a business landline.", "Shown in each card's requirements"],
+      ["Documents", "Government ID, TIN/SSS/PhilID number, and proof of income: BIR 2316 or ITR, recent payslips, or a COE. Self-employed add audited financials and DTI/SEC papers.", "Listed per bank in each card"]
+    ];
+    return `
+      <h2>Applying.</h2>
+      <p>What banks weigh when they decide, what to prepare, and how this app uses your answers. It only asks for broad brackets, never names, numbers or IDs, and nothing leaves this page.</p>
+      <h3 id="guide-check">What banks check</h3>
       <div class="card"><table class="factors"><thead><tr><th>Factor</th><th>How banks use it</th><th>In this app</th></tr></thead>
       <tbody>${rows.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>
       <h3>Documents to prepare</h3>
@@ -1978,10 +2264,22 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       <p>${esc(D.meta.interestCapNote)}</p>`;
   }
 
-  function renderData() {
+  function renderLearn(sub) {
+    const cur = LEARN.some(([k]) => k === sub) ? sub : "rewards";
+    $("#view-learn").innerHTML = topicNav("learn", LEARN, cur) + (cur === "credit" ? learnCredit() : cur === "apply" ? learnApply() : learnRewards());
+  }
+
+  /* ---------- About: the data, what changed ---------- */
+  const ABOUT = [["data", "About the data"], ["changes", "What changed"]];
+  function renderAbout(sub) {
+    const cur = sub === "changes" ? "changes" : "data";
+    $("#view-about").innerHTML = topicNav("about", ABOUT, cur) + (cur === "changes" ? aboutChanges() : aboutData());
+  }
+
+  function aboutData() {
     const c = D.cards;
     const official = c.filter(x => x.via === "official").length;
-    $("#view-data").innerHTML = `
+    return `
       <h2>About the data.</h2>
       <dl class="kv">
         <dt>Version</dt><dd class="num">${esc(D.meta.version)}</dd>
@@ -2013,7 +2311,7 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       <h3>Privacy</h3>
       <p>Your answers never leave this page. There's no account and no form that sends them, and closing the page clears them. The only things kept, in your own browser, are your light/dark choice and the MoneyMax switch.</p>
       <p>${window.PHCF_ANALYTICS ? `Visits are counted with <a href="https://www.goatcounter.com/help/privacy" target="_blank" rel="noopener">GoatCounter</a>, which sets no cookies and doesn't store IP addresses. It only gets the page address (without your view or answers), the website you came from (not the full link), and your screen width.` : "This copy of the app doesn't count visits."}</p>
-      <p>Like any website, the host (GitHub Pages) and the font service (Google Fonts) receive your browser's ordinary requests for files, which include your IP address.</p>
+      <p>Everything loads from this site, fonts included. Like any web host, GitHub Pages receives your browser's ordinary requests for files, which include your IP address.</p>
       <h3>Found a mistake?</h3>
       <p>Every card has a “Report a correction” link. It opens a pre-filled issue on <a href="${REPO_URL}/issues" target="_blank" rel="noopener">the project's GitHub page</a> (you need a free GitHub account). Corrections are checked against the bank's own site before they go in.</p>
       <h3>Use it like an app</h3>
@@ -2026,31 +2324,86 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   }
 
   /* ---------- Views ---------- */
-  const VIEWS = ["find", "compare", "promos", "changes", "factors", "data"];
-  // #guide is the credit guide's address; its section kept the old "factors" id.
-  const currentView = () => { const h = location.hash.slice(1) === "guide" ? "factors" : location.hash.slice(1); return VIEWS.includes(h) ? h : "find"; };
+  const VIEWS = ["find", "wallet", "compare", "promos", "learn", "about"];
+  // Old addresses keep working.
+  const ALIAS = { guide: "learn-credit", factors: "learn-credit", data: "about", changes: "about-changes", results: "find" };
+  // "#learn-credit" is the Learn view on its Credit topic; "#card-<id>" opens a card over whatever view is showing.
+  function route() {
+    let h = location.hash.slice(1);
+    if (ALIAS[h]) h = ALIAS[h];
+    if (h.startsWith("card-")) return { view: lastView || "find", card: h.slice(5) };
+    const [v, sub] = h.split("-");
+    return { view: VIEWS.includes(v) ? v : "find", sub };
+  }
+  const currentView = () => route().view;
   let lastView = null;
   function showView() {
-    const v = currentView();
-    const cardLink = location.hash.startsWith("#card-") ? location.hash.slice(6) : null;
-    if (lastView && lastView !== v && location.hash !== "#results" && !cardLink) window.scrollTo(0, 0);
+    const { view: v, sub, card } = route();
+    if (card) {
+      if (!lastView) { lastView = v; for (const id of VIEWS) $("#view-" + id).hidden = id !== v; document.querySelectorAll(".links a, .tabbar a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false")); }
+      if (D.cards.some(c => c.id === card)) showSheet(card);
+      return;
+    }
+    if (sheet.id) hideSheet();
+    if (lastView && lastView !== v && location.hash !== "#results") window.scrollTo(0, 0);
     lastView = v;
     for (const id of VIEWS) $("#view-" + id).hidden = id !== v;
-    document.querySelectorAll(".links a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false"));
+    document.querySelectorAll(".links a, .tabbar a").forEach(a => a.setAttribute("aria-current", a.dataset.view === v ? "page" : "false"));
     if (v === "compare") renderCompare();
     if (v === "promos") renderPromos();
-    if (v === "changes") renderChanges();
-    if (cardLink && D.cards.some(c => c.id === cardLink)) setTimeout(() => goTo(cardLink, true), 50);
-    renderDock(lastRun ? picks(lastRun.live) : null);
+    if (v === "wallet") renderWalletView();
+    if (v === "learn") renderLearn(sub);
+    if (v === "about") renderAbout(sub);
+    renderDock();
     if (location.hash === "#results") { const r = $("#results"); if (r) r.scrollIntoView(); }
+  }
+
+  /* ---------- Card sheet ---------- */
+  const sheet = { id: null, tab: "overview", pushed: false, opener: null };
+  function openCard(id) {
+    sheet.opener = document.activeElement;
+    if (location.hash === "#card-" + id) { showSheet(id); return; }
+    sheet.pushed = true;
+    location.hash = "#card-" + id;
+  }
+  function showSheet(id, tab, keepScroll) {
+    const c = D.cards.find(x => x.id === id);
+    if (!c) return;
+    const r = lastRun.byId[id];
+    const sameCard = sheet.id === id;
+    sheet.id = id; sheet.tab = tab || (sameCard ? sheet.tab : "overview");
+    // Phones scroll the whole panel; larger screens scroll just the body.
+    const scroller = () => matchMedia("(max-width: 760px)").matches ? $("#sheetPanel") : $("#sheetBody");
+    const top = keepScroll && scroller() ? scroller().scrollTop : 0;
+    $("#sheetPanel").innerHTML = r ? sheetHtml(r, sheet.tab) : closedSheetHtml(c);
+    if (keepScroll && scroller()) scroller().scrollTop = top;
+    if ($("#sheet").hidden) {
+      $("#sheet").hidden = false; document.body.classList.add("locked");
+      const x = $("#sheetPanel .sheet-close"); if (x) x.focus();
+    }
+    renderDock();
+  }
+  function hideSheet() {
+    $("#sheet").hidden = true; document.body.classList.remove("locked");
+    sheet.id = null; sheet.pushed = false;
+    const o = sheet.opener; sheet.opener = null;
+    if (o && document.contains(o) && o.focus) o.focus();
+    renderDock();
+  }
+  function closeSheet() {
+    if (sheet.pushed) { history.back(); return; }
+    history.replaceState(null, "", "#" + (lastView || "find"));
+    hideSheet();
   }
 
   /* ---------- Wire up ---------- */
   buildForm();
-  renderFresh(); renderFactors(); renderData(); renderResults(); showView();
+  renderFresh(); renderResults(); renderSummaries();
+  openStep(matchMedia("(max-width: 1024px)").matches ? 0 : 1);
+  showView();
   let t;
   const update = () => { clearTimeout(t); t = setTimeout(() => { readForm(); updateTotal(); renderResults(); }, 80); };
-  function updateTotal() { $("#spendTotal").textContent = peso(Object.values(st.spend).reduce((a, b) => a + b, 0)); }
+  function updateTotal() { $("#spendTotal").textContent = peso(monthlySpend()); }
   updateTotal();
   $("#mv").addEventListener("input", e => { e.target.dataset.set = "1"; });
   $("#form").addEventListener("input", update);
@@ -2063,47 +2416,74 @@ table.factors.narrow td:first-child { white-space: nowrap; }
   }));
   $("#resetBtn").addEventListener("click", () => {
     document.querySelectorAll("#spend input").forEach(i => { i.value = 0; });
-    $("#sampleNote").parentElement.hidden = true; update();
+    $("#sampleNote").hidden = true; update();
   });
-  function goTo(id, instant) {
-    if (currentView() !== "find") { history.replaceState(null, "", "#find"); showView(); }
-    const find = () => document.getElementById("card-" + id);
-    let el = find();
-    if (!el) { view.tab = "all"; view.q = ""; view.banks.clear(); view.nets.clear(); view.rewards.clear(); view.perks.clear(); view.fee = "any"; renderResults(); el = find(); }
-    if (el) { el.open = true; setTimeout(() => el.scrollIntoView({ behavior: instant || matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 30); }
-  }
+  const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
   let qTimer;
   document.addEventListener("click", e => {
+    if (e.target.closest("[data-close]")) { e.preventDefault(); closeSheet(); return; }
+    const stab = e.target.closest("[data-stab]");
+    if (stab) {
+      const panel = $("#sheetPanel"), was = panel.scrollTop;
+      showSheet(sheet.id, stab.dataset.stab);
+      // Keep the tabs where they were and start the new tab at its top.
+      // The tabs sit right under the header (a stuck element reports its stuck position, so measure the header).
+      const head = $(".sheet-top", panel); panel.scrollTop = head ? Math.min(was, head.offsetHeight) : 0;
+      const b = $("#sheetBody"); if (b && b !== panel) b.scrollTop = 0;
+      return;
+    }
     const cmp = e.target.closest("[data-cmp]");
     if (cmp) { e.preventDefault(); e.stopPropagation(); toggleCompare(cmp.dataset.cmp); return; }
     const go = e.target.closest("[data-go]");
-    if (go) { e.preventDefault(); goTo(go.dataset.go); return; }
+    if (go) { e.preventDefault(); openCard(go.dataset.go); return; }
+    const sb = e.target.closest("[data-stepbtn]");
+    if (sb) { const n = +sb.dataset.stepbtn; openStep(sb.closest(".step").dataset.open === "true" ? 0 : n); return; }
+    const nx = e.target.closest("[data-next]");
+    if (nx) { openStep(+nx.dataset.next, true); return; }
+    if (e.target.closest("[data-done]")) { openStep(0); $("#results").scrollIntoView({ behavior: smooth() }); return; }
     const tab = e.target.closest("[data-tab]");
     if (tab) { view.tab = tab.dataset.tab; renderResults(); return; }
     if (e.target.closest("#fBtn")) { view.filtersOpen = !view.filtersOpen; renderResults(); return; }
     if (e.target.closest("#fReset") || e.target.closest("#fReset2")) { view.banks.clear(); view.nets.clear(); view.rewards.clear(); view.perks.clear(); view.fee = "any"; renderResults(); return; }
-    if (e.target.closest("#dockClear") || e.target.closest("#cmpClear")) { compare.length = 0; renderResults(); renderCompare(); renderDock(picks(lastRun.live)); return; }
+    if (e.target.closest("#dockClear") || e.target.closest("#cmpClear")) { compare.length = 0; renderResults(); renderCompare(); renderDock(); return; }
     if (e.target.closest("#cmpSeed")) { picks(lastRun.live).slice(0, 3).forEach(p => { if (!inCompare(p.r.card.id)) compare.push(p.r.card.id); }); renderResults(); renderCompare(); return; }
     const cp = e.target.closest("[data-copy]");
     if (cp) { e.preventDefault(); copyLink(cp.dataset.copy); return; }
     if (e.target.closest("#installBtn") && installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; $("#installBtn").hidden = true; }); return; }
-    if (e.target.closest("#addCard")) { st.wallet = readWallet(); st.wallet.push(newWalletRow()); renderWallet(); update(); const sel = document.querySelectorAll("#wallet .w-card"); if (sel.length) sel[sel.length - 1].focus(); return; }
+    const add = e.target.closest("[data-addcard]");
+    if (add) {
+      const box = add.closest(".wallet-ed");
+      st.wallet = readWallet(box); st.wallet.push(newWalletRow());
+      if (st.card !== "yes") { st.card = "yes"; $("#card-yes").checked = true; }
+      box.innerHTML = walletEditor(); renderWallet(box); update();
+      const sel = box.querySelectorAll(".w-card"); if (sel.length) sel[sel.length - 1].focus();
+      return;
+    }
     const del = e.target.closest("[data-wdel]");
     if (del) {
-      st.wallet = readWallet(); st.wallet.splice(+del.dataset.wdel, 1);
+      const box = del.closest(".wallet-ed");
+      st.wallet = readWallet(box); st.wallet.splice(+del.dataset.wdel, 1);
       if (!st.wallet.length) { st.card = "none"; $("#card-none").checked = true; }
-      renderWallet(); update(); return;
+      box.innerHTML = walletEditor(); renderWallet(box); update(); return;
     }
     const pb = e.target.closest("[data-promobank]");
     if (pb) { view.promoBank = pb.dataset.promobank; location.hash = "#promos"; return; }
     const sc = e.target.closest("[data-scroll]");
-    if (sc) { e.preventDefault(); if (currentView() !== "factors") { location.hash = "#guide"; } setTimeout(() => { const t = document.getElementById("guide-" + sc.dataset.scroll); if (t) t.scrollIntoView({ block: "start" }); }, 60); return; }
+    if (sc) { e.preventDefault(); location.hash = "#learn-credit"; setTimeout(() => { const el = document.getElementById("guide-" + sc.dataset.scroll); if (el) el.scrollIntoView({ block: "start" }); }, 60); return; }
     if (e.target.closest("#mvReset")) { delete $("#mv").dataset.set; update(); return; }
-    const jump = e.target.closest("[data-jump]");
-    if (jump) { e.preventDefault(); $("#results").scrollIntoView({ behavior: "smooth" }); return; }
-    if (e.target.closest("#heroGo")) { e.preventDefault(); $("#results").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+    if (e.target.closest("#heroGo")) { e.preventDefault(); openStep(1, true); return; }
+    if (e.target.closest("#heroResults")) { e.preventDefault(); $("#results").scrollIntoView({ behavior: smooth() }); }
   });
   document.addEventListener("change", e => {
+    // Card list edits, from either editor: keep st.wallet current and redraw the other editor.
+    const box = e.target.closest(".wallet-ed");
+    if (box) {
+      st.wallet = readWallet(box);
+      if (box.id !== "wallet" && st.card !== "yes") { st.card = "yes"; $("#card-yes").checked = true; }
+      renderWallet(box);
+      if (box.id !== "wallet") update();
+      return;
+    }
     const fk = e.target.closest("[data-fk]");
     if (fk) { const set = view[fk.dataset.fk]; fk.checked ? set.add(fk.value) : set.delete(fk.value); renderResults(); return; }
     if (e.target.name === "ffee") { view.fee = e.target.value; renderResults(); return; }
@@ -2122,8 +2502,8 @@ table.factors.narrow td:first-child { white-space: nowrap; }
       qTimer = setTimeout(() => { const pos = e.target.selectionStart; renderResults(); const q = $("#q"); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (err) {} } }, 150);
     }
   });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && sheet.id) closeSheet(); });
   window.addEventListener("hashchange", showView);
-  addEventListener("resize", () => renderDock(lastRun ? picks(lastRun.live) : null));
 
   // Installable app: only on the GitHub Pages site (the Claude artifact can't run service workers).
   let installEvt = null;
